@@ -417,7 +417,10 @@ async def update_checklist(case_id: str, input: ChecklistUpdate):
         raise HTTPException(status_code=404, detail="Case not found")
     
     checklist_key = f"{input.phase.value}Checklist"
-    case[checklist_key] = [item.model_dump() for item in input.items]
+    updated_items = [item.model_dump() for item in input.items]
+    logger.info(f"Updated items to save: {len(updated_items)}, first completed: {updated_items[0].get('completed') if updated_items else 'N/A'}")
+    
+    case[checklist_key] = updated_items
     case["updatedAt"] = datetime.now(timezone.utc).isoformat()
     
     completed_count = sum(1 for item in input.items if item.completed)
@@ -429,8 +432,17 @@ async def update_checklist(case_id: str, input: ChecklistUpdate):
         input.phase.value
     )
     
-    await db.cases.update_one({"id": case_id}, {"$set": case})
-    return Case(**case)
+    # Log what we're about to save
+    logger.info(f"Saving to DB - {checklist_key} has {len(case[checklist_key])} items")
+    
+    result = await db.cases.update_one({"id": case_id}, {"$set": case})
+    logger.info(f"MongoDB update result: matched={result.matched_count}, modified={result.modified_count}")
+    
+    # Fetch fresh from DB to return
+    updated_case = await db.cases.find_one({"id": case_id}, {"_id": 0})
+    logger.info(f"Fresh from DB - {checklist_key} has {len(updated_case.get(checklist_key, []))} items")
+    
+    return Case(**updated_case)
 
 @api_router.post("/cases/{case_id}/checklists/{phase}/item", response_model=Case)
 async def add_checklist_item(case_id: str, phase: ChecklistPhase, item: ChecklistItemCreate):
