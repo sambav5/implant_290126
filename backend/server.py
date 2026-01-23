@@ -61,7 +61,7 @@ class CaseStatus(str, Enum):
 
 # ============ MODELS ============
 class ChecklistItemBase(BaseModel):
-    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    id: str
     text: str
     completed: bool = False
     notes: Optional[str] = None
@@ -69,6 +69,14 @@ class ChecklistItemBase(BaseModel):
 
 class ChecklistItem(ChecklistItemBase):
     isCustom: bool = False
+
+class ChecklistItemCreate(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    text: str
+    completed: bool = False
+    notes: Optional[str] = None
+    completedAt: Optional[str] = None
+    isCustom: bool = True
 
 class PlanningData(BaseModel):
     boneAvailability: Optional[BoneAvailability] = None
