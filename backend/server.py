@@ -407,6 +407,11 @@ async def analyze_case(case_id: str):
 # Checklist Management
 @api_router.put("/cases/{case_id}/checklists", response_model=Case)
 async def update_checklist(case_id: str, input: ChecklistUpdate):
+    logger.info(f"Updating checklist for case {case_id}, phase {input.phase}")
+    logger.info(f"Received {len(input.items)} items")
+    if input.items:
+        logger.info(f"First item: id={input.items[0].id}, completed={input.items[0].completed}")
+    
     case = await db.cases.find_one({"id": case_id}, {"_id": 0})
     if not case:
         raise HTTPException(status_code=404, detail="Case not found")
@@ -416,6 +421,7 @@ async def update_checklist(case_id: str, input: ChecklistUpdate):
     case["updatedAt"] = datetime.now(timezone.utc).isoformat()
     
     completed_count = sum(1 for item in input.items if item.completed)
+    logger.info(f"Completed count: {completed_count}")
     case = add_timeline_entry(
         case, 
         f"Checklist updated", 
