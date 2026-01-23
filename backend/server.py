@@ -425,7 +425,7 @@ async def update_checklist(case_id: str, input: ChecklistUpdate):
     if not case:
         raise HTTPException(status_code=404, detail="Case not found")
     
-    checklist_key = f"{input.phase.value}Checklist"
+    checklist_key = get_checklist_key(input.phase)
     updated_items = [item.model_dump() for item in input.items]
     logger.info(f"Updated items to save: {len(updated_items)}, first completed: {updated_items[0].get('completed') if updated_items else 'N/A'}")
     
