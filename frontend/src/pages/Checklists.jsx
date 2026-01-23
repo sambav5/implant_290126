@@ -332,6 +332,32 @@ export default function Checklists() {
         </div>
       </main>
       
+      {/* Bottom Navigation */}
+      <div className="fixed bottom-0 left-0 right-0 p-4 bg-white border-t border-border safe-area-pb">
+        <div className="page-container">
+          {caseData?.status === 'completed' ? (
+            <Button
+              onClick={() => navigate(`/case/${id}/learning`)}
+              className="w-full btn-clinical bg-accent text-accent-foreground hover:bg-accent/90"
+              data-testid="continue-learning-btn"
+            >
+              <Lightbulb className="h-5 w-5 mr-2" />
+              Complete Learning Reflection
+              <ChevronRight className="h-5 w-5 ml-2" />
+            </Button>
+          ) : (
+            <Button
+              onClick={() => navigate(`/case/${id}`)}
+              className="w-full btn-clinical bg-primary text-primary-foreground hover:bg-primary/90"
+              data-testid="continue-btn"
+            >
+              Continue to Case Overview
+              <ChevronRight className="h-5 w-5 ml-2" />
+            </Button>
+          )}
+        </div>
+      </div>
+      
       {/* Add Item Dialog */}
       <Dialog open={addItemDialogOpen} onOpenChange={setAddItemDialogOpen}>
         <DialogContent>
