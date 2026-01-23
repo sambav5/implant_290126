@@ -1,34 +1,196 @@
-.App-logo {
-    height: 40vmin;
-    pointer-events: none;
+/* App-specific styles */
+
+/* Mobile-first layout helpers */
+.bottom-nav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 50;
+    padding-bottom: max(1rem, env(safe-area-inset-bottom));
 }
 
-@media (prefers-reduced-motion: no-preference) {
-    .App-logo {
-        animation: App-logo-spin infinite 20s linear;
-    }
-}
-
-.App-header {
-    background-color: #0f0f10;
-    min-height: 100vh;
+/* Floating action button */
+.fab {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    z-index: 50;
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
     display: flex;
-    flex-direction: column;
     align-items: center;
     justify-content: center;
-    font-size: calc(10px + 2vmin);
-    color: white;
+    box-shadow: 0 4px 12px rgba(47, 128, 237, 0.35);
 }
 
-.App-link {
-    color: #61dafb;
+.fab:hover {
+    box-shadow: 0 6px 20px rgba(47, 128, 237, 0.45);
+    transform: translateY(-2px);
 }
 
-@keyframes App-logo-spin {
-    from {
-        transform: rotate(0deg);
+.fab:active {
+    transform: scale(0.95);
+}
+
+/* Step indicator */
+.step-indicator {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.step-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background-color: #E2E8F0;
+}
+
+.step-dot.active {
+    background-color: #2F80ED;
+    width: 24px;
+    border-radius: 4px;
+}
+
+.step-dot.completed {
+    background-color: #10B981;
+}
+
+/* Timeline styles */
+.timeline-entry {
+    position: relative;
+    padding-left: 24px;
+}
+
+.timeline-entry::before {
+    content: '';
+    position: absolute;
+    left: 6px;
+    top: 24px;
+    bottom: 0;
+    width: 2px;
+    background-color: #E2E8F0;
+}
+
+.timeline-entry:last-child::before {
+    display: none;
+}
+
+.timeline-entry::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 8px;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background-color: #F5F6F8;
+    border: 2px solid #2F80ED;
+}
+
+/* Risk indicator pulse */
+.risk-pulse-high {
+    animation: pulse-red 2s infinite;
+}
+
+.risk-pulse-moderate {
+    animation: pulse-amber 2s infinite;
+}
+
+@keyframes pulse-red {
+    0%, 100% {
+        box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4);
     }
-    to {
-        transform: rotate(360deg);
+    50% {
+        box-shadow: 0 0 0 8px rgba(239, 68, 68, 0);
+    }
+}
+
+@keyframes pulse-amber {
+    0%, 100% {
+        box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.4);
+    }
+    50% {
+        box-shadow: 0 0 0 8px rgba(245, 158, 11, 0);
+    }
+}
+
+/* Tooth number badge */
+.tooth-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    background-color: #2F80ED;
+    color: white;
+    font-family: 'Sora', sans-serif;
+    font-weight: 600;
+    font-size: 14px;
+}
+
+/* Status badge styles */
+.status-planning {
+    background-color: #E0E7FF;
+    color: #4F46E5;
+}
+
+.status-in-progress {
+    background-color: #FEF3C7;
+    color: #D97706;
+}
+
+.status-completed {
+    background-color: #D1FAE5;
+    color: #059669;
+}
+
+/* Mobile menu transition */
+.mobile-menu {
+    transform: translateX(-100%);
+    opacity: 0;
+}
+
+.mobile-menu.open {
+    transform: translateX(0);
+    opacity: 1;
+}
+
+/* Loading skeleton */
+.skeleton {
+    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+}
+
+@keyframes shimmer {
+    0% {
+        background-position: -200% 0;
+    }
+    100% {
+        background-position: 200% 0;
+    }
+}
+
+/* Print styles for PDF */
+@media print {
+    .no-print {
+        display: none !important;
+    }
+    
+    .print-only {
+        display: block !important;
+    }
+    
+    body {
+        background: white !important;
+    }
+    
+    .card-clinical {
+        box-shadow: none !important;
+        border: 1px solid #ddd !important;
     }
 }
