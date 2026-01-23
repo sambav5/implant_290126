@@ -436,7 +436,7 @@ async def update_checklist(case_id: str, input: ChecklistUpdate):
     logger.info(f"Completed count: {completed_count}")
     case = add_timeline_entry(
         case, 
-        f"Checklist updated", 
+        "Checklist updated", 
         f"{completed_count}/{len(input.items)} completed",
         input.phase.value
     )
