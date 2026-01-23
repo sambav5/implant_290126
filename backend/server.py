@@ -427,13 +427,20 @@ async def update_checklist(case_id: str, input: ChecklistUpdate):
     return Case(**case)
 
 @api_router.post("/cases/{case_id}/checklists/{phase}/item", response_model=Case)
-async def add_checklist_item(case_id: str, phase: ChecklistPhase, item: ChecklistItemBase):
+async def add_checklist_item(case_id: str, phase: ChecklistPhase, item: ChecklistItemCreate):
     case = await db.cases.find_one({"id": case_id}, {"_id": 0})
     if not case:
         raise HTTPException(status_code=404, detail="Case not found")
     
     checklist_key = f"{phase.value}Checklist"
-    new_item = ChecklistItem(**item.model_dump(), isCustom=True)
+    new_item = ChecklistItem(
+        id=item.id,
+        text=item.text,
+        completed=item.completed,
+        notes=item.notes,
+        completedAt=item.completedAt,
+        isCustom=True
+    )
     case[checklist_key].append(new_item.model_dump())
     case["updatedAt"] = datetime.now(timezone.utc).isoformat()
     case = add_timeline_entry(case, "Checklist item added", item.text, phase.value)
