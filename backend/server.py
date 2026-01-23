@@ -459,7 +459,7 @@ async def add_checklist_item(case_id: str, phase: ChecklistPhase, item: Checklis
     if not case:
         raise HTTPException(status_code=404, detail="Case not found")
     
-    checklist_key = f"{phase.value}Checklist"
+    checklist_key = get_checklist_key(phase)
     new_item = ChecklistItem(
         id=item.id,
         text=item.text,
