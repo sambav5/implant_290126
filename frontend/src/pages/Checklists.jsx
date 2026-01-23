@@ -236,7 +236,7 @@ export default function Checklists() {
   const overallProgress = overallTotal > 0 ? Math.round((overallCompleted / overallTotal) * 100) : 0;
   
   return (
-    <div className="min-h-screen bg-background pb-24">
+    <div className="min-h-screen bg-background pb-32">
       {/* Header */}
       <header className="glass-header sticky top-0 z-40 px-4 py-4">
         <div className="page-container">
