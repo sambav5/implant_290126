@@ -176,7 +176,7 @@ export const generateCasePDF = (caseData, variant = 'dentist') => {
       }
       
       const checkbox = item.completed ? '☑' : '☐';
-      doc.setTextColor(item.completed ? ...primaryColor : ...mutedColor);
+      doc.setTextColor(...(item.completed ? primaryColor : mutedColor));
       doc.text(checkbox, 14, yPos);
       doc.setTextColor(...textColor);
       doc.text(item.text, 22, yPos);
