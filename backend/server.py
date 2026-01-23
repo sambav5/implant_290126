@@ -283,6 +283,15 @@ def calculate_risk_assessment(planning_data: PlanningData, tooth_number: str) ->
     )
 
 # ============ HELPER FUNCTIONS ============
+def get_checklist_key(phase: ChecklistPhase) -> str:
+    """Convert phase enum to camelCase checklist key"""
+    key_map = {
+        ChecklistPhase.PRE_TREATMENT: 'preTreatmentChecklist',
+        ChecklistPhase.TREATMENT: 'treatmentChecklist',
+        ChecklistPhase.POST_TREATMENT: 'postTreatmentChecklist',
+    }
+    return key_map[phase]
+
 def add_timeline_entry(case: dict, action: str, details: str = None, phase: str = None) -> dict:
     entry = TimelineEntry(
         timestamp=datetime.now(timezone.utc).isoformat(),
