@@ -310,50 +310,201 @@ export default function PlanningWizard() {
       <main className="page-container py-6">
         {/* Results View */}
         {showResults && caseData?.riskAssessment && (
-          <div className="space-y-6 animate-fade-in">
+          <div className="space-y-5 animate-fade-in">
+            {/* Clinical Depth Toggle */}
             <div className="card-clinical">
-              <div className="flex items-center gap-3 mb-4">
-                <div className={`w-12 h-12 rounded-full flex items-center justify-center ${
-                  risk.className.replace('badge', 'bg').replace('text', 'bg')
-                } bg-opacity-20`}>
-                  <Activity className={`h-6 w-6 ${risk.color}`} />
-                </div>
-                <div>
-                  <Badge className={risk.className}>{risk.label}</Badge>
-                  <p className="text-sm text-muted-foreground mt-1">Risk Assessment</p>
-                </div>
-              </div>
-              
-              <p className="text-foreground mb-4">
-                {caseData.riskAssessment.plainLanguageSummary}
-              </p>
-              
-              {/* Factors */}
-              {caseData.riskAssessment.factors?.length > 0 && (
-                <div className="mb-4">
-                  <p className="text-sm font-medium text-muted-foreground mb-2">Identified Factors:</p>
-                  <div className="flex flex-wrap gap-2">
-                    {caseData.riskAssessment.factors.map((factor, index) => (
-                      <Badge key={index} variant="secondary">{factor}</Badge>
-                    ))}
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                    {detailedMode ? <Lightbulb className="h-5 w-5 text-primary" /> : <Zap className="h-5 w-5 text-primary" />}
+                  </div>
+                  <div>
+                    <p className="font-semibold text-foreground">Clinical Depth</p>
+                    <p className="text-sm text-muted-foreground">
+                      {detailedMode ? 'Detailed reasoning' : 'Standard summary'}
+                    </p>
                   </div>
                 </div>
-              )}
-              
-              {/* Considerations */}
-              {caseData.riskAssessment.considerations?.length > 0 && (
-                <div className="space-y-3 p-4 bg-muted/50 rounded-lg">
-                  <p className="text-sm font-medium">Considerations:</p>
-                  {caseData.riskAssessment.considerations.map((consideration, index) => (
-                    <div key={index} className="flex items-start gap-2 text-sm">
-                      <Info className="h-4 w-4 text-primary shrink-0 mt-0.5" />
-                      <span>{consideration}</span>
-                    </div>
-                  ))}
-                </div>
-              )}
+                <Switch
+                  checked={detailedMode}
+                  onCheckedChange={setDetailedMode}
+                  data-testid="clinical-depth-toggle"
+                />
+              </div>
             </div>
             
+            {/* === STANDARD MODE === */}
+            {!detailedMode && (
+              <div className="space-y-4">
+                {/* Primary Issue + Complexity */}
+                <div className="card-clinical">
+                  <div className="flex items-start justify-between gap-4 mb-4">
+                    <div>
+                      <p className="text-sm text-muted-foreground mb-1">Primary Clinical Issue</p>
+                      <h3 className="text-lg font-semibold text-foreground">
+                        {caseData.riskAssessment.primaryIssue || 'Standard Implant Placement'}
+                      </h3>
+                    </div>
+                    <Badge 
+                      className={`${complexityConfig[caseData.riskAssessment.caseComplexity]?.bgColor} ${complexityConfig[caseData.riskAssessment.caseComplexity]?.color} ${complexityConfig[caseData.riskAssessment.caseComplexity]?.borderColor} border`}
+                    >
+                      {caseData.riskAssessment.caseComplexity || 'Moderate'}
+                    </Badge>
+                  </div>
+                  
+                  {/* Implant Timing */}
+                  <div className="flex items-center gap-2 p-3 bg-muted/50 rounded-lg mb-3">
+                    <Clock className="h-4 w-4 text-muted-foreground shrink-0" />
+                    <p className="text-sm">
+                      <span className="font-medium">Timing: </span>
+                      {caseData.riskAssessment.implantTiming || 'Conventional placement protocol'}
+                    </p>
+                  </div>
+                  
+                  {/* Brief Rationale */}
+                  <p className="text-sm text-muted-foreground italic">
+                    {caseData.riskAssessment.briefRationale || caseData.riskAssessment.plainLanguageSummary}
+                  </p>
+                </div>
+              </div>
+            )}
+            
+            {/* === DETAILED MODE === */}
+            {detailedMode && (
+              <div className="space-y-4">
+                {/* 1. Primary Clinical Issue (Expanded) */}
+                <div className="card-clinical">
+                  <div className="flex items-center gap-2 mb-3">
+                    <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center text-xs font-semibold text-primary">1</div>
+                    <h4 className="font-semibold text-foreground">Primary Clinical Issue</h4>
+                  </div>
+                  <p className="text-foreground leading-relaxed">
+                    {caseData.riskAssessment.primaryIssueExpanded || caseData.riskAssessment.plainLanguageSummary}
+                  </p>
+                </div>
+                
+                {/* 2. Case Complexity + Drivers */}
+                <div className="card-clinical">
+                  <div className="flex items-center gap-2 mb-3">
+                    <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center text-xs font-semibold text-primary">2</div>
+                    <h4 className="font-semibold text-foreground">Case Complexity</h4>
+                    <Badge 
+                      className={`ml-auto ${complexityConfig[caseData.riskAssessment.caseComplexity]?.bgColor} ${complexityConfig[caseData.riskAssessment.caseComplexity]?.color} ${complexityConfig[caseData.riskAssessment.caseComplexity]?.borderColor} border`}
+                    >
+                      {caseData.riskAssessment.caseComplexity || 'Moderate'}
+                    </Badge>
+                  </div>
+                  
+                  {caseData.riskAssessment.complexityDrivers?.length > 0 && (
+                    <div className="space-y-2">
+                      <p className="text-sm text-muted-foreground">Contributing factors:</p>
+                      <ul className="space-y-1.5">
+                        {caseData.riskAssessment.complexityDrivers.map((driver, index) => (
+                          <li key={index} className="flex items-start gap-2 text-sm">
+                            <span className="text-primary mt-1">•</span>
+                            <span>{driver}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                </div>
+                
+                {/* 3. Implant Timing Recommendation */}
+                <div className="card-clinical">
+                  <div className="flex items-center gap-2 mb-3">
+                    <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center text-xs font-semibold text-primary">3</div>
+                    <h4 className="font-semibold text-foreground">Implant Timing</h4>
+                  </div>
+                  
+                  <div className="flex items-center gap-2 p-3 bg-muted/50 rounded-lg mb-3">
+                    <Clock className="h-4 w-4 text-muted-foreground shrink-0" />
+                    <p className="text-sm font-medium">
+                      {caseData.riskAssessment.implantTiming || 'Conventional placement protocol'}
+                    </p>
+                  </div>
+                  
+                  {/* Immediate Placement Eligibility */}
+                  {caseData.riskAssessment.immediatePlacementEligible !== null && (
+                    <div className={`p-3 rounded-lg border ${
+                      caseData.riskAssessment.immediatePlacementEligible 
+                        ? 'bg-emerald-50 border-emerald-200' 
+                        : 'bg-amber-50 border-amber-200'
+                    }`}>
+                      <p className={`text-sm font-medium mb-2 ${
+                        caseData.riskAssessment.immediatePlacementEligible 
+                          ? 'text-emerald-700' 
+                          : 'text-amber-700'
+                      }`}>
+                        {caseData.riskAssessment.immediatePlacementEligible 
+                          ? '✓ Immediate placement may be considered'
+                          : '⚠ Immediate placement not recommended'}
+                      </p>
+                      {caseData.riskAssessment.immediatePlacementReasons?.length > 0 && (
+                        <ul className="space-y-1">
+                          {caseData.riskAssessment.immediatePlacementReasons.map((reason, index) => (
+                            <li key={index} className="text-sm text-slate-600 flex items-start gap-2">
+                              <span className="mt-0.5">→</span>
+                              <span>{reason}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                    </div>
+                  )}
+                </div>
+                
+                {/* 4. Risk Modifiers Detected */}
+                {caseData.riskAssessment.riskModifiers?.length > 0 && (
+                  <div className="card-clinical">
+                    <div className="flex items-center gap-2 mb-3">
+                      <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center text-xs font-semibold text-primary">4</div>
+                      <h4 className="font-semibold text-foreground">Risk Modifiers Detected</h4>
+                    </div>
+                    <div className="space-y-2">
+                      {caseData.riskAssessment.riskModifiers.map((modifier, index) => (
+                        <div key={index} className="flex items-start gap-2 text-sm p-2 bg-muted/30 rounded">
+                          <Shield className="h-4 w-4 text-amber-500 shrink-0 mt-0.5" />
+                          <span>{modifier}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                
+                {/* 5. Clinical Rationale */}
+                {caseData.riskAssessment.clinicalRationale?.length > 0 && (
+                  <div className="card-clinical">
+                    <div className="flex items-center gap-2 mb-3">
+                      <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center text-xs font-semibold text-primary">5</div>
+                      <h4 className="font-semibold text-foreground">Clinical Rationale</h4>
+                    </div>
+                    <ul className="space-y-2">
+                      {caseData.riskAssessment.clinicalRationale.map((rationale, index) => (
+                        <li key={index} className="flex items-start gap-2 text-sm">
+                          <Info className="h-4 w-4 text-primary shrink-0 mt-0.5" />
+                          <span>{rationale}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+                
+                {/* 6. Backup Awareness (Complex cases only) */}
+                {caseData.riskAssessment.backupAwareness && (
+                  <div className="p-4 bg-slate-50 rounded-lg border border-slate-200">
+                    <div className="flex items-start gap-2">
+                      <Lightbulb className="h-4 w-4 text-slate-500 shrink-0 mt-0.5" />
+                      <p className="text-sm text-slate-600 italic">
+                        {caseData.riskAssessment.backupAwareness}
+                      </p>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+            
+            {/* Disclaimer */}
             <div className="p-4 bg-muted/50 rounded-lg border border-border">
               <div className="flex items-start gap-2">
                 <AlertTriangle className="h-4 w-4 text-muted-foreground shrink-0 mt-0.5" />
