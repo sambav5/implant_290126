@@ -112,10 +112,26 @@ class TimelineEntry(BaseModel):
     phase: Optional[str] = None
 
 class RiskAssessment(BaseModel):
+    # Standard mode fields
     overallRisk: str = "moderate"
     factors: List[str] = []
     considerations: List[str] = []
     plainLanguageSummary: str = ""
+    
+    # Standard mode additions
+    primaryIssue: str = ""
+    caseComplexity: str = "Moderate"  # Simple / Moderate / Complex
+    implantTiming: str = ""
+    briefRationale: str = ""
+    
+    # Detailed mode fields
+    primaryIssueExpanded: str = ""
+    complexityDrivers: List[str] = []
+    immediatePlacementEligible: Optional[bool] = None
+    immediatePlacementReasons: List[str] = []
+    riskModifiers: List[str] = []
+    clinicalRationale: List[str] = []
+    backupAwareness: Optional[str] = None
 
 class Case(BaseModel):
     model_config = ConfigDict(extra="ignore")
