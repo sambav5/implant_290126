@@ -220,66 +220,145 @@ DEFAULT_POST_TREATMENT_CHECKLIST = [
 # ============ PLANNING ENGINE ============
 def calculate_risk_assessment(planning_data: PlanningData, tooth_number: str) -> RiskAssessment:
     """
-    Internal risk stratification inspired by SAC classification.
-    Returns plain-language considerations, not scores or commands.
+    Enhanced risk stratification with toggle-based reasoning depth.
+    Returns both Standard and Detailed mode outputs using existing inputs only.
     """
     factors = []
     considerations = []
+    risk_modifiers = []
+    complexity_drivers = []
+    clinical_rationale = []
     risk_level = "low"
+    complexity_score = 0
     
-    # Bone availability assessment
+    # Determine if esthetic zone
+    esthetic_teeth = ["7", "8", "9", "10", "6", "11", "22", "23", "24", "25", "26", "27"]
+    is_esthetic_zone = tooth_number in esthetic_teeth or planning_data.estheticZone == EsteticZone.HIGH
+    
+    # Determine if posterior zone
+    posterior_teeth = ["1", "2", "3", "14", "15", "16", "17", "18", "19", "30", "31", "32"]
+    is_posterior = tooth_number in posterior_teeth
+    
+    # === BONE ASSESSMENT ===
     if planning_data.boneAvailability == BoneAvailability.INSUFFICIENT:
         factors.append("Limited bone availability")
         considerations.append("Consider bone augmentation procedures before or during implant placement")
+        complexity_drivers.append("Insufficient bone volume requiring augmentation consideration")
+        risk_modifiers.append("Bone deficiency detected")
+        clinical_rationale.append("Limited bone availability typically requires staged approach or simultaneous grafting")
         risk_level = "high"
+        complexity_score += 3
     elif planning_data.boneAvailability == BoneAvailability.LIMITED:
         factors.append("Moderate bone limitation")
         considerations.append("Be mindful of potential need for guided bone regeneration")
+        complexity_drivers.append("Borderline bone dimensions")
         risk_level = "moderate" if risk_level != "high" else risk_level
+        complexity_score += 2
+    elif planning_data.boneAvailability == BoneAvailability.MODERATE:
+        complexity_score += 1
     
-    # Esthetic zone assessment
-    esthetic_teeth = ["7", "8", "9", "10", "6", "11", "22", "23", "24", "25", "26", "27"]
-    if tooth_number in esthetic_teeth or planning_data.estheticZone == EsteticZone.HIGH:
+    # === ESTHETIC ZONE ===
+    if is_esthetic_zone:
         factors.append("High esthetic zone")
         considerations.append("Cases like this often require careful attention to soft tissue management")
         considerations.append("Consider provisionalization timeline for optimal esthetic outcomes")
+        complexity_drivers.append("Esthetic zone demands precise positioning and soft tissue outcomes")
+        clinical_rationale.append("Anterior placement requires meticulous attention to emergence profile and papilla preservation")
         risk_level = "moderate" if risk_level == "low" else risk_level
+        complexity_score += 2
     
-    # Soft tissue biotype
+    # === SOFT TISSUE BIOTYPE ===
     if planning_data.softTissueBiotype == SoftTissueBiotype.THIN:
         factors.append("Thin soft tissue biotype")
         considerations.append("Be mindful of potential gingival recession risk")
         considerations.append("Consider soft tissue grafting if indicated")
+        risk_modifiers.append("Thin biotype increases esthetic risk")
+        if is_esthetic_zone:
+            risk_modifiers.append("Thin biotype in esthetic zone warrants careful planning")
+            clinical_rationale.append("Thin biotype in visible areas may benefit from connective tissue grafting")
         risk_level = "moderate" if risk_level == "low" else risk_level
+        complexity_score += 1
     
-    # Systemic modifiers
+    # === SMOKING STATUS ===
     if planning_data.smokingStatus == "current":
         factors.append("Active smoker")
         considerations.append("Smoking cessation counseling may improve outcomes")
         considerations.append("Consider extended healing time before loading")
+        risk_modifiers.append("Active smoking impacts healing and osseointegration")
+        clinical_rationale.append("Smoking is associated with higher implant failure rates; extended healing recommended")
         risk_level = "moderate" if risk_level == "low" else risk_level
+        complexity_score += 2
+    elif planning_data.smokingStatus == "former":
+        risk_modifiers.append("Former smoker - monitor healing")
     
+    # === DIABETES ===
     if planning_data.diabetesStatus == "uncontrolled":
         factors.append("Uncontrolled diabetes")
         considerations.append("Optimize glycemic control before surgery if possible")
         considerations.append("Be aware of potential healing complications")
+        risk_modifiers.append("Uncontrolled diabetes significantly affects healing")
+        complexity_drivers.append("Systemic condition requiring medical optimization")
+        clinical_rationale.append("HbA1c optimization prior to surgery improves predictability")
         risk_level = "high"
+        complexity_score += 3
     elif planning_data.diabetesStatus == "controlled":
         factors.append("Controlled diabetes")
         considerations.append("Monitor healing progress carefully")
+        risk_modifiers.append("Well-controlled diabetes - standard precautions apply")
+        complexity_score += 1
     
-    # Medications check
+    # === MEDICATIONS ===
     if any(med.lower() in ["bisphosphonates", "denosumab", "antiresorptive"] for med in planning_data.medications):
         factors.append("Antiresorptive medication history")
         considerations.append("Consider MRONJ risk assessment")
         considerations.append("May require medical consultation before proceeding")
+        risk_modifiers.append("Antiresorptive therapy requires MRONJ risk evaluation")
+        complexity_drivers.append("Medication history requires interdisciplinary coordination")
+        clinical_rationale.append("Drug holiday consideration and specialist consultation may be warranted")
         risk_level = "high"
+        complexity_score += 3
     
     if any(med.lower() in ["warfarin", "anticoagulant", "blood thinner"] for med in planning_data.medications):
         factors.append("Anticoagulant therapy")
         considerations.append("Coordinate with physician regarding anticoagulation management")
+        risk_modifiers.append("Anticoagulation requires perioperative management plan")
+        complexity_score += 1
     
-    # Generate plain language summary
+    # === OCCLUSION / BRUXISM ===
+    if planning_data.occlusion and "brux" in planning_data.occlusion.lower():
+        risk_modifiers.append("Bruxism may affect long-term implant success")
+        clinical_rationale.append("Consider occlusal splint therapy post-restoration")
+        complexity_score += 1
+    
+    # === RESTORATIVE CONTEXT ===
+    if planning_data.restorativeContext == "bridge_abutment":
+        complexity_drivers.append("Bridge abutment requires precise positioning for path of insertion")
+        complexity_score += 1
+    elif planning_data.restorativeContext == "fixed_prosthesis":
+        complexity_drivers.append("Full arch rehabilitation increases planning complexity")
+        complexity_score += 2
+    
+    # === DETERMINE CASE COMPLEXITY ===
+    if complexity_score <= 2:
+        case_complexity = "Simple"
+    elif complexity_score <= 5:
+        case_complexity = "Moderate"
+    else:
+        case_complexity = "Complex"
+    
+    # === PRIMARY ISSUE DETERMINATION ===
+    primary_issue = determine_primary_issue(planning_data, tooth_number, is_esthetic_zone, is_posterior)
+    primary_issue_expanded = expand_primary_issue(planning_data, tooth_number, is_esthetic_zone, factors)
+    
+    # === IMPLANT TIMING ===
+    implant_timing, immediate_eligible, immediate_reasons = determine_implant_timing(
+        planning_data, risk_level, complexity_score, is_esthetic_zone
+    )
+    
+    # === BRIEF RATIONALE (Standard Mode) ===
+    brief_rationale = generate_brief_rationale(case_complexity, primary_issue, implant_timing)
+    
+    # === PLAIN LANGUAGE SUMMARY ===
     if risk_level == "low":
         summary = "This case appears straightforward. Standard protocols should be appropriate, though individual patient factors should always be considered."
     elif risk_level == "moderate":
@@ -291,12 +370,143 @@ def calculate_risk_assessment(planning_data: PlanningData, tooth_number: str) ->
         factors.append("No significant risk factors identified")
         considerations.append("Standard implant protocols may be appropriate")
     
+    # Limit complexity drivers to top 3
+    complexity_drivers = complexity_drivers[:3] if complexity_drivers else ["Standard case parameters"]
+    
+    # === BACKUP AWARENESS (Complex cases only) ===
+    backup_awareness = None
+    if case_complexity == "Complex":
+        backup_awareness = "If intraoperative findings differ from planning, consider staging the procedure. This is a reasonable approach that prioritizes long-term success."
+    
+    # Ensure clinical rationale has content
+    if not clinical_rationale:
+        clinical_rationale = ["Standard protocols are appropriate for this case profile"]
+    
     return RiskAssessment(
         overallRisk=risk_level,
         factors=factors,
         considerations=considerations,
-        plainLanguageSummary=summary
+        plainLanguageSummary=summary,
+        # Standard mode
+        primaryIssue=primary_issue,
+        caseComplexity=case_complexity,
+        implantTiming=implant_timing,
+        briefRationale=brief_rationale,
+        # Detailed mode
+        primaryIssueExpanded=primary_issue_expanded,
+        complexityDrivers=complexity_drivers,
+        immediatePlacementEligible=immediate_eligible,
+        immediatePlacementReasons=immediate_reasons,
+        riskModifiers=risk_modifiers if risk_modifiers else ["No significant risk modifiers identified"],
+        clinicalRationale=clinical_rationale[:3],
+        backupAwareness=backup_awareness
     )
+
+
+def determine_primary_issue(planning_data: PlanningData, tooth_number: str, is_esthetic: bool, is_posterior: bool) -> str:
+    """Generate concise primary issue label for Standard mode."""
+    if planning_data.boneAvailability == BoneAvailability.INSUFFICIENT:
+        return "Bone Deficiency"
+    if is_esthetic and planning_data.softTissueBiotype == SoftTissueBiotype.THIN:
+        return "Esthetic Zone + Thin Biotype"
+    if is_esthetic:
+        return "Esthetic Zone Placement"
+    if is_posterior and planning_data.boneAvailability in [BoneAvailability.LIMITED, BoneAvailability.MODERATE]:
+        return "Posterior Site"
+    if planning_data.restorativeContext == "fixed_prosthesis":
+        return "Full Arch Rehabilitation"
+    if planning_data.smokingStatus == "current":
+        return "Smoker - Modified Protocol"
+    if planning_data.diabetesStatus == "uncontrolled":
+        return "Systemic Optimization Needed"
+    return "Standard Implant Placement"
+
+
+def expand_primary_issue(planning_data: PlanningData, tooth_number: str, is_esthetic: bool, factors: List[str]) -> str:
+    """Generate expanded primary issue description for Detailed mode."""
+    parts = []
+    
+    # Location context
+    if is_esthetic:
+        parts.append(f"Implant planned for tooth #{tooth_number} in the esthetic zone")
+    else:
+        parts.append(f"Implant planned for tooth #{tooth_number}")
+    
+    # Bone context
+    if planning_data.boneAvailability == BoneAvailability.INSUFFICIENT:
+        parts.append("with insufficient bone volume that may require augmentation")
+    elif planning_data.boneAvailability == BoneAvailability.LIMITED:
+        parts.append("with limited bone that warrants careful dimension planning")
+    elif planning_data.boneAvailability == BoneAvailability.ADEQUATE:
+        parts.append("with adequate bone support")
+    
+    # Soft tissue context
+    if planning_data.softTissueBiotype == SoftTissueBiotype.THIN and is_esthetic:
+        parts.append("Thin gingival biotype in this visible area requires attention to soft tissue outcomes.")
+    
+    # Restorative context
+    if planning_data.restorativeContext:
+        resto_map = {
+            "single_crown": "Final restoration will be a single crown.",
+            "bridge_abutment": "Implant will serve as a bridge abutment.",
+            "overdenture": "Implant will support an overdenture.",
+            "fixed_prosthesis": "Part of a fixed full-arch prosthesis."
+        }
+        if planning_data.restorativeContext in resto_map:
+            parts.append(resto_map[planning_data.restorativeContext])
+    
+    return " ".join(parts)
+
+
+def determine_implant_timing(planning_data: PlanningData, risk_level: str, complexity_score: int, is_esthetic: bool) -> tuple:
+    """Determine implant timing recommendation and immediate placement eligibility."""
+    immediate_eligible = None
+    immediate_reasons = []
+    
+    # Check for conditions that contraindicate immediate placement
+    contraindications = []
+    
+    if planning_data.boneAvailability == BoneAvailability.INSUFFICIENT:
+        contraindications.append("Insufficient bone requires augmentation first")
+    
+    if planning_data.diabetesStatus == "uncontrolled":
+        contraindications.append("Systemic condition should be optimized before surgery")
+    
+    if any(med.lower() in ["bisphosphonates", "denosumab", "antiresorptive"] for med in planning_data.medications):
+        contraindications.append("Antiresorptive medication history requires careful timing consideration")
+    
+    if planning_data.smokingStatus == "current" and is_esthetic:
+        contraindications.append("Active smoking in esthetic zone increases immediate placement risk")
+    
+    # Determine timing recommendation
+    if risk_level == "high" or complexity_score > 5:
+        timing = "Delayed placement recommended"
+        immediate_eligible = False
+        immediate_reasons = contraindications if contraindications else ["Complex case factors favor staged approach"]
+    elif contraindications:
+        timing = "Conventional or delayed placement"
+        immediate_eligible = False
+        immediate_reasons = contraindications
+    elif planning_data.boneAvailability == BoneAvailability.ADEQUATE and risk_level == "low":
+        timing = "Immediate or early placement may be considered"
+        immediate_eligible = True
+        immediate_reasons = ["Favorable bone and risk profile support immediate consideration"]
+    else:
+        timing = "Conventional placement protocol"
+        immediate_eligible = None  # Not applicable / case dependent
+        immediate_reasons = []
+    
+    return timing, immediate_eligible, immediate_reasons
+
+
+def generate_brief_rationale(complexity: str, primary_issue: str, timing: str) -> str:
+    """Generate one-line rationale for Standard mode."""
+    if complexity == "Simple":
+        return f"{primary_issue} with favorable conditions supports {timing.lower()}."
+    elif complexity == "Moderate":
+        return f"{primary_issue} requires attention to specific factors; {timing.lower()} is appropriate."
+    else:
+        return f"{primary_issue} with multiple considerations; careful planning essential."
 
 # ============ HELPER FUNCTIONS ============
 def get_checklist_key(phase: ChecklistPhase) -> str:
