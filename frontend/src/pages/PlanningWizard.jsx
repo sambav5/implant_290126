@@ -158,9 +158,15 @@ const PLANNING_STEPS = [
 ];
 
 const riskConfig = {
-  low: { label: 'Low Risk', className: 'risk-badge-low', color: 'text-emerald-600' },
-  moderate: { label: 'Moderate', className: 'risk-badge-moderate', color: 'text-amber-600' },
-  high: { label: 'High Risk', className: 'risk-badge-high', color: 'text-red-600' },
+  low: { label: 'Low Risk', className: 'risk-badge-low', color: 'text-emerald-600', bgColor: 'bg-emerald-50' },
+  moderate: { label: 'Moderate', className: 'risk-badge-moderate', color: 'text-amber-600', bgColor: 'bg-amber-50' },
+  high: { label: 'High Risk', className: 'risk-badge-high', color: 'text-red-600', bgColor: 'bg-red-50' },
+};
+
+const complexityConfig = {
+  Simple: { color: 'text-emerald-600', bgColor: 'bg-emerald-50', borderColor: 'border-emerald-200' },
+  Moderate: { color: 'text-amber-600', bgColor: 'bg-amber-50', borderColor: 'border-amber-200' },
+  Complex: { color: 'text-red-600', bgColor: 'bg-red-50', borderColor: 'border-red-200' },
 };
 
 export default function PlanningWizard() {
