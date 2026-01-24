@@ -179,6 +179,7 @@ export default function PlanningWizard() {
   const [currentStep, setCurrentStep] = useState(0);
   const [planningData, setPlanningData] = useState({});
   const [showResults, setShowResults] = useState(false);
+  const [detailedMode, setDetailedMode] = useState(false);
   
   useEffect(() => {
     loadCase();
