@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, ChevronRight, ChevronLeft, AlertTriangle, Activity, Info } from 'lucide-react';
+import { ArrowLeft, ChevronRight, ChevronLeft, AlertTriangle, Activity, Info, Clock, Zap, Shield, Lightbulb } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
@@ -8,6 +8,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
+import { Switch } from '@/components/ui/switch';
 import { caseApi } from '@/services/api';
 import { toast } from 'sonner';
 
