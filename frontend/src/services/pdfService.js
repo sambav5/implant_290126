@@ -478,15 +478,16 @@ export const generateLabPDF = (caseData) => {
     yPos += noteLines.length * 5 + 8;
   } else {
     doc.setTextColor(...mutedColor);
-    doc.setFontStyle('italic');
+    doc.setFont('helvetica', 'italic');
     doc.text('No additional notes provided.', 14, yPos);
+    doc.setFont('helvetica', 'normal');
     yPos += 8;
   }
   
   if (caseData.planningData?.occlusion) {
     yPos += 4;
     doc.setTextColor(...mutedColor);
-    doc.setFontStyle('normal');
+    doc.setFont('helvetica', 'normal');
     doc.text('Occlusal Notes:', 14, yPos);
     yPos += 5;
     const occlusionLines = doc.splitTextToSize(caseData.planningData.occlusion, pageWidth - 28);
