@@ -29,7 +29,7 @@ export const generateDentistPDF = (caseData) => {
   
   yPos = 45;
   
-  // Case Info Section
+  // ============ SECTION 1: CASE INFORMATION ============
   doc.setTextColor(...textColor);
   doc.setFontSize(14);
   doc.setFont('helvetica', 'bold');
