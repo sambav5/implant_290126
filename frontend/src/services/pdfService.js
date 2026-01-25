@@ -64,7 +64,7 @@ export const generateDentistPDF = (caseData) => {
   
   yPos += 10;
   
-  // Planning Data Section
+  // ============ SECTION 2: PLANNING DATA ============
   if (caseData.planningData) {
     doc.setTextColor(...textColor);
     doc.setFontSize(14);
@@ -81,7 +81,9 @@ export const generateDentistPDF = (caseData) => {
       ['Bone Width:', caseData.planningData.boneWidth || '-'],
       ['Esthetic Zone:', caseData.planningData.estheticZone || '-'],
       ['Soft Tissue Biotype:', caseData.planningData.softTissueBiotype || '-'],
-      ['Restorative Context:', caseData.planningData.restorativeContext || '-'],
+      ['Restorative Context:', caseData.planningData.restorativeContext?.replace('_', ' ') || '-'],
+      ['Smoking Status:', caseData.planningData.smokingStatus || '-'],
+      ['Diabetes Status:', caseData.planningData.diabetesStatus || '-'],
     ];
     
     planningData.forEach(([label, value]) => {
@@ -92,12 +94,23 @@ export const generateDentistPDF = (caseData) => {
       yPos += 6;
     });
     
-    if (caseData.planningData.systemicModifiers?.length > 0) {
+    if (caseData.planningData.medications?.length > 0) {
       doc.setTextColor(...mutedColor);
-      doc.text('Systemic Modifiers:', 14, yPos);
+      doc.text('Medications:', 14, yPos);
       doc.setTextColor(...textColor);
-      doc.text(caseData.planningData.systemicModifiers.join(', '), 60, yPos);
+      doc.text(caseData.planningData.medications.join(', '), 60, yPos);
       yPos += 6;
+    }
+    
+    if (caseData.planningData.additionalNotes) {
+      yPos += 4;
+      doc.setTextColor(...mutedColor);
+      doc.text('Additional Notes:', 14, yPos);
+      yPos += 5;
+      doc.setTextColor(...textColor);
+      const noteLines = doc.splitTextToSize(caseData.planningData.additionalNotes, pageWidth - 28);
+      doc.text(noteLines, 14, yPos);
+      yPos += noteLines.length * 5;
     }
   }
   
