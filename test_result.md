@@ -308,3 +308,48 @@ agent_communication:
       
       Backend implementation is production-ready. No issues found.
       Ready for main agent to summarize and finish the implementation.
+  - agent: "main"
+    message: |
+      PDF REFACTORING IMPLEMENTATION - IN PROGRESS
+      
+      Task: Separate Dentist Copy and Lab Copy PDFs with distinct purposes
+      
+      Changes Made:
+      1. Created generateDentistPDF() - Clinical documentation with all medical/surgical info
+      2. Created generateLabPDF() - Prosthetic instructions only, no medical details
+      3. Updated pdfService.js with two distinct PDF generation functions
+      4. Maintained backward compatibility with downloadCasePDF()
+      
+      Dentist Copy Includes:
+      ✅ Case Information (full patient data)
+      ✅ Planning Data (complete clinical details)
+      ✅ Risk Assessment (with complexity and timing)
+      ✅ Clinical Considerations
+      ✅ Pre-Treatment Checklist
+      ✅ Treatment Checklist
+      ✅ Post-Treatment Checklist
+      ✅ Learning Reflections
+      ✅ Clinical disclaimer footer
+      
+      Lab Copy Includes ONLY:
+      ✅ Case Identification (name, tooth number, date)
+      ✅ Restoration Type (clear specification)
+      ✅ Implant Site Notes (location, esthetic zone, adjacent teeth)
+      ✅ Prosthetic Instructions (retention, emergence, margin, provisional)
+      ✅ Additional Lab Notes
+      ✅ Lab-specific disclaimer (no clinical responsibility)
+      
+      Lab Copy EXCLUDES:
+      ❌ Risk assessment details
+      ❌ Medical considerations (diabetes, smoking, medications)
+      ❌ Surgical checklists
+      ❌ Consent language
+      ❌ Post-op care instructions
+      ❌ Patient medical data
+      
+      Visual Differentiation:
+      - Dentist: Blue header "Clinical Case Documentation"
+      - Lab: Green header "Prosthetic Fabrication Order"
+      - Different disclaimers on each page
+      
+      Ready for testing to verify both PDFs generate correctly
