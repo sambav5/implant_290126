@@ -193,7 +193,7 @@ export const generateDentistPDF = (caseData) => {
   
   yPos += 10;
   
-  // Checklists Section
+  // ============ SECTION 4-6: CHECKLISTS ============
   const renderChecklist = (title, items) => {
     if (!items || items.length === 0) return;
     
@@ -221,10 +221,12 @@ export const generateDentistPDF = (caseData) => {
       doc.setTextColor(...(item.completed ? primaryColor : mutedColor));
       doc.text(checkbox, 14, yPos);
       doc.setTextColor(...textColor);
-      doc.text(item.text, 22, yPos);
+      const textLines = doc.splitTextToSize(item.text, pageWidth - 32);
+      doc.text(textLines, 22, yPos);
+      yPos += textLines.length * 5;
       
-      if (item.notes && variant === 'dentist') {
-        yPos += 4;
+      if (item.notes) {
+        yPos += 2;
         doc.setTextColor(...mutedColor);
         doc.setFontSize(8);
         const noteLines = doc.splitTextToSize(`Note: ${item.notes}`, pageWidth - 36);
@@ -243,8 +245,8 @@ export const generateDentistPDF = (caseData) => {
   renderChecklist('Treatment Checklist', caseData.treatmentChecklist);
   renderChecklist('Post-Treatment Checklist', caseData.postTreatmentChecklist);
   
-  // Learning Feedback (dentist copy only)
-  if (variant === 'dentist' && caseData.feedback?.whatWasUnexpected) {
+  // Learning Feedback
+  if (caseData.feedback?.whatWasUnexpected || caseData.feedback?.whatToDoubleCheckNextTime) {
     if (yPos > 230) {
       doc.addPage();
       yPos = 20;
@@ -288,7 +290,7 @@ export const generateDentistPDF = (caseData) => {
     doc.setFontSize(8);
     doc.setTextColor(...mutedColor);
     doc.text(
-      'Decision support only. Final responsibility lies with the clinician.',
+      'Decision support only. Final clinical responsibility lies with the treating clinician.',
       pageWidth / 2,
       doc.internal.pageSize.getHeight() - 10,
       { align: 'center' }
@@ -304,8 +306,252 @@ export const generateDentistPDF = (caseData) => {
   return doc;
 };
 
-export const downloadCasePDF = (caseData, variant = 'dentist') => {
-  const doc = generateCasePDF(caseData, variant);
-  const filename = `${caseData.caseName.replace(/\s+/g, '_')}_${variant}_${new Date().toISOString().split('T')[0]}.pdf`;
+// ============ LAB COPY PDF ============
+export const generateLabPDF = (caseData) => {
+  const doc = new jsPDF();
+  const pageWidth = doc.internal.pageSize.getWidth();
+  
+  // Colors - Using green theme for lab copy to differentiate
+  const labColor = [16, 185, 129]; // Green
+  const textColor = [31, 41, 55];
+  const mutedColor = [100, 116, 139];
+  
+  let yPos = 20;
+  
+  // Header
+  doc.setFillColor(...labColor);
+  doc.rect(0, 0, pageWidth, 35, 'F');
+  
+  doc.setTextColor(255, 255, 255);
+  doc.setFontSize(20);
+  doc.setFont('helvetica', 'bold');
+  doc.text('Prosthetic Fabrication Order', 14, 22);
+  
+  doc.setFontSize(10);
+  doc.setFont('helvetica', 'normal');
+  doc.text(`Date: ${new Date().toLocaleDateString()}`, pageWidth - 14, 22, { align: 'right' });
+  doc.text('Lab Copy', pageWidth - 14, 28, { align: 'right' });
+  
+  yPos = 50;
+  
+  // ============ SECTION 1: CASE IDENTIFICATION ============
+  doc.setTextColor(...textColor);
+  doc.setFontSize(14);
+  doc.setFont('helvetica', 'bold');
+  doc.text('Case Identification', 14, yPos);
+  yPos += 8;
+  
+  doc.setFontSize(11);
+  doc.setFont('helvetica', 'normal');
+  
+  const caseId = [
+    ['Case Name:', caseData.caseName],
+    ['Tooth Number:', `#${caseData.toothNumber}`],
+    ['Order Date:', new Date(caseData.createdAt).toLocaleDateString()],
+  ];
+  
+  caseId.forEach(([label, value]) => {
+    doc.setTextColor(...mutedColor);
+    doc.text(label, 14, yPos);
+    doc.setTextColor(...textColor);
+    doc.setFont('helvetica', 'bold');
+    doc.text(value || '-', 60, yPos);
+    doc.setFont('helvetica', 'normal');
+    yPos += 7;
+  });
+  
+  yPos += 12;
+  
+  // ============ SECTION 2: RESTORATION TYPE ============
+  doc.setTextColor(...textColor);
+  doc.setFontSize(14);
+  doc.setFont('helvetica', 'bold');
+  doc.text('Restoration Specification', 14, yPos);
+  yPos += 8;
+  
+  doc.setFontSize(11);
+  doc.setFont('helvetica', 'normal');
+  
+  const restorationType = caseData.planningData?.restorativeContext || 'Not specified';
+  const restorationMap = {
+    'single_crown': 'Single Implant Crown',
+    'bridge_abutment': 'Bridge Abutment',
+    'overdenture': 'Overdenture Support',
+    'fixed_prosthesis': 'Fixed Full Arch Prosthesis',
+  };
+  
+  doc.setFillColor(245, 245, 245);
+  doc.roundedRect(14, yPos - 4, pageWidth - 28, 12, 2, 2, 'F');
+  doc.setTextColor(...textColor);
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(12);
+  doc.text(restorationMap[restorationType] || restorationType, 18, yPos + 4);
+  yPos += 16;
+  
+  // ============ SECTION 3: IMPLANT SITE NOTES ============
+  doc.setTextColor(...textColor);
+  doc.setFontSize(14);
+  doc.setFont('helvetica', 'bold');
+  doc.text('Implant Site Notes', 14, yPos);
+  yPos += 8;
+  
+  doc.setFontSize(10);
+  doc.setFont('helvetica', 'normal');
+  
+  const siteNotes = [
+    ['Location:', `Tooth #${caseData.toothNumber}`],
+    ['Esthetic Zone:', caseData.planningData?.estheticZone?.toUpperCase() || 'Not specified'],
+    ['Adjacent Teeth:', caseData.planningData?.adjacentTeeth || 'Not specified'],
+  ];
+  
+  siteNotes.forEach(([label, value]) => {
+    doc.setTextColor(...mutedColor);
+    doc.text(label, 14, yPos);
+    doc.setTextColor(...textColor);
+    doc.text(value, 60, yPos);
+    yPos += 6;
+  });
+  
+  yPos += 12;
+  
+  // ============ SECTION 4: PROSTHETIC INSTRUCTIONS ============
+  doc.setTextColor(...textColor);
+  doc.setFontSize(14);
+  doc.setFont('helvetica', 'bold');
+  doc.text('Prosthetic Instructions', 14, yPos);
+  yPos += 10;
+  
+  doc.setFontSize(10);
+  doc.setFont('helvetica', 'normal');
+  
+  // Retention Type
+  doc.setFillColor(250, 250, 250);
+  doc.roundedRect(14, yPos - 4, pageWidth - 28, 10, 2, 2, 'F');
+  doc.setTextColor(...mutedColor);
+  doc.text('Retention Type:', 18, yPos + 2);
+  doc.setTextColor(...textColor);
+  doc.text('Screw-retained (confirm with clinician)', 80, yPos + 2);
+  yPos += 14;
+  
+  // Emergence Profile
+  doc.setFillColor(250, 250, 250);
+  doc.roundedRect(14, yPos - 4, pageWidth - 28, 10, 2, 2, 'F');
+  doc.setTextColor(...mutedColor);
+  doc.text('Emergence Profile:', 18, yPos + 2);
+  doc.setTextColor(...textColor);
+  const estheticHigh = caseData.planningData?.estheticZone === 'high';
+  doc.text(estheticHigh ? 'Critical - confirm ideal contour with clinician' : 'Standard profile (clinician to confirm)', 80, yPos + 2);
+  yPos += 14;
+  
+  // Margin Depth
+  doc.setFillColor(250, 250, 250);
+  doc.roundedRect(14, yPos - 4, pageWidth - 28, 10, 2, 2, 'F');
+  doc.setTextColor(...mutedColor);
+  doc.text('Margin Depth:', 18, yPos + 2);
+  doc.setTextColor(...textColor);
+  doc.text('Per clinician instruction', 80, yPos + 2);
+  yPos += 14;
+  
+  // Provisional Required
+  doc.setFillColor(250, 250, 250);
+  doc.roundedRect(14, yPos - 4, pageWidth - 28, 10, 2, 2, 'F');
+  doc.setTextColor(...mutedColor);
+  doc.text('Provisional Required:', 18, yPos + 2);
+  doc.setTextColor(...textColor);
+  doc.text(estheticHigh ? 'Yes - esthetic zone' : 'Confirm with clinician', 80, yPos + 2);
+  yPos += 16;
+  
+  // ============ SECTION 5: ADDITIONAL LAB NOTES ============
+  doc.setTextColor(...textColor);
+  doc.setFontSize(14);
+  doc.setFont('helvetica', 'bold');
+  doc.text('Additional Lab Notes', 14, yPos);
+  yPos += 8;
+  
+  doc.setFontSize(10);
+  doc.setFont('helvetica', 'normal');
+  
+  if (caseData.planningData?.additionalNotes) {
+    const noteLines = doc.splitTextToSize(caseData.planningData.additionalNotes, pageWidth - 28);
+    doc.setTextColor(...textColor);
+    doc.text(noteLines, 14, yPos);
+    yPos += noteLines.length * 5 + 8;
+  } else {
+    doc.setTextColor(...mutedColor);
+    doc.setFontStyle('italic');
+    doc.text('No additional notes provided.', 14, yPos);
+    yPos += 8;
+  }
+  
+  if (caseData.planningData?.occlusion) {
+    yPos += 4;
+    doc.setTextColor(...mutedColor);
+    doc.setFontStyle('normal');
+    doc.text('Occlusal Notes:', 14, yPos);
+    yPos += 5;
+    const occlusionLines = doc.splitTextToSize(caseData.planningData.occlusion, pageWidth - 28);
+    doc.setTextColor(...textColor);
+    doc.text(occlusionLines, 14, yPos);
+    yPos += occlusionLines.length * 5;
+  }
+  
+  yPos += 15;
+  
+  // ============ LAB DISCLAIMER ============
+  doc.setFillColor(255, 250, 230);
+  doc.roundedRect(14, yPos - 4, pageWidth - 28, 28, 2, 2, 'F');
+  doc.setTextColor(180, 83, 9);
+  doc.setFontSize(9);
+  doc.setFont('helvetica', 'bold');
+  doc.text('IMPORTANT LAB NOTICE:', 18, yPos + 2);
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(8);
+  doc.setTextColor(120, 53, 15);
+  const disclaimerText = 'This order is for prosthetic fabrication only. The laboratory assumes no clinical responsibility. All measurements, specifications, and clinical decisions remain the sole responsibility of the treating clinician. Confirm all details before proceeding with fabrication.';
+  const disclaimerLines = doc.splitTextToSize(disclaimerText, pageWidth - 40);
+  doc.text(disclaimerLines, 18, yPos + 8);
+  
+  // Footer on each page
+  const totalPages = doc.internal.getNumberOfPages();
+  for (let i = 1; i <= totalPages; i++) {
+    doc.setPage(i);
+    doc.setFontSize(8);
+    doc.setTextColor(...mutedColor);
+    doc.text(
+      'For prosthetic fabrication only - No clinical responsibility',
+      pageWidth / 2,
+      doc.internal.pageSize.getHeight() - 10,
+      { align: 'center' }
+    );
+    doc.text(
+      `Page ${i} of ${totalPages}`,
+      pageWidth - 14,
+      doc.internal.pageSize.getHeight() - 10,
+      { align: 'right' }
+    );
+  }
+  
+  return doc;
+};
+
+// ============ DOWNLOAD FUNCTIONS ============
+export const downloadDentistPDF = (caseData) => {
+  const doc = generateDentistPDF(caseData);
+  const filename = `${caseData.caseName.replace(/\s+/g, '_')}_Dentist_${new Date().toISOString().split('T')[0]}.pdf`;
   doc.save(filename);
+};
+
+export const downloadLabPDF = (caseData) => {
+  const doc = generateLabPDF(caseData);
+  const filename = `${caseData.caseName.replace(/\s+/g, '_')}_Lab_${new Date().toISOString().split('T')[0]}.pdf`;
+  doc.save(filename);
+};
+
+// Legacy function for backward compatibility
+export const downloadCasePDF = (caseData, variant = 'dentist') => {
+  if (variant === 'lab') {
+    downloadLabPDF(caseData);
+  } else {
+    downloadDentistPDF(caseData);
+  }
 };
