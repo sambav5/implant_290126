@@ -116,7 +116,7 @@ export const generateDentistPDF = (caseData) => {
   
   yPos += 10;
   
-  // Risk Assessment Section
+  // ============ SECTION 3: RISK ASSESSMENT ============
   if (caseData.riskAssessment) {
     doc.setTextColor(...textColor);
     doc.setFontSize(14);
@@ -134,9 +134,37 @@ export const generateDentistPDF = (caseData) => {
     doc.roundedRect(14, yPos - 4, 60, 8, 2, 2, 'F');
     doc.setTextColor(255, 255, 255);
     doc.setFontSize(10);
-    doc.text(`Overall: ${caseData.riskAssessment.overallRisk.toUpperCase()}`, 16, yPos + 2);
+    doc.text(`Overall: ${caseData.riskAssessment.overallRisk?.toUpperCase() || 'MODERATE'}`, 16, yPos + 2);
     yPos += 12;
     
+    // Primary Issue and Complexity
+    if (caseData.riskAssessment.primaryIssue) {
+      doc.setTextColor(...textColor);
+      doc.setFont('helvetica', 'bold');
+      doc.text('Primary Issue:', 14, yPos);
+      doc.setFont('helvetica', 'normal');
+      doc.text(caseData.riskAssessment.primaryIssue, 50, yPos);
+      yPos += 6;
+    }
+    
+    if (caseData.riskAssessment.caseComplexity) {
+      doc.setFont('helvetica', 'bold');
+      doc.text('Complexity:', 14, yPos);
+      doc.setFont('helvetica', 'normal');
+      doc.text(caseData.riskAssessment.caseComplexity, 50, yPos);
+      yPos += 6;
+    }
+    
+    if (caseData.riskAssessment.implantTiming) {
+      doc.setFont('helvetica', 'bold');
+      doc.text('Timing:', 14, yPos);
+      doc.setFont('helvetica', 'normal');
+      const timingLines = doc.splitTextToSize(caseData.riskAssessment.implantTiming, pageWidth - 60);
+      doc.text(timingLines, 50, yPos);
+      yPos += timingLines.length * 5 + 4;
+    }
+    
+    yPos += 4;
     doc.setTextColor(...textColor);
     doc.setFontSize(10);
     const summaryLines = doc.splitTextToSize(caseData.riskAssessment.plainLanguageSummary, pageWidth - 28);
@@ -145,7 +173,7 @@ export const generateDentistPDF = (caseData) => {
     
     if (caseData.riskAssessment.considerations?.length > 0) {
       doc.setFont('helvetica', 'bold');
-      doc.text('Considerations:', 14, yPos);
+      doc.text('Clinical Considerations:', 14, yPos);
       yPos += 6;
       doc.setFont('helvetica', 'normal');
       
