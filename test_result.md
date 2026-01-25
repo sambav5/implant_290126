@@ -101,3 +101,101 @@
 #====================================================================================================
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
+
+user_problem_statement: |
+  Add a Clinical Depth toggle with two modes:
+  - Standard (default): Shows minimal output (primary issue, complexity, timing, brief rationale)
+  - Detailed (toggle ON): Reveals additional reasoning layers with 6 sections:
+    1. Primary Clinical Issue (Expanded)
+    2. Case Complexity + Drivers
+    3. Immediate Placement Eligibility Gate
+    4. Risk Modifiers Detected
+    5. Clinical Rationale
+    6. Soft Backup Awareness (Complex cases only)
+  
+  Hard Constraints:
+  - No new mandatory inputs
+  - No increase in form completion time
+  - Toggle controls output depth only, not input form
+  - Supportive, senior-clinician voice
+  - Output readable in under 90 seconds
+
+backend:
+  - task: "Clinical Depth Toggle - Backend Planning Engine"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: true
+        agent: "main"
+        comment: |
+          Backend implementation is complete with RiskAssessment model containing all required fields:
+          - Standard mode: primaryIssue, caseComplexity, implantTiming, briefRationale
+          - Detailed mode: primaryIssueExpanded, complexityDrivers, immediatePlacementEligible, 
+            immediatePlacementReasons, riskModifiers, clinicalRationale, backupAwareness
+          The calculate_risk_assessment function generates all data using existing planning inputs only.
+          Helper functions implemented: determine_primary_issue, expand_primary_issue, 
+          determine_implant_timing, generate_brief_rationale.
+
+frontend:
+  - task: "Clinical Depth Toggle - Frontend UI"
+    implemented: true
+    working: true
+    file: "/app/frontend/src/pages/PlanningWizard.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: true
+        agent: "main"
+        comment: |
+          Frontend implementation is complete:
+          - Toggle switch with Lightbulb/Zap icons implemented (line 182, 314-334)
+          - Standard mode displays 4 key elements: primary issue, complexity badge, timing, brief rationale
+          - Detailed mode displays 6 numbered sections with proper styling and conditional rendering
+          - Immediate placement eligibility gate shown with color-coded feedback
+          - Risk modifiers displayed with shield icons
+          - Clinical rationale shown with info icons
+          - Backup awareness shown for complex cases only
+          - All content properly styled with clinical aesthetic
+
+metadata:
+  created_by: "main_agent"
+  version: "1.0"
+  test_sequence: 0
+  run_ui: true
+
+test_plan:
+  current_focus:
+    - "Clinical Depth Toggle - Backend Planning Engine"
+    - "Clinical Depth Toggle - Frontend UI"
+  stuck_tasks: []
+  test_all: false
+  test_priority: "high_first"
+
+agent_communication:
+  - agent: "main"
+    message: |
+      Implementation Status: COMPLETE
+      
+      The Clinical Depth Toggle feature is fully implemented in both backend and frontend.
+      All services are running successfully after resolving node_modules dependency issues.
+      
+      Ready for testing:
+      1. Create a new case
+      2. Complete the planning wizard with various input combinations
+      3. Verify Standard mode shows minimal output (4 elements)
+      4. Toggle to Detailed mode and verify all 6 sections appear
+      5. Test immediate placement eligibility logic
+      6. Verify backup awareness appears only for Complex cases
+      7. Test with different case complexity scenarios (Simple, Moderate, Complex)
+      
+      All constraints met:
+      ✅ No new mandatory inputs
+      ✅ No increase in form completion time
+      ✅ Toggle controls output depth only
+      ✅ Uses existing planning data
+      ✅ Clinical supportive tone maintained
