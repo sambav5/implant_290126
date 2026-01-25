@@ -431,8 +431,8 @@ def main():
     
     tester = DentalImplantAPITester()
     
-    # Test sequence
-    tests = [
+    # Basic API tests
+    basic_tests = [
         tester.test_root_endpoint,
         tester.test_create_case,
         tester.test_get_all_cases,
@@ -448,16 +448,31 @@ def main():
         tester.test_delete_case,
     ]
     
-    for test in tests:
+    # Clinical Depth Toggle specific tests
+    clinical_depth_tests = [
+        tester.test_clinical_depth_simple_case,
+        tester.test_clinical_depth_moderate_case,
+        tester.test_clinical_depth_complex_case,
+    ]
+    
+    print("\n🔧 Running Basic API Tests...")
+    for test in basic_tests:
         test()
     
-    # Print results
+    print("\n🔬 Running Clinical Depth Toggle Tests...")
+    for test in clinical_depth_tests:
+        test()
+    
+    # Print Clinical Depth Toggle summary
+    clinical_success = tester.print_clinical_depth_summary()
+    
+    # Print overall results
     print("\n" + "=" * 50)
-    print(f"📊 Tests Results: {tester.tests_passed}/{tester.tests_run} passed")
+    print(f"📊 Overall Test Results: {tester.tests_passed}/{tester.tests_run} passed")
     success_rate = (tester.tests_passed / tester.tests_run) * 100 if tester.tests_run > 0 else 0
     print(f"📈 Success Rate: {success_rate:.1f}%")
     
-    if tester.tests_passed == tester.tests_run:
+    if tester.tests_passed == tester.tests_run and clinical_success:
         print("🎉 All tests passed!")
         return 0
     else:
