@@ -1,7 +1,8 @@
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
 
-export const generateCasePDF = (caseData, variant = 'dentist') => {
+// ============ DENTIST COPY PDF ============
+export const generateDentistPDF = (caseData) => {
   const doc = new jsPDF();
   const pageWidth = doc.internal.pageSize.getWidth();
   
@@ -19,12 +20,12 @@ export const generateCasePDF = (caseData, variant = 'dentist') => {
   doc.setTextColor(255, 255, 255);
   doc.setFontSize(20);
   doc.setFont('helvetica', 'bold');
-  doc.text('Implant Case Summary', 14, 22);
+  doc.text('Clinical Case Documentation', 14, 22);
   
   doc.setFontSize(10);
   doc.setFont('helvetica', 'normal');
   doc.text(`Generated: ${new Date().toLocaleDateString()}`, pageWidth - 14, 22, { align: 'right' });
-  doc.text(variant === 'lab' ? 'Lab Copy' : 'Dentist Copy', pageWidth - 14, 28, { align: 'right' });
+  doc.text('Dentist Copy', pageWidth - 14, 28, { align: 'right' });
   
   yPos = 45;
   
