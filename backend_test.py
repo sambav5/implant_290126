@@ -179,6 +179,252 @@ class DentalImplantAPITester:
             return False
         return self.run_test("Delete Case", "DELETE", f"cases/{self.created_case_id}", 200)
 
+    # ============ CLINICAL DEPTH TOGGLE TESTS ============
+    
+    def test_clinical_depth_simple_case(self):
+        """Test Clinical Depth Toggle - Simple Case Scenario"""
+        print("\n🔬 Testing Clinical Depth Toggle - Simple Case")
+        
+        # Create case for simple scenario
+        case_data = {
+            "caseName": "Simple Posterior Implant",
+            "toothNumber": "30",  # Posterior tooth
+            "optionalAge": 35,
+            "optionalSex": "male"
+        }
+        
+        success, response = self.run_test("Create Simple Case", "POST", "cases", 200, case_data)
+        if not success or 'id' not in response:
+            return False
+            
+        case_id = response['id']
+        
+        # Update with simple case planning data
+        planning_data = {
+            "planningData": {
+                "boneAvailability": "adequate",
+                "estheticZone": "low",
+                "smokingStatus": "never",
+                "diabetesStatus": "none",
+                "medications": []
+            }
+        }
+        
+        success, _ = self.run_test("Update Simple Case Planning", "PUT", f"cases/{case_id}", 200, planning_data)
+        if not success:
+            return False
+        
+        # Analyze case
+        success, analysis = self.run_test("Analyze Simple Case", "POST", f"cases/{case_id}/analyze", 200)
+        if not success:
+            return False
+            
+        # Verify Simple case results
+        result = self.verify_clinical_depth_response(analysis, "Simple", case_id)
+        self.clinical_depth_results.append(("Simple Case", result, analysis))
+        
+        # Cleanup
+        self.run_test("Delete Simple Case", "DELETE", f"cases/{case_id}", 200)
+        return result
+
+    def test_clinical_depth_moderate_case(self):
+        """Test Clinical Depth Toggle - Moderate Case Scenario"""
+        print("\n🔬 Testing Clinical Depth Toggle - Moderate Case")
+        
+        # Create case for moderate scenario
+        case_data = {
+            "caseName": "Moderate Esthetic Zone Implant",
+            "toothNumber": "8",  # Esthetic zone
+            "optionalAge": 42,
+            "optionalSex": "female"
+        }
+        
+        success, response = self.run_test("Create Moderate Case", "POST", "cases", 200, case_data)
+        if not success or 'id' not in response:
+            return False
+            
+        case_id = response['id']
+        
+        # Update with moderate case planning data
+        planning_data = {
+            "planningData": {
+                "boneAvailability": "moderate",
+                "estheticZone": "high",
+                "softTissueBiotype": "thin",
+                "smokingStatus": "former",
+                "diabetesStatus": "none"
+            }
+        }
+        
+        success, _ = self.run_test("Update Moderate Case Planning", "PUT", f"cases/{case_id}", 200, planning_data)
+        if not success:
+            return False
+        
+        # Analyze case
+        success, analysis = self.run_test("Analyze Moderate Case", "POST", f"cases/{case_id}/analyze", 200)
+        if not success:
+            return False
+            
+        # Verify Moderate case results
+        result = self.verify_clinical_depth_response(analysis, "Moderate", case_id)
+        self.clinical_depth_results.append(("Moderate Case", result, analysis))
+        
+        # Cleanup
+        self.run_test("Delete Moderate Case", "DELETE", f"cases/{case_id}", 200)
+        return result
+
+    def test_clinical_depth_complex_case(self):
+        """Test Clinical Depth Toggle - Complex Case Scenario"""
+        print("\n🔬 Testing Clinical Depth Toggle - Complex Case")
+        
+        # Create case for complex scenario
+        case_data = {
+            "caseName": "Complex High-Risk Implant",
+            "toothNumber": "9",  # Esthetic zone
+            "optionalAge": 58,
+            "optionalSex": "male"
+        }
+        
+        success, response = self.run_test("Create Complex Case", "POST", "cases", 200, case_data)
+        if not success or 'id' not in response:
+            return False
+            
+        case_id = response['id']
+        
+        # Update with complex case planning data
+        planning_data = {
+            "planningData": {
+                "boneAvailability": "insufficient",
+                "estheticZone": "high",
+                "softTissueBiotype": "thin",
+                "smokingStatus": "current",
+                "diabetesStatus": "uncontrolled",
+                "medications": ["bisphosphonates"]
+            }
+        }
+        
+        success, _ = self.run_test("Update Complex Case Planning", "PUT", f"cases/{case_id}", 200, planning_data)
+        if not success:
+            return False
+        
+        # Analyze case
+        success, analysis = self.run_test("Analyze Complex Case", "POST", f"cases/{case_id}/analyze", 200)
+        if not success:
+            return False
+            
+        # Verify Complex case results
+        result = self.verify_clinical_depth_response(analysis, "Complex", case_id)
+        self.clinical_depth_results.append(("Complex Case", result, analysis))
+        
+        # Cleanup
+        self.run_test("Delete Complex Case", "DELETE", f"cases/{case_id}", 200)
+        return result
+
+    def verify_clinical_depth_response(self, analysis, expected_complexity, case_id):
+        """Verify Clinical Depth Toggle response structure and content"""
+        print(f"\n🔍 Verifying Clinical Depth Response for {expected_complexity} case...")
+        
+        issues = []
+        
+        # Check if analysis response exists
+        if not analysis:
+            issues.append("No analysis response received")
+            return False
+            
+        # ===== STANDARD MODE FIELDS =====
+        standard_fields = ['primaryIssue', 'caseComplexity', 'implantTiming', 'briefRationale']
+        for field in standard_fields:
+            if field not in analysis or not analysis[field]:
+                issues.append(f"Missing or empty standard field: {field}")
+        
+        # ===== DETAILED MODE FIELDS =====
+        detailed_fields = ['primaryIssueExpanded', 'complexityDrivers', 'immediatePlacementEligible', 
+                          'immediatePlacementReasons', 'riskModifiers', 'clinicalRationale']
+        for field in detailed_fields:
+            if field not in analysis:
+                issues.append(f"Missing detailed field: {field}")
+        
+        # ===== COMPLEXITY VERIFICATION =====
+        if 'caseComplexity' in analysis:
+            actual_complexity = analysis['caseComplexity']
+            if actual_complexity != expected_complexity:
+                issues.append(f"Expected complexity '{expected_complexity}', got '{actual_complexity}'")
+        
+        # ===== BACKUP AWARENESS (Complex cases only) =====
+        if expected_complexity == "Complex":
+            if 'backupAwareness' not in analysis or not analysis['backupAwareness']:
+                issues.append("Complex case missing backupAwareness field")
+        else:
+            if 'backupAwareness' in analysis and analysis['backupAwareness']:
+                issues.append(f"Non-complex case should not have backupAwareness, but got: {analysis['backupAwareness']}")
+        
+        # ===== IMMEDIATE PLACEMENT ELIGIBILITY =====
+        if 'immediatePlacementEligible' in analysis:
+            immediate_eligible = analysis['immediatePlacementEligible']
+            if expected_complexity == "Complex" and immediate_eligible is True:
+                issues.append("Complex cases should not be eligible for immediate placement")
+        
+        # ===== ARRAY LENGTH CONSTRAINTS =====
+        if 'complexityDrivers' in analysis and isinstance(analysis['complexityDrivers'], list):
+            if len(analysis['complexityDrivers']) > 3:
+                issues.append(f"complexityDrivers should have max 3 items, got {len(analysis['complexityDrivers'])}")
+        
+        if 'clinicalRationale' in analysis and isinstance(analysis['clinicalRationale'], list):
+            if len(analysis['clinicalRationale']) > 3:
+                issues.append(f"clinicalRationale should have max 3 items, got {len(analysis['clinicalRationale'])}")
+        
+        # ===== CONTENT QUALITY CHECKS =====
+        if 'primaryIssue' in analysis and analysis['primaryIssue']:
+            if len(analysis['primaryIssue']) < 5:
+                issues.append("primaryIssue seems too short")
+        
+        if 'briefRationale' in analysis and analysis['briefRationale']:
+            if len(analysis['briefRationale']) < 10:
+                issues.append("briefRationale seems too short")
+        
+        # Print verification results
+        if issues:
+            print(f"❌ Verification failed for {expected_complexity} case:")
+            for issue in issues:
+                print(f"   • {issue}")
+            print(f"\nActual response structure:")
+            print(json.dumps(analysis, indent=2))
+            return False
+        else:
+            print(f"✅ {expected_complexity} case verification passed")
+            print(f"   • Complexity: {analysis.get('caseComplexity', 'N/A')}")
+            print(f"   • Primary Issue: {analysis.get('primaryIssue', 'N/A')}")
+            print(f"   • Immediate Placement: {analysis.get('immediatePlacementEligible', 'N/A')}")
+            if expected_complexity == "Complex":
+                print(f"   • Backup Awareness: {'Present' if analysis.get('backupAwareness') else 'Missing'}")
+            return True
+
+    def print_clinical_depth_summary(self):
+        """Print summary of Clinical Depth Toggle test results"""
+        print("\n" + "=" * 60)
+        print("🔬 CLINICAL DEPTH TOGGLE TEST SUMMARY")
+        print("=" * 60)
+        
+        for test_name, passed, analysis in self.clinical_depth_results:
+            status = "✅ PASSED" if passed else "❌ FAILED"
+            complexity = analysis.get('caseComplexity', 'Unknown') if analysis else 'No Data'
+            print(f"{status} - {test_name} (Complexity: {complexity})")
+            
+            if analysis and passed:
+                print(f"   Primary Issue: {analysis.get('primaryIssue', 'N/A')}")
+                print(f"   Timing: {analysis.get('implantTiming', 'N/A')}")
+                immediate = analysis.get('immediatePlacementEligible')
+                if immediate is not None:
+                    print(f"   Immediate Placement: {'Yes' if immediate else 'No'}")
+                if analysis.get('backupAwareness'):
+                    print(f"   Backup Awareness: Present")
+        
+        passed_count = sum(1 for _, passed, _ in self.clinical_depth_results if passed)
+        total_count = len(self.clinical_depth_results)
+        print(f"\nClinical Depth Tests: {passed_count}/{total_count} passed")
+        
+        return passed_count == total_count
+
 def main():
     print("🦷 Starting Dental Implant Planning API Tests")
     print("=" * 50)
