@@ -373,7 +373,7 @@ DEFAULT_PROSTHETIC_CHECKLIST = {
                 "title": "Follow-Up & Long-Term Monitoring",
                 "isLabSection": False,
                 "items": [
-                    {"text": "1-week follow-up", "id": str(uuid.uuid4()), "importance": "advanced"},
+                    {"text": "1-week follow-up", "id": str(uuid.uuid4()), "importance": "essential"},  # ESSENTIAL #7 - Schedule follow-up visit
                     {"text": "3-month evaluation", "id": str(uuid.uuid4()), "importance": "advanced"},
                     {"text": "Annual radiographs", "id": str(uuid.uuid4()), "importance": "advanced"},
                     {"text": "Recall interval", "id": str(uuid.uuid4()), "importance": "advanced"},
