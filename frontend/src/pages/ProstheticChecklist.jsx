@@ -345,45 +345,52 @@ export default function ProstheticChecklist() {
                           <div className={`px-4 pb-4 ${section.isLabSection ? 'bg-green-50/30' : ''}`}>
                             {section.items
                               .filter(item => showFullProtocol || item.importance === 'essential')
-                              .map((item, itemIndex) => (
-                              <div
-                                key={item.id}
-                                className={`flex items-start gap-3 py-3 border-b border-slate-100 last:border-0 ${
-                                  item.completed ? 'opacity-60' : ''
-                                }`}
-                              >
-                                <button
-                                  onClick={() => toggleItem(phaseKey, sectionIndex, section.items.indexOf(item))}
-                                  className="shrink-0 pt-0.5 touch-target"
+                              .map((item, itemIndex) => {
+                                const isAdvanced = item.importance === 'advanced';
+                                return (
+                                <div
+                                  key={item.id}
+                                  className={`flex items-start gap-3 py-3 border-b border-slate-100 last:border-0 ${
+                                    item.completed ? 'opacity-60' : ''
+                                  } ${isAdvanced && showFullProtocol ? 'bg-slate-50/50' : ''}`}
                                 >
-                                  {item.completed ? (
-                                    <CheckCircle2 className="h-5 w-5 text-emerald-600" />
-                                  ) : (
-                                    <Circle className="h-5 w-5 text-slate-300" />
-                                  )}
-                                </button>
-                                <div className="flex-1">
-                                  <div className="flex items-start gap-2">
-                                    <p className={`text-sm flex-1 ${item.completed ? 'line-through text-muted-foreground' : 'text-foreground'}`}>
-                                      {item.text}
-                                    </p>
-                                    {item.importance === 'essential' && (
-                                      <span className="shrink-0 px-2 py-0.5 text-xs font-medium bg-emerald-100 text-emerald-700 rounded-full">
-                                        Essential
-                                      </span>
+                                  <button
+                                    onClick={() => toggleItem(phaseKey, sectionIndex, section.items.indexOf(item))}
+                                    className="shrink-0 pt-0.5 touch-target"
+                                  >
+                                    {item.completed ? (
+                                      <CheckCircle2 className="h-5 w-5 text-emerald-600" />
+                                    ) : (
+                                      <Circle className="h-5 w-5 text-slate-300" />
                                     )}
-                                    {!showFullProtocol && item.importance !== 'essential' && (
-                                      <TrendingUp className="h-4 w-4 text-blue-500 shrink-0" title="High Impact" />
+                                  </button>
+                                  <div className="flex-1">
+                                    <div className="flex items-start gap-2">
+                                      <p className={`text-sm flex-1 ${item.completed ? 'line-through text-muted-foreground' : 'text-foreground'}`}>
+                                        {item.text}
+                                      </p>
+                                      {item.importance === 'essential' && (
+                                        <span className="shrink-0 px-2 py-0.5 text-xs font-medium bg-emerald-100 text-emerald-700 rounded-full">
+                                          Essential
+                                        </span>
+                                      )}
+                                      {isAdvanced && showFullProtocol && (
+                                        <span className="shrink-0 px-1.5 py-0.5 text-[10px] font-medium bg-slate-200 text-slate-600 rounded">
+                                          Advanced
+                                        </span>
+                                      )}
+                                      {!showFullProtocol && item.importance !== 'essential' && (
+                                        <TrendingUp className="h-4 w-4 text-blue-500 shrink-0" title="High Impact" />
+                                      )}
+                                    </div>
+                                    {item.completedAt && (
+                                      <p className="text-xs text-muted-foreground mt-1">
+                                        Completed: {new Date(item.completedAt).toLocaleString()}
+                                      </p>
                                     )}
                                   </div>
-                                  {item.completedAt && (
-                                    <p className="text-xs text-muted-foreground mt-1">
-                                      Completed: {new Date(item.completedAt).toLocaleString()}
-                                    </p>
-                                  )}
                                 </div>
-                              </div>
-                            ))}
+                              )})}
                           </div>
                         )}
                       </div>
