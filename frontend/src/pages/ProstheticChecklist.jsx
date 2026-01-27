@@ -297,7 +297,13 @@ export default function ProstheticChecklist() {
                   {phase.sections.map((section, sectionIndex) => {
                     const sectionKey = `${phaseKey}-${sectionIndex}`;
                     const isSectionExpanded = expandedSections[sectionKey];
-                    const completedItems = section.items.filter(item => item.completed).length;
+                    const completedItems = section.items.filter(item => {
+                      const isVisible = showFullProtocol || item.importance === 'essential';
+                      return isVisible && item.completed;
+                    }).length;
+                    const totalVisibleItems = section.items.filter(item => 
+                      showFullProtocol || item.importance === 'essential'
+                    ).length;
 
                     return (
                       <div key={sectionIndex} className="border-t border-slate-200">
