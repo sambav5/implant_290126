@@ -5,15 +5,9 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import ToothSelector from '@/components/ToothSelector';
 import { caseApi } from '@/services/api';
 import { toast } from 'sonner';
-
-const TOOTH_NUMBERS = [
-  // Upper right (1-8), Upper left (9-16)
-  '1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15', '16',
-  // Lower left (17-24), Lower right (25-32)
-  '17', '18', '19', '20', '21', '22', '23', '24', '25', '26', '27', '28', '29', '30', '31', '32'
-];
 
 export default function NewCase() {
   const navigate = useNavigate();
