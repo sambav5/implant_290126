@@ -6,6 +6,7 @@ import NewCase from "@/pages/NewCase";
 import CaseDetail from "@/pages/CaseDetail";
 import PlanningWizard from "@/pages/PlanningWizard";
 import Checklists from "@/pages/Checklists";
+import ProstheticChecklist from "@/pages/ProstheticChecklist";
 import LearningLoop from "@/pages/LearningLoop";
 
 function App() {
@@ -18,6 +19,7 @@ function App() {
           <Route path="/case/:id" element={<CaseDetail />} />
           <Route path="/case/:id/planning" element={<PlanningWizard />} />
           <Route path="/case/:id/checklists" element={<Checklists />} />
+          <Route path="/case/:id/prosthetic-checklist" element={<ProstheticChecklist />} />
           <Route path="/case/:id/learning" element={<LearningLoop />} />
         </Routes>
       </BrowserRouter>
