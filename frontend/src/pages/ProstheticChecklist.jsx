@@ -101,8 +101,12 @@ export default function ProstheticChecklist() {
     
     phase.sections.forEach(section => {
       section.items.forEach(item => {
-        total++;
-        if (item.completed) completed++;
+        // Only count visible items based on toggle state
+        const isVisible = showFullProtocol || item.importance === 'essential';
+        if (isVisible) {
+          total++;
+          if (item.completed) completed++;
+        }
       });
     });
     
@@ -122,8 +126,12 @@ export default function ProstheticChecklist() {
     Object.values(checklist).forEach(phase => {
       phase.sections.forEach(section => {
         section.items.forEach(item => {
-          total++;
-          if (item.completed) completed++;
+          // Only count visible items based on toggle state
+          const isVisible = showFullProtocol || item.importance === 'essential';
+          if (isVisible) {
+            total++;
+            if (item.completed) completed++;
+          }
         });
       });
     });
@@ -133,6 +141,24 @@ export default function ProstheticChecklist() {
       total,
       percentage: total > 0 ? Math.round((completed / total) * 100) : 0
     };
+  };
+
+  const getVisibleItemsCount = () => {
+    if (!checklist) return { essential: 0, total: 0 };
+    
+    let essential = 0;
+    let total = 0;
+    
+    Object.values(checklist).forEach(phase => {
+      phase.sections.forEach(section => {
+        section.items.forEach(item => {
+          total++;
+          if (item.importance === 'essential') essential++;
+        });
+      });
+    });
+    
+    return { essential, total };
   };
 
   if (loading) {
