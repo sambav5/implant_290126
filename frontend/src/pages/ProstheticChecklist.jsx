@@ -22,6 +22,7 @@ export default function ProstheticChecklist() {
   const [checklist, setChecklist] = useState(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [showFullProtocol, setShowFullProtocol] = useState(false); // NEW: Toggle state
   const [expandedPhases, setExpandedPhases] = useState({
     phase1: true,
     phase2: true,
