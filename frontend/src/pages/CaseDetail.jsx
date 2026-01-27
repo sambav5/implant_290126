@@ -320,11 +320,33 @@ export default function CaseDetail() {
             </div>
           </button>
           
+          {/* Prosthetic Checklist - NEW 4-Phase */}
+          <button
+            onClick={() => navigate(`/case/${id}/prosthetic-checklist`)}
+            className="card-clinical-interactive w-full animate-slide-up stagger-4"
+            data-testid="prosthetic-checklist-btn"
+          >
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-lg bg-purple-500/10 flex items-center justify-center">
+                  <CheckSquare className="h-5 w-5 text-purple-600" />
+                </div>
+                <div className="text-left">
+                  <h3 className="font-semibold">Prosthetic Checklist</h3>
+                  <p className="text-sm text-muted-foreground">
+                    4-phase workflow with lab coordination
+                  </p>
+                </div>
+              </div>
+              <ChevronRight className="h-5 w-5 text-muted-foreground" />
+            </div>
+          </button>
+          
           {/* Learning Loop (only show if completed) */}
           {caseData.status === 'completed' && (
             <button
               onClick={() => navigate(`/case/${id}/learning`)}
-              className="card-clinical-interactive w-full animate-slide-up stagger-4"
+              className="card-clinical-interactive w-full animate-slide-up stagger-5"
               data-testid="learning-btn"
             >
               <div className="flex items-center justify-between">
