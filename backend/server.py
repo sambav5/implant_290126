@@ -285,40 +285,40 @@ DEFAULT_PROSTHETIC_CHECKLIST = {
                 "title": "Lab Delivery & Quality Review",
                 "isLabSection": False,
                 "items": [
-                    {"text": "Receive lab work", "id": str(uuid.uuid4())},
-                    {"text": "Inspect model accuracy", "id": str(uuid.uuid4())},
-                    {"text": "Assess restoration fit", "id": str(uuid.uuid4())},
-                    {"text": "Check shade under lighting", "id": str(uuid.uuid4())},
-                    {"text": "Inspect defects", "id": str(uuid.uuid4())},
-                    {"text": "Assess margins", "id": str(uuid.uuid4())},
-                    {"text": "Contact lab if discrepancies", "id": str(uuid.uuid4())},
+                    {"text": "Receive lab work", "id": str(uuid.uuid4()), "importance": "advanced"},
+                    {"text": "Inspect model accuracy", "id": str(uuid.uuid4()), "importance": "essential"},  # ESSENTIAL #1
+                    {"text": "Assess restoration fit", "id": str(uuid.uuid4()), "importance": "advanced"},
+                    {"text": "Check shade under lighting", "id": str(uuid.uuid4()), "importance": "essential"},  # ESSENTIAL #2
+                    {"text": "Inspect defects", "id": str(uuid.uuid4()), "importance": "advanced"},
+                    {"text": "Assess margins", "id": str(uuid.uuid4()), "importance": "advanced"},
+                    {"text": "Contact lab if discrepancies", "id": str(uuid.uuid4()), "importance": "advanced"},
                 ]
             },
             {
                 "title": "Clinical Try-In & Adjustment",
                 "isLabSection": False,
                 "items": [
-                    {"text": "Isolate implant site", "id": str(uuid.uuid4())},
-                    {"text": "Passive fit check", "id": str(uuid.uuid4())},
-                    {"text": "Margin evaluation", "id": str(uuid.uuid4())},
-                    {"text": "Occlusal check", "id": str(uuid.uuid4())},
-                    {"text": "Esthetic evaluation", "id": str(uuid.uuid4())},
-                    {"text": "Soft tissue assessment", "id": str(uuid.uuid4())},
-                    {"text": "Adjustments", "id": str(uuid.uuid4())},
-                    {"text": "Document remakes", "id": str(uuid.uuid4())},
+                    {"text": "Isolate implant site", "id": str(uuid.uuid4()), "importance": "advanced"},
+                    {"text": "Passive fit check", "id": str(uuid.uuid4()), "importance": "essential"},  # ESSENTIAL #3
+                    {"text": "Margin evaluation", "id": str(uuid.uuid4()), "importance": "essential"},  # ESSENTIAL #4
+                    {"text": "Occlusal check", "id": str(uuid.uuid4()), "importance": "essential"},  # ESSENTIAL #5
+                    {"text": "Esthetic evaluation", "id": str(uuid.uuid4()), "importance": "advanced"},
+                    {"text": "Soft tissue assessment", "id": str(uuid.uuid4()), "importance": "advanced"},
+                    {"text": "Adjustments", "id": str(uuid.uuid4()), "importance": "advanced"},
+                    {"text": "Document remakes", "id": str(uuid.uuid4()), "importance": "advanced"},
                 ]
             },
             {
                 "title": "Lab Communication – Adjustments & Approval",
                 "isLabSection": True,
                 "items": [
-                    {"text": "Communicate adjustments", "id": str(uuid.uuid4())},
-                    {"text": "Request refinements", "id": str(uuid.uuid4())},
-                    {"text": "Approve final design", "id": str(uuid.uuid4())},
-                    {"text": "Confirm no modifications", "id": str(uuid.uuid4())},
-                    {"text": "Discuss remakes", "id": str(uuid.uuid4())},
-                    {"text": "Establish delivery timeline", "id": str(uuid.uuid4())},
-                    {"text": "Confirm occlusal requirements", "id": str(uuid.uuid4())},
+                    {"text": "Communicate adjustments", "id": str(uuid.uuid4()), "importance": "advanced"},
+                    {"text": "Request refinements", "id": str(uuid.uuid4()), "importance": "advanced"},
+                    {"text": "Approve final design", "id": str(uuid.uuid4()), "importance": "essential"},  # ESSENTIAL #6
+                    {"text": "Confirm no modifications", "id": str(uuid.uuid4()), "importance": "advanced"},
+                    {"text": "Discuss remakes", "id": str(uuid.uuid4()), "importance": "advanced"},
+                    {"text": "Establish delivery timeline", "id": str(uuid.uuid4()), "importance": "advanced"},
+                    {"text": "Confirm occlusal requirements", "id": str(uuid.uuid4()), "importance": "advanced"},
                 ]
             }
         ]
