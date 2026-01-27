@@ -192,6 +192,52 @@ export default function ProstheticChecklist() {
             )}
           </div>
           
+          {/* Scope Toggle */}
+          <div className="mb-4 p-3 bg-slate-50 rounded-lg border border-slate-200">
+            <div className="flex items-center justify-between gap-3">
+              <div className="flex-1">
+                <button
+                  onClick={() => setShowFullProtocol(false)}
+                  className={`text-sm font-medium transition-colors ${
+                    !showFullProtocol ? 'text-emerald-700' : 'text-muted-foreground'
+                  }`}
+                >
+                  {!showFullProtocol && '✓ '}Essential Checklist ({getVisibleItemsCount().essential} items)
+                </button>
+              </div>
+              
+              {/* Toggle Switch */}
+              <button
+                onClick={() => setShowFullProtocol(!showFullProtocol)}
+                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                  showFullProtocol ? 'bg-blue-600' : 'bg-emerald-500'
+                }`}
+              >
+                <span
+                  className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                    showFullProtocol ? 'translate-x-6' : 'translate-x-1'
+                  }`}
+                />
+              </button>
+              
+              <div className="flex-1 text-right">
+                <button
+                  onClick={() => setShowFullProtocol(true)}
+                  className={`text-sm font-medium transition-colors ${
+                    showFullProtocol ? 'text-blue-700' : 'text-muted-foreground'
+                  }`}
+                >
+                  {showFullProtocol && '✓ '}Full Protocol ({getVisibleItemsCount().total} items)
+                </button>
+              </div>
+            </div>
+            <p className="text-xs text-center text-muted-foreground mt-2">
+              {showFullProtocol 
+                ? 'Showing comprehensive 4-phase protocol with all lab coordination steps'
+                : 'Showing essential high-impact items only (80/20 principle)'}
+            </p>
+          </div>
+          
           {/* Overall Progress */}
           <div className="space-y-2">
             <div className="flex justify-between text-sm">
