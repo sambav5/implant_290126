@@ -99,38 +99,12 @@ export default function NewCase() {
             </p>
           </div>
           
-          {/* Tooth Number */}
-          <div className="space-y-2">
-            <Label htmlFor="toothNumber" className="text-sm font-medium">
-              Tooth Number <span className="text-destructive">*</span>
-            </Label>
-            <Select
-              value={formData.toothNumber}
-              onValueChange={(value) => setFormData({ ...formData, toothNumber: value })}
-            >
-              <SelectTrigger className="input-clinical" data-testid="tooth-number-select">
-                <SelectValue placeholder="Select tooth number" />
-              </SelectTrigger>
-              <SelectContent>
-                <div className="p-2 text-xs font-medium text-muted-foreground">Upper Arch</div>
-                <div className="grid grid-cols-8 gap-1 px-2 pb-2">
-                  {TOOTH_NUMBERS.slice(0, 16).map((num) => (
-                    <SelectItem key={num} value={num} className="text-center p-2">
-                      {num}
-                    </SelectItem>
-                  ))}
-                </div>
-                <div className="p-2 text-xs font-medium text-muted-foreground border-t">Lower Arch</div>
-                <div className="grid grid-cols-8 gap-1 px-2 pb-2">
-                  {TOOTH_NUMBERS.slice(16).map((num) => (
-                    <SelectItem key={num} value={num} className="text-center p-2">
-                      {num}
-                    </SelectItem>
-                  ))}
-                </div>
-              </SelectContent>
-            </Select>
-          </div>
+          {/* Tooth Number - Visual Selector */}
+          <ToothSelector
+            value={formData.toothNumber}
+            onChange={(value) => setFormData({ ...formData, toothNumber: value })}
+            required
+          />
           
           {/* Optional Fields */}
           <div className="pt-4 border-t border-border">
