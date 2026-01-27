@@ -165,43 +165,23 @@ export default function ToothSelector({ value, onChange, required = false }) {
         Tooth Number {required && <span className="text-destructive">*</span>}
       </Label>
       
-      {/* SVG Jaw Diagram */}
-      <div className="p-4 bg-white rounded-lg border border-border">
+      {/* SVG Jaw Diagram - IMPROVED with better sizing */}
+      <div className="p-6 bg-gradient-to-b from-slate-50 to-white rounded-lg border-2 border-slate-200">
         <div className="flex flex-col items-center">
           <svg
-            viewBox="0 0 260 80"
-            className="w-full max-w-2xl"
-            style={{ maxHeight: '200px' }}
+            viewBox="0 0 600 220"
+            className="w-full"
+            style={{ maxWidth: '800px' }}
           >
             {/* Upper arch label */}
-            <text x="130" y="12" textAnchor="middle" fontSize="9" fill="#64748B" fontWeight="500">
-              Upper Arch
+            <text x="300" y="20" textAnchor="middle" fontSize="14" fill="#475569" fontWeight="600">
+              Upper Arch (Maxilla)
             </text>
             
-            {/* Upper teeth - curved arch */}
+            {/* Upper teeth - curved arch with better spacing */}
             {upperTeeth.map((tooth, index) => {
-              const baseX = 20 + index * 15;
-              const curveY = 20 + Math.abs(8 - index) * 1.5; // Create arch curve
-              return (
-                <Tooth
-                  key={tooth.num}
-                  number={tooth.num}
-                  x={baseX}
-                  y={curveY}
-                  type={tooth.type}
-                />
-              );
-            })}
-            
-            {/* Lower arch label */}
-            <text x="130" y="75" textAnchor="middle" fontSize="9" fill="#64748B" fontWeight="500">
-              Lower Arch
-            </text>
-            
-            {/* Lower teeth - curved arch */}
-            {lowerTeeth.map((tooth, index) => {
-              const baseX = 20 + index * 15;
-              const curveY = 45 + Math.abs(8 - index) * 1.5; // Create arch curve
+              const baseX = 35 + index * 35; // Increased spacing from 15 to 35
+              const curveY = 35 + Math.abs(8 - index) * 2.5; // More pronounced curve
               return (
                 <Tooth
                   key={tooth.num}
@@ -214,8 +194,40 @@ export default function ToothSelector({ value, onChange, required = false }) {
             })}
             
             {/* Midline indicator */}
-            <line x1="128" y1="18" x2="128" y2="72" stroke="#E2E8F0" strokeWidth="1" strokeDasharray="2,2" />
+            <line x1="300" y1="30" x2="300" y2="195" stroke="#CBD5E1" strokeWidth="2" strokeDasharray="4,4" />
+            <text x="310" y="115" fontSize="11" fill="#94A3B8" fontWeight="500">Midline</text>
+            
+            {/* Lower arch label */}
+            <text x="300" y="210" textAnchor="middle" fontSize="14" fill="#475569" fontWeight="600">
+              Lower Arch (Mandible)
+            </text>
+            
+            {/* Lower teeth - curved arch with better spacing */}
+            {lowerTeeth.map((tooth, index) => {
+              const baseX = 35 + index * 35; // Increased spacing
+              const curveY = 125 + Math.abs(8 - index) * 2.5; // More pronounced curve
+              return (
+                <Tooth
+                  key={tooth.num}
+                  number={tooth.num}
+                  x={baseX}
+                  y={curveY}
+                  type={tooth.type}
+                />
+              );
+            })}
+            
+            {/* Side labels for orientation */}
+            <text x="10" y="80" fontSize="11" fill="#94A3B8" fontWeight="500">Right</text>
+            <text x="570" y="80" fontSize="11" fill="#94A3B8" fontWeight="500" textAnchor="end">Left</text>
           </svg>
+        </div>
+        
+        {/* Legend for mobile users */}
+        <div className="mt-4 pt-4 border-t border-slate-200">
+          <p className="text-xs text-muted-foreground text-center">
+            Tap any tooth to select • Numbers follow Universal tooth numbering system
+          </p>
         </div>
       </div>
       
