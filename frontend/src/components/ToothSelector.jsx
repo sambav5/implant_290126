@@ -49,24 +49,24 @@ export default function ToothSelector({ value, onChange, required = false }) {
   const isSelected = (toothNumber) => value === toothNumber;
   const isHovered = (toothNumber) => hoveredTooth === toothNumber;
 
-  // Tooth shape component
+  // Tooth shape component - LARGER with better spacing
   const Tooth = ({ number, x, y, type = 'molar' }) => {
     const selected = isSelected(number);
     const hovered = isHovered(number);
     
-    // Different tooth shapes based on type
+    // Larger tooth shapes for better visibility and touch targets
     const getToothPath = () => {
       switch (type) {
         case 'molar':
-          return 'M0,0 L12,0 L12,16 L0,16 Z';
+          return 'M2,0 L26,0 L26,32 L2,32 Z'; // Large rectangle
         case 'premolar':
-          return 'M1,0 L11,0 L12,14 L0,14 Z';
+          return 'M3,0 L25,0 L26,30 L2,30 Z'; // Slightly narrower
         case 'canine':
-          return 'M2,0 L10,0 L12,12 L6,16 L0,12 Z';
+          return 'M5,0 L23,0 L28,24 L14,32 L0,24 Z'; // Pointed tip
         case 'incisor':
-          return 'M3,0 L9,0 L10,14 L2,14 Z';
+          return 'M6,0 L22,0 L24,30 L4,30 Z'; // Narrow
         default:
-          return 'M0,0 L12,0 L12,16 L0,16 Z';
+          return 'M2,0 L26,0 L26,32 L2,32 Z';
       }
     };
 
@@ -88,20 +88,30 @@ export default function ToothSelector({ value, onChange, required = false }) {
           }
         }}
       >
+        {/* Touch-friendly background area */}
+        <rect
+          x="-2"
+          y="-2"
+          width="32"
+          height="36"
+          fill="transparent"
+          pointerEvents="all"
+        />
+        
         <path
           d={getToothPath()}
-          fill={selected ? '#2F80ED' : hovered ? '#E8F0FE' : '#F5F6F8'}
-          stroke={selected ? '#2F80ED' : hovered ? '#2F80ED' : '#CBD5E1'}
-          strokeWidth={selected ? 2 : 1}
+          fill={selected ? '#2F80ED' : hovered ? '#E8F0FE' : '#FFFFFF'}
+          stroke={selected ? '#2F80ED' : hovered ? '#2F80ED' : '#94A3B8'}
+          strokeWidth={selected ? 3 : 1.5}
           className="transition-all duration-200"
         />
         <text
-          x="6"
-          y="10"
+          x="14"
+          y="20"
           textAnchor="middle"
-          fontSize="7"
-          fontWeight={selected ? 'bold' : 'normal'}
-          fill={selected ? 'white' : '#64748B'}
+          fontSize="12"
+          fontWeight={selected ? 'bold' : '600'}
+          fill={selected ? 'white' : '#475569'}
           pointerEvents="none"
         >
           {number}
