@@ -238,41 +238,41 @@ DEFAULT_PROSTHETIC_CHECKLIST = {
                 "title": "Pre-Prosthetic Clinical Preparation",
                 "isLabSection": False,
                 "items": [
-                    {"text": "Implant stability assessment", "id": str(uuid.uuid4())},
-                    {"text": "Verify emergence profile", "id": str(uuid.uuid4())},
-                    {"text": "Check soft tissue maturity", "id": str(uuid.uuid4())},
-                    {"text": "Evaluate peri-implant mucosa", "id": str(uuid.uuid4())},
-                    {"text": "Soft tissue contouring if needed", "id": str(uuid.uuid4())},
-                    {"text": "Baseline photography", "id": str(uuid.uuid4())},
-                    {"text": "Color documentation", "id": str(uuid.uuid4())},
+                    {"text": "Implant stability assessment", "id": str(uuid.uuid4()), "importance": "essential"},  # ESSENTIAL #1
+                    {"text": "Verify emergence profile", "id": str(uuid.uuid4()), "importance": "essential"},  # ESSENTIAL #2 - part of "soft tissue maturity"
+                    {"text": "Check soft tissue maturity", "id": str(uuid.uuid4()), "importance": "essential"},  # ESSENTIAL #2
+                    {"text": "Evaluate peri-implant mucosa", "id": str(uuid.uuid4()), "importance": "advanced"},
+                    {"text": "Soft tissue contouring if needed", "id": str(uuid.uuid4()), "importance": "advanced"},
+                    {"text": "Baseline photography", "id": str(uuid.uuid4()), "importance": "advanced"},
+                    {"text": "Color documentation", "id": str(uuid.uuid4()), "importance": "advanced"},
                 ]
             },
             {
                 "title": "Impression & Data Capture Protocol",
                 "isLabSection": False,
                 "items": [
-                    {"text": "Select impression technique", "id": str(uuid.uuid4())},
-                    {"text": "Confirm abutment selection", "id": str(uuid.uuid4())},
-                    {"text": "Tissue retraction", "id": str(uuid.uuid4())},
-                    {"text": "Capture impression", "id": str(uuid.uuid4())},
-                    {"text": "Jaw relation", "id": str(uuid.uuid4())},
-                    {"text": "Bite registration", "id": str(uuid.uuid4())},
-                    {"text": "Digital scans if applicable", "id": str(uuid.uuid4())},
-                    {"text": "Shade documentation", "id": str(uuid.uuid4())},
+                    {"text": "Select impression technique", "id": str(uuid.uuid4()), "importance": "essential"},  # ESSENTIAL #3
+                    {"text": "Confirm abutment selection", "id": str(uuid.uuid4()), "importance": "essential"},  # ESSENTIAL #4
+                    {"text": "Tissue retraction", "id": str(uuid.uuid4()), "importance": "advanced"},
+                    {"text": "Capture impression", "id": str(uuid.uuid4()), "importance": "essential"},  # ESSENTIAL #5
+                    {"text": "Jaw relation", "id": str(uuid.uuid4()), "importance": "essential"},  # ESSENTIAL #6
+                    {"text": "Bite registration", "id": str(uuid.uuid4()), "importance": "advanced"},
+                    {"text": "Digital scans if applicable", "id": str(uuid.uuid4()), "importance": "advanced"},
+                    {"text": "Shade documentation", "id": str(uuid.uuid4()), "importance": "advanced"},
                 ]
             },
             {
                 "title": "Lab Communication – Case Dispatch",
                 "isLabSection": True,
                 "items": [
-                    {"text": "Prepare detailed lab prescription", "id": str(uuid.uuid4())},
-                    {"text": "Specify abutment & margin details", "id": str(uuid.uuid4())},
-                    {"text": "Include esthetic parameters", "id": str(uuid.uuid4())},
-                    {"text": "Define functional specs", "id": str(uuid.uuid4())},
-                    {"text": "Attach photos", "id": str(uuid.uuid4())},
-                    {"text": "Note special instructions", "id": str(uuid.uuid4())},
-                    {"text": "Schedule try-in", "id": str(uuid.uuid4())},
-                    {"text": "Confirm lab receipt", "id": str(uuid.uuid4())},
+                    {"text": "Prepare detailed lab prescription", "id": str(uuid.uuid4()), "importance": "essential"},  # ESSENTIAL #7
+                    {"text": "Specify abutment & margin details", "id": str(uuid.uuid4()), "importance": "advanced"},
+                    {"text": "Include esthetic parameters", "id": str(uuid.uuid4()), "importance": "advanced"},
+                    {"text": "Define functional specs", "id": str(uuid.uuid4()), "importance": "advanced"},
+                    {"text": "Attach photos", "id": str(uuid.uuid4()), "importance": "advanced"},
+                    {"text": "Note special instructions", "id": str(uuid.uuid4()), "importance": "advanced"},
+                    {"text": "Schedule try-in", "id": str(uuid.uuid4()), "importance": "advanced"},
+                    {"text": "Confirm lab receipt", "id": str(uuid.uuid4()), "importance": "advanced"},
                 ]
             }
         ]
