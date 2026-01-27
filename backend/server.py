@@ -194,38 +194,38 @@ DEFAULT_PROSTHETIC_CHECKLIST = {
                 "title": "Clinical Assessment",
                 "isLabSection": False,
                 "items": [
-                    {"text": "Review medical & surgical history", "id": str(uuid.uuid4())},
-                    {"text": "Verify implant placement dates & implant specifications", "id": str(uuid.uuid4())},
-                    {"text": "Assess esthetics & patient expectations", "id": str(uuid.uuid4())},
-                    {"text": "Evaluate bone volume & jaw relation", "id": str(uuid.uuid4())},
-                    {"text": "Document existing dentition status", "id": str(uuid.uuid4())},
-                    {"text": "Confirm implant position & osseointegration", "id": str(uuid.uuid4())},
-                    {"text": "Radiographic verification (periapical, CBCT if needed)", "id": str(uuid.uuid4())},
+                    {"text": "Review medical & surgical history", "id": str(uuid.uuid4()), "importance": "advanced"},
+                    {"text": "Verify implant placement dates & implant specifications", "id": str(uuid.uuid4()), "importance": "essential"},  # ESSENTIAL #1
+                    {"text": "Assess esthetics & patient expectations", "id": str(uuid.uuid4()), "importance": "essential"},  # ESSENTIAL #3
+                    {"text": "Evaluate bone volume & jaw relation", "id": str(uuid.uuid4()), "importance": "advanced"},
+                    {"text": "Document existing dentition status", "id": str(uuid.uuid4()), "importance": "advanced"},
+                    {"text": "Confirm implant position & osseointegration", "id": str(uuid.uuid4()), "importance": "essential"},  # ESSENTIAL #2
+                    {"text": "Radiographic verification (periapical, CBCT if needed)", "id": str(uuid.uuid4()), "importance": "advanced"},
                 ]
             },
             {
                 "title": "Lab Communication – Case Setup",
                 "isLabSection": True,
                 "items": [
-                    {"text": "Send pre-case consultation form to lab", "id": str(uuid.uuid4())},
-                    {"text": "Confirm lab can accommodate abutment selection", "id": str(uuid.uuid4())},
-                    {"text": "Discuss margin location requirements", "id": str(uuid.uuid4())},
-                    {"text": "Confirm turnaround time & remake policy", "id": str(uuid.uuid4())},
-                    {"text": "Share esthetic photos & concerns", "id": str(uuid.uuid4())},
-                    {"text": "Establish lab point of contact", "id": str(uuid.uuid4())},
+                    {"text": "Send pre-case consultation form to lab", "id": str(uuid.uuid4()), "importance": "advanced"},
+                    {"text": "Confirm lab can accommodate abutment selection", "id": str(uuid.uuid4()), "importance": "advanced"},
+                    {"text": "Discuss margin location requirements", "id": str(uuid.uuid4()), "importance": "essential"},  # ESSENTIAL #5 - mapped to "Define margin location"
+                    {"text": "Confirm turnaround time & remake policy", "id": str(uuid.uuid4()), "importance": "advanced"},
+                    {"text": "Share esthetic photos & concerns", "id": str(uuid.uuid4()), "importance": "essential"},  # ESSENTIAL #6 - mapped to "Communicate esthetic expectations to lab"
+                    {"text": "Establish lab point of contact", "id": str(uuid.uuid4()), "importance": "advanced"},
                 ]
             },
             {
                 "title": "Prosthetic Strategy & Planning",
                 "isLabSection": False,
                 "items": [
-                    {"text": "Determine abutment approach", "id": str(uuid.uuid4())},
-                    {"text": "Decide restoration material", "id": str(uuid.uuid4())},
-                    {"text": "Plan emergence profile", "id": str(uuid.uuid4())},
-                    {"text": "Define esthetic goals", "id": str(uuid.uuid4())},
-                    {"text": "Establish occlusal scheme", "id": str(uuid.uuid4())},
-                    {"text": "Document treatment plan", "id": str(uuid.uuid4())},
-                    {"text": "Obtain informed consent", "id": str(uuid.uuid4())},
+                    {"text": "Determine abutment approach", "id": str(uuid.uuid4()), "importance": "essential"},  # ESSENTIAL #4 - mapped to "Decide abutment type"
+                    {"text": "Decide restoration material", "id": str(uuid.uuid4()), "importance": "advanced"},
+                    {"text": "Plan emergence profile", "id": str(uuid.uuid4()), "importance": "advanced"},
+                    {"text": "Define esthetic goals", "id": str(uuid.uuid4()), "importance": "advanced"},
+                    {"text": "Establish occlusal scheme", "id": str(uuid.uuid4()), "importance": "advanced"},
+                    {"text": "Document treatment plan", "id": str(uuid.uuid4()), "importance": "advanced"},
+                    {"text": "Obtain informed consent", "id": str(uuid.uuid4()), "importance": "advanced"},
                 ]
             }
         ]
