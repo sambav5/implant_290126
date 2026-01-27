@@ -331,56 +331,56 @@ DEFAULT_PROSTHETIC_CHECKLIST = {
                 "title": "Final Cementation & Seating",
                 "isLabSection": False,
                 "items": [
-                    {"text": "Isolation & field prep", "id": str(uuid.uuid4())},
-                    {"text": "Cement selection", "id": str(uuid.uuid4())},
-                    {"text": "Abutment cleaning", "id": str(uuid.uuid4())},
-                    {"text": "Controlled cement application", "id": str(uuid.uuid4())},
-                    {"text": "Seating & alignment", "id": str(uuid.uuid4())},
-                    {"text": "Cement removal", "id": str(uuid.uuid4())},
-                    {"text": "Ultrasonic margin cleaning", "id": str(uuid.uuid4())},
-                    {"text": "Radiographic cement check", "id": str(uuid.uuid4())},
-                    {"text": "Final occlusion", "id": str(uuid.uuid4())},
+                    {"text": "Isolation & field prep", "id": str(uuid.uuid4()), "importance": "essential"},  # ESSENTIAL #1
+                    {"text": "Cement selection", "id": str(uuid.uuid4()), "importance": "essential"},  # ESSENTIAL #2
+                    {"text": "Abutment cleaning", "id": str(uuid.uuid4()), "importance": "advanced"},
+                    {"text": "Controlled cement application", "id": str(uuid.uuid4()), "importance": "advanced"},
+                    {"text": "Seating & alignment", "id": str(uuid.uuid4()), "importance": "advanced"},
+                    {"text": "Cement removal", "id": str(uuid.uuid4()), "importance": "essential"},  # ESSENTIAL #3
+                    {"text": "Ultrasonic margin cleaning", "id": str(uuid.uuid4()), "importance": "advanced"},
+                    {"text": "Radiographic cement check", "id": str(uuid.uuid4()), "importance": "essential"},  # ESSENTIAL #4
+                    {"text": "Final occlusion", "id": str(uuid.uuid4()), "importance": "essential"},  # ESSENTIAL #5
                 ]
             },
             {
                 "title": "Immediate Post-Delivery Assessment",
                 "isLabSection": False,
                 "items": [
-                    {"text": "Patient comfort", "id": str(uuid.uuid4())},
-                    {"text": "Phonetics", "id": str(uuid.uuid4())},
-                    {"text": "Mastication", "id": str(uuid.uuid4())},
-                    {"text": "Dynamic occlusion", "id": str(uuid.uuid4())},
-                    {"text": "Lateral movements", "id": str(uuid.uuid4())},
-                    {"text": "Sensitivity check", "id": str(uuid.uuid4())},
-                    {"text": "Esthetic satisfaction", "id": str(uuid.uuid4())},
+                    {"text": "Patient comfort", "id": str(uuid.uuid4()), "importance": "advanced"},
+                    {"text": "Phonetics", "id": str(uuid.uuid4()), "importance": "advanced"},
+                    {"text": "Mastication", "id": str(uuid.uuid4()), "importance": "advanced"},
+                    {"text": "Dynamic occlusion", "id": str(uuid.uuid4()), "importance": "advanced"},
+                    {"text": "Lateral movements", "id": str(uuid.uuid4()), "importance": "advanced"},
+                    {"text": "Sensitivity check", "id": str(uuid.uuid4()), "importance": "advanced"},
+                    {"text": "Esthetic satisfaction", "id": str(uuid.uuid4()), "importance": "advanced"},
                 ]
             },
             {
                 "title": "Patient Education & Care Instructions",
                 "isLabSection": False,
                 "items": [
-                    {"text": "Home care instruction", "id": str(uuid.uuid4())},
-                    {"text": "Interdental cleaning", "id": str(uuid.uuid4())},
-                    {"text": "Chewing precautions", "id": str(uuid.uuid4())},
-                    {"text": "Written instructions", "id": str(uuid.uuid4())},
-                    {"text": "Dietary guidance", "id": str(uuid.uuid4())},
-                    {"text": "Smoking counseling", "id": str(uuid.uuid4())},
-                    {"text": "Emergency contact", "id": str(uuid.uuid4())},
-                    {"text": "Healing timeline", "id": str(uuid.uuid4())},
+                    {"text": "Home care instruction", "id": str(uuid.uuid4()), "importance": "essential"},  # ESSENTIAL #6
+                    {"text": "Interdental cleaning", "id": str(uuid.uuid4()), "importance": "advanced"},
+                    {"text": "Chewing precautions", "id": str(uuid.uuid4()), "importance": "advanced"},
+                    {"text": "Written instructions", "id": str(uuid.uuid4()), "importance": "advanced"},
+                    {"text": "Dietary guidance", "id": str(uuid.uuid4()), "importance": "advanced"},
+                    {"text": "Smoking counseling", "id": str(uuid.uuid4()), "importance": "advanced"},
+                    {"text": "Emergency contact", "id": str(uuid.uuid4()), "importance": "advanced"},
+                    {"text": "Healing timeline", "id": str(uuid.uuid4()), "importance": "advanced"},
                 ]
             },
             {
                 "title": "Follow-Up & Long-Term Monitoring",
                 "isLabSection": False,
                 "items": [
-                    {"text": "1-week follow-up", "id": str(uuid.uuid4())},
-                    {"text": "3-month evaluation", "id": str(uuid.uuid4())},
-                    {"text": "Annual radiographs", "id": str(uuid.uuid4())},
-                    {"text": "Recall interval", "id": str(uuid.uuid4())},
-                    {"text": "Baseline probing", "id": str(uuid.uuid4())},
-                    {"text": "Maintenance protocol", "id": str(uuid.uuid4())},
-                    {"text": "Crown renewal planning", "id": str(uuid.uuid4())},
-                    {"text": "Document complications", "id": str(uuid.uuid4())},
+                    {"text": "1-week follow-up", "id": str(uuid.uuid4()), "importance": "advanced"},
+                    {"text": "3-month evaluation", "id": str(uuid.uuid4()), "importance": "advanced"},
+                    {"text": "Annual radiographs", "id": str(uuid.uuid4()), "importance": "advanced"},
+                    {"text": "Recall interval", "id": str(uuid.uuid4()), "importance": "advanced"},
+                    {"text": "Baseline probing", "id": str(uuid.uuid4()), "importance": "advanced"},
+                    {"text": "Maintenance protocol", "id": str(uuid.uuid4()), "importance": "advanced"},
+                    {"text": "Crown renewal planning", "id": str(uuid.uuid4()), "importance": "advanced"},
+                    {"text": "Document complications", "id": str(uuid.uuid4()), "importance": "advanced"},
                 ]
             }
         ]
