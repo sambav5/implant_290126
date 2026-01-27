@@ -146,6 +146,7 @@ class Case(BaseModel):
     preTreatmentChecklist: List[ChecklistItem] = []
     treatmentChecklist: List[ChecklistItem] = []
     postTreatmentChecklist: List[ChecklistItem] = []
+    prostheticChecklist: Optional[dict] = None  # New 4-phase prosthetic checklist
     feedback: Feedback = Field(default_factory=Feedback)
     attachments: Attachments = Field(default_factory=Attachments)
     timeline: List[TimelineEntry] = []
