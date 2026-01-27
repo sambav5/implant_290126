@@ -906,6 +906,51 @@ async def add_checklist_item(case_id: str, phase: ChecklistPhase, item: Checklis
     await db.cases.update_one({"id": case_id}, {"$set": case})
     return Case(**case)
 
+# ============ PROSTHETIC CHECKLIST ENDPOINTS ============
+@api_router.get("/cases/{case_id}/prosthetic-checklist")
+async def get_prosthetic_checklist(case_id: str):
+    """Get or initialize the 4-phase prosthetic checklist for a case"""
+    case = await db.cases.find_one({"id": case_id}, {"_id": 0})
+    if not case:
+        raise HTTPException(status_code=404, detail="Case not found")
+    
+    # If checklist doesn't exist, initialize it with defaults
+    if not case.get("prostheticChecklist"):
+        case["prostheticChecklist"] = DEFAULT_PROSTHETIC_CHECKLIST
+        case["updatedAt"] = datetime.now(timezone.utc).isoformat()
+        await db.cases.update_one({"id": case_id}, {"$set": case})
+    
+    return {"prostheticChecklist": case.get("prostheticChecklist")}
+
+@api_router.put("/cases/{case_id}/prosthetic-checklist")
+async def update_prosthetic_checklist(case_id: str, checklist: dict):
+    """Update the entire prosthetic checklist"""
+    case = await db.cases.find_one({"id": case_id}, {"_id": 0})
+    if not case:
+        raise HTTPException(status_code=404, detail="Case not found")
+    
+    case["prostheticChecklist"] = checklist
+    case["updatedAt"] = datetime.now(timezone.utc).isoformat()
+    
+    # Count completed items
+    total_items = 0
+    completed_items = 0
+    for phase_key, phase_data in checklist.items():
+        for section in phase_data.get("sections", []):
+            for item in section.get("items", []):
+                total_items += 1
+                if item.get("completed"):
+                    completed_items += 1
+    
+    case = add_timeline_entry(
+        case,
+        "Prosthetic checklist updated",
+        f"{completed_items}/{total_items} items completed"
+    )
+    
+    await db.cases.update_one({"id": case_id}, {"$set": case})
+    return {"message": "Checklist updated successfully", "progress": f"{completed_items}/{total_items}"}
+
 # Learning Loop / Feedback
 @api_router.put("/cases/{case_id}/feedback", response_model=Case)
 async def update_feedback(case_id: str, input: FeedbackUpdate):
