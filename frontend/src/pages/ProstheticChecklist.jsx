@@ -321,6 +321,11 @@ export default function ProstheticChecklist() {
                             <h3 className={`font-semibold ${section.isLabSection ? 'text-green-700' : 'text-slate-700'}`}>
                               {section.isLabSection && '🏥 '}
                               {section.title}
+                              {!showFullProtocol && totalVisibleItems < section.items.length && (
+                                <span className="ml-2 text-xs text-blue-600 font-normal">
+                                  (+{section.items.length - totalVisibleItems} more)
+                                </span>
+                              )}
                             </h3>
                           </div>
                           <div className="flex items-center gap-2">
