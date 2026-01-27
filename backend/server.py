@@ -183,6 +183,210 @@ class AttachmentAdd(BaseModel):
     url: str
 
 # ============ DEFAULT CHECKLISTS ============
+# ============ IMPLANT PROSTHETIC CHECKLIST (4-PHASE) ============
+DEFAULT_PROSTHETIC_CHECKLIST = {
+    "phase1": {
+        "title": "PHASE 1 — PRE-Rx PLANNING",
+        "description": "Comprehensive case assessment & prosthetic strategy",
+        "sections": [
+            {
+                "title": "Clinical Assessment",
+                "isLabSection": False,
+                "items": [
+                    {"text": "Review medical & surgical history", "id": str(uuid.uuid4())},
+                    {"text": "Verify implant placement dates & implant specifications", "id": str(uuid.uuid4())},
+                    {"text": "Assess esthetics & patient expectations", "id": str(uuid.uuid4())},
+                    {"text": "Evaluate bone volume & jaw relation", "id": str(uuid.uuid4())},
+                    {"text": "Document existing dentition status", "id": str(uuid.uuid4())},
+                    {"text": "Confirm implant position & osseointegration", "id": str(uuid.uuid4())},
+                    {"text": "Radiographic verification (periapical, CBCT if needed)", "id": str(uuid.uuid4())},
+                ]
+            },
+            {
+                "title": "Lab Communication – Case Setup",
+                "isLabSection": True,
+                "items": [
+                    {"text": "Send pre-case consultation form to lab", "id": str(uuid.uuid4())},
+                    {"text": "Confirm lab can accommodate abutment selection", "id": str(uuid.uuid4())},
+                    {"text": "Discuss margin location requirements", "id": str(uuid.uuid4())},
+                    {"text": "Confirm turnaround time & remake policy", "id": str(uuid.uuid4())},
+                    {"text": "Share esthetic photos & concerns", "id": str(uuid.uuid4())},
+                    {"text": "Establish lab point of contact", "id": str(uuid.uuid4())},
+                ]
+            },
+            {
+                "title": "Prosthetic Strategy & Planning",
+                "isLabSection": False,
+                "items": [
+                    {"text": "Determine abutment approach", "id": str(uuid.uuid4())},
+                    {"text": "Decide restoration material", "id": str(uuid.uuid4())},
+                    {"text": "Plan emergence profile", "id": str(uuid.uuid4())},
+                    {"text": "Define esthetic goals", "id": str(uuid.uuid4())},
+                    {"text": "Establish occlusal scheme", "id": str(uuid.uuid4())},
+                    {"text": "Document treatment plan", "id": str(uuid.uuid4())},
+                    {"text": "Obtain informed consent", "id": str(uuid.uuid4())},
+                ]
+            }
+        ]
+    },
+    "phase2": {
+        "title": "PHASE 2 — Rx EXECUTION",
+        "description": "Clinical preparation & prosthetic data capture",
+        "sections": [
+            {
+                "title": "Pre-Prosthetic Clinical Preparation",
+                "isLabSection": False,
+                "items": [
+                    {"text": "Implant stability assessment", "id": str(uuid.uuid4())},
+                    {"text": "Verify emergence profile", "id": str(uuid.uuid4())},
+                    {"text": "Check soft tissue maturity", "id": str(uuid.uuid4())},
+                    {"text": "Evaluate peri-implant mucosa", "id": str(uuid.uuid4())},
+                    {"text": "Soft tissue contouring if needed", "id": str(uuid.uuid4())},
+                    {"text": "Baseline photography", "id": str(uuid.uuid4())},
+                    {"text": "Color documentation", "id": str(uuid.uuid4())},
+                ]
+            },
+            {
+                "title": "Impression & Data Capture Protocol",
+                "isLabSection": False,
+                "items": [
+                    {"text": "Select impression technique", "id": str(uuid.uuid4())},
+                    {"text": "Confirm abutment selection", "id": str(uuid.uuid4())},
+                    {"text": "Tissue retraction", "id": str(uuid.uuid4())},
+                    {"text": "Capture impression", "id": str(uuid.uuid4())},
+                    {"text": "Jaw relation", "id": str(uuid.uuid4())},
+                    {"text": "Bite registration", "id": str(uuid.uuid4())},
+                    {"text": "Digital scans if applicable", "id": str(uuid.uuid4())},
+                    {"text": "Shade documentation", "id": str(uuid.uuid4())},
+                ]
+            },
+            {
+                "title": "Lab Communication – Case Dispatch",
+                "isLabSection": True,
+                "items": [
+                    {"text": "Prepare detailed lab prescription", "id": str(uuid.uuid4())},
+                    {"text": "Specify abutment & margin details", "id": str(uuid.uuid4())},
+                    {"text": "Include esthetic parameters", "id": str(uuid.uuid4())},
+                    {"text": "Define functional specs", "id": str(uuid.uuid4())},
+                    {"text": "Attach photos", "id": str(uuid.uuid4())},
+                    {"text": "Note special instructions", "id": str(uuid.uuid4())},
+                    {"text": "Schedule try-in", "id": str(uuid.uuid4())},
+                    {"text": "Confirm lab receipt", "id": str(uuid.uuid4())},
+                ]
+            }
+        ]
+    },
+    "phase3": {
+        "title": "PHASE 3 — POST-Rx PLANNING",
+        "description": "Quality assurance & final clinical preparation",
+        "sections": [
+            {
+                "title": "Lab Delivery & Quality Review",
+                "isLabSection": False,
+                "items": [
+                    {"text": "Receive lab work", "id": str(uuid.uuid4())},
+                    {"text": "Inspect model accuracy", "id": str(uuid.uuid4())},
+                    {"text": "Assess restoration fit", "id": str(uuid.uuid4())},
+                    {"text": "Check shade under lighting", "id": str(uuid.uuid4())},
+                    {"text": "Inspect defects", "id": str(uuid.uuid4())},
+                    {"text": "Assess margins", "id": str(uuid.uuid4())},
+                    {"text": "Contact lab if discrepancies", "id": str(uuid.uuid4())},
+                ]
+            },
+            {
+                "title": "Clinical Try-In & Adjustment",
+                "isLabSection": False,
+                "items": [
+                    {"text": "Isolate implant site", "id": str(uuid.uuid4())},
+                    {"text": "Passive fit check", "id": str(uuid.uuid4())},
+                    {"text": "Margin evaluation", "id": str(uuid.uuid4())},
+                    {"text": "Occlusal check", "id": str(uuid.uuid4())},
+                    {"text": "Esthetic evaluation", "id": str(uuid.uuid4())},
+                    {"text": "Soft tissue assessment", "id": str(uuid.uuid4())},
+                    {"text": "Adjustments", "id": str(uuid.uuid4())},
+                    {"text": "Document remakes", "id": str(uuid.uuid4())},
+                ]
+            },
+            {
+                "title": "Lab Communication – Adjustments & Approval",
+                "isLabSection": True,
+                "items": [
+                    {"text": "Communicate adjustments", "id": str(uuid.uuid4())},
+                    {"text": "Request refinements", "id": str(uuid.uuid4())},
+                    {"text": "Approve final design", "id": str(uuid.uuid4())},
+                    {"text": "Confirm no modifications", "id": str(uuid.uuid4())},
+                    {"text": "Discuss remakes", "id": str(uuid.uuid4())},
+                    {"text": "Establish delivery timeline", "id": str(uuid.uuid4())},
+                    {"text": "Confirm occlusal requirements", "id": str(uuid.uuid4())},
+                ]
+            }
+        ]
+    },
+    "phase4": {
+        "title": "PHASE 4 — PROSTHETIC REHABILITATION",
+        "description": "Permanent restoration delivery & long-term care",
+        "sections": [
+            {
+                "title": "Final Cementation & Seating",
+                "isLabSection": False,
+                "items": [
+                    {"text": "Isolation & field prep", "id": str(uuid.uuid4())},
+                    {"text": "Cement selection", "id": str(uuid.uuid4())},
+                    {"text": "Abutment cleaning", "id": str(uuid.uuid4())},
+                    {"text": "Controlled cement application", "id": str(uuid.uuid4())},
+                    {"text": "Seating & alignment", "id": str(uuid.uuid4())},
+                    {"text": "Cement removal", "id": str(uuid.uuid4())},
+                    {"text": "Ultrasonic margin cleaning", "id": str(uuid.uuid4())},
+                    {"text": "Radiographic cement check", "id": str(uuid.uuid4())},
+                    {"text": "Final occlusion", "id": str(uuid.uuid4())},
+                ]
+            },
+            {
+                "title": "Immediate Post-Delivery Assessment",
+                "isLabSection": False,
+                "items": [
+                    {"text": "Patient comfort", "id": str(uuid.uuid4())},
+                    {"text": "Phonetics", "id": str(uuid.uuid4())},
+                    {"text": "Mastication", "id": str(uuid.uuid4())},
+                    {"text": "Dynamic occlusion", "id": str(uuid.uuid4())},
+                    {"text": "Lateral movements", "id": str(uuid.uuid4())},
+                    {"text": "Sensitivity check", "id": str(uuid.uuid4())},
+                    {"text": "Esthetic satisfaction", "id": str(uuid.uuid4())},
+                ]
+            },
+            {
+                "title": "Patient Education & Care Instructions",
+                "isLabSection": False,
+                "items": [
+                    {"text": "Home care instruction", "id": str(uuid.uuid4())},
+                    {"text": "Interdental cleaning", "id": str(uuid.uuid4())},
+                    {"text": "Chewing precautions", "id": str(uuid.uuid4())},
+                    {"text": "Written instructions", "id": str(uuid.uuid4())},
+                    {"text": "Dietary guidance", "id": str(uuid.uuid4())},
+                    {"text": "Smoking counseling", "id": str(uuid.uuid4())},
+                    {"text": "Emergency contact", "id": str(uuid.uuid4())},
+                    {"text": "Healing timeline", "id": str(uuid.uuid4())},
+                ]
+            },
+            {
+                "title": "Follow-Up & Long-Term Monitoring",
+                "isLabSection": False,
+                "items": [
+                    {"text": "1-week follow-up", "id": str(uuid.uuid4())},
+                    {"text": "3-month evaluation", "id": str(uuid.uuid4())},
+                    {"text": "Annual radiographs", "id": str(uuid.uuid4())},
+                    {"text": "Recall interval", "id": str(uuid.uuid4())},
+                    {"text": "Baseline probing", "id": str(uuid.uuid4())},
+                    {"text": "Maintenance protocol", "id": str(uuid.uuid4())},
+                    {"text": "Crown renewal planning", "id": str(uuid.uuid4())},
+                    {"text": "Document complications", "id": str(uuid.uuid4())},
+                ]
+            }
+        ]
+    }
+}
+
+# Legacy checklists for backward compatibility
 DEFAULT_PRE_TREATMENT_CHECKLIST = [
     {"text": "CBCT scan reviewed", "id": str(uuid.uuid4())},
     {"text": "Bone quality and quantity assessed", "id": str(uuid.uuid4())},
