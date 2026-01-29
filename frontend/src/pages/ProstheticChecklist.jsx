@@ -9,6 +9,15 @@ import { toast } from 'sonner';
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8001';
 
 const PHASE_COLORS = {
+  phase1_diagnostic: { bg: 'bg-blue-50', border: 'border-blue-200', text: 'text-blue-700', badge: 'bg-blue-100' },
+  phase2_pre_surgical: { bg: 'bg-indigo-50', border: 'border-indigo-200', text: 'text-indigo-700', badge: 'bg-indigo-100' },
+  phase3_surgical: { bg: 'bg-purple-50', border: 'border-purple-200', text: 'text-purple-700', badge: 'bg-purple-100' },
+  phase4_post_surgical: { bg: 'bg-pink-50', border: 'border-pink-200', text: 'text-pink-700', badge: 'bg-pink-100' },
+  phase5_prosthetic_planning: { bg: 'bg-amber-50', border: 'border-amber-200', text: 'text-amber-700', badge: 'bg-amber-100' },
+  phase6_impression: { bg: 'bg-orange-50', border: 'border-orange-200', text: 'text-orange-700', badge: 'bg-orange-100' },
+  phase7_try_in: { bg: 'bg-teal-50', border: 'border-teal-200', text: 'text-teal-700', badge: 'bg-teal-100' },
+  phase8_final_delivery: { bg: 'bg-emerald-50', border: 'border-emerald-200', text: 'text-emerald-700', badge: 'bg-emerald-100' },
+  // Legacy 4-phase colors (fallback)
   phase1: { bg: 'bg-blue-50', border: 'border-blue-200', text: 'text-blue-700', badge: 'bg-blue-100' },
   phase2: { bg: 'bg-amber-50', border: 'border-amber-200', text: 'text-amber-700', badge: 'bg-amber-100' },
   phase3: { bg: 'bg-purple-50', border: 'border-purple-200', text: 'text-purple-700', badge: 'bg-purple-100' },
@@ -20,15 +29,13 @@ export default function ProstheticChecklist() {
   const navigate = useNavigate();
   const [caseData, setCaseData] = useState(null);
   const [checklist, setChecklist] = useState(null);
+  const [isDynamic, setIsDynamic] = useState(false);
+  const [planningConditions, setPlanningConditions] = useState(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [showFullProtocol, setShowFullProtocol] = useState(false); // NEW: Toggle state
-  const [expandedPhases, setExpandedPhases] = useState({
-    phase1: true,
-    phase2: true,
-    phase3: true,
-    phase4: true,
-  });
+  const [showFullProtocol, setShowFullProtocol] = useState(false);
+  const [showMasterChecklist, setShowMasterChecklist] = useState(false);
+  const [expandedPhases, setExpandedPhases] = useState({});
   const [expandedSections, setExpandedSections] = useState({});
 
   useEffect(() => {
