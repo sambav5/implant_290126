@@ -32,6 +32,136 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
+# Load master checklist from JSON
+CHECKLIST_PATH = Path(__file__).parent / "config" / "implantMasterChecklist.v1.json"
+
+def load_master_checklist():
+    """Load master checklist from JSON file"""
+    try:
+        with open(CHECKLIST_PATH, 'r') as f:
+            return json.load(f)
+    except Exception as e:
+        logger.error(f"Failed to load master checklist: {e}")
+        return None
+
+MASTER_CHECKLIST = load_master_checklist()
+
+def derive_planning_conditions(case_data: dict) -> dict:
+    """
+    Derive planning conditions from case data to match checklist conditions.
+    This function translates case data into the format expected by checklist conditions.
+    """
+    planning_data = case_data.get("planningData", {})
+    risk_assessment = case_data.get("riskAssessment", {})
+    
+    conditions = {
+        # Implant timing
+        "implantTiming": risk_assessment.get("implantTiming", "").lower() if risk_assessment.get("implantTiming") else None,
+        
+        # Loading protocol - infer from timing
+        "loadingProtocol": "immediate" if "immediate" in risk_assessment.get("implantTiming", "").lower() else "delayed",
+        
+        # Esthetic zone
+        "estheticZone": planning_data.get("estheticZone"),
+        
+        # Bone availability
+        "boneAvailability": planning_data.get("boneAvailability"),
+        
+        # Soft tissue
+        "softTissueBiotype": planning_data.get("softTissueBiotype"),
+        
+        # Restorative
+        "restorativeContext": planning_data.get("restorativeContext"),
+        "prostheticType": planning_data.get("restorativeContext"),
+        
+        # Systemic
+        "smokingStatus": planning_data.get("smokingStatus"),
+        "diabetesStatus": planning_data.get("diabetesStatus"),
+        "medications": planning_data.get("medications", []),
+        
+        # Risk modifiers
+        "bruxism": "bruxism" in risk_assessment.get("riskModifiers", []) if risk_assessment.get("riskModifiers") else False,
+    }
+    
+    # Clean up None values
+    return {k: v for k, v in conditions.items() if v is not None}
+
+def matches_conditions(item_conditions: dict, case_conditions: dict) -> bool:
+    """
+    Check if all item conditions match the case conditions.
+    Returns True if item has no conditions OR all conditions match exactly.
+    """
+    if not item_conditions:
+        return True
+    
+    for key, expected_value in item_conditions.items():
+        case_value = case_conditions.get(key)
+        
+        # Handle different value types
+        if isinstance(expected_value, bool):
+            if case_value != expected_value:
+                return False
+        elif isinstance(expected_value, str):
+            if str(case_value).lower() != expected_value.lower():
+                return False
+        elif isinstance(expected_value, list):
+            if not all(item in case_value for item in expected_value):
+                return False
+        else:
+            if case_value != expected_value:
+                return False
+    
+    return True
+
+def filter_checklist_for_case(master_checklist: dict, case_data: dict) -> dict:
+    """
+    Filter master checklist based on case planning conditions.
+    Returns only phases, sections, and items that are relevant for this case.
+    """
+    if not master_checklist:
+        return {}
+    
+    case_conditions = derive_planning_conditions(case_data)
+    filtered_phases = {}
+    
+    for phase in master_checklist.get("phases", []):
+        filtered_sections = []
+        
+        for section in phase.get("sections", []):
+            filtered_items = []
+            
+            for item in section.get("items", []):
+                item_conditions = item.get("conditions", {})
+                
+                if matches_conditions(item_conditions, case_conditions):
+                    # Create a copy without the conditions field for client
+                    item_copy = {
+                        "id": item["id"],
+                        "text": item["text"],
+                        "importance": item.get("importance", "advanced"),
+                        "completed": False,
+                        "completedAt": None
+                    }
+                    filtered_items.append(item_copy)
+            
+            # Only include section if it has visible items
+            if filtered_items:
+                filtered_sections.append({
+                    "title": section["title"],
+                    "isLabSection": section.get("isLabSection", False),
+                    "items": filtered_items
+                })
+        
+        # Only include phase if it has visible sections
+        if filtered_sections:
+            filtered_phases[phase["id"]] = {
+                "title": phase["title"],
+                "description": phase["description"],
+                "sections": filtered_sections
+            }
+    
+    return filtered_phases
+
 # ============ ENUMS ============
 class BoneAvailability(str, Enum):
     ADEQUATE = "adequate"
