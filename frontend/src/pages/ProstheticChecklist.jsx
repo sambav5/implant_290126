@@ -301,7 +301,7 @@ export default function ProstheticChecklist() {
         {checklist && Object.keys(checklist).map((phaseKey) => {
           const phase = checklist[phaseKey];
           const progress = calculateProgress(phase);
-          const colors = PHASE_COLORS[phaseKey];
+          const colors = PHASE_COLORS[phaseKey] || DEFAULT_PHASE_COLOR; // Fallback for undefined phases
           const isExpanded = expandedPhases[phaseKey];
 
           return (
