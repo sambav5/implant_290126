@@ -1040,16 +1040,29 @@ async def add_checklist_item(case_id: str, phase: ChecklistPhase, item: Checklis
 # ============ PROSTHETIC CHECKLIST ENDPOINTS ============
 @api_router.get("/cases/{case_id}/prosthetic-checklist")
 async def get_prosthetic_checklist(case_id: str):
-    """Get or initialize the 4-phase prosthetic checklist for a case"""
+    """Get filtered prosthetic checklist based on case planning conditions"""
     case = await db.cases.find_one({"id": case_id}, {"_id": 0})
     if not case:
         raise HTTPException(status_code=404, detail="Case not found")
     
-    # If checklist doesn't exist, initialize it with defaults
-    if not case.get("prostheticChecklist"):
-        case["prostheticChecklist"] = DEFAULT_PROSTHETIC_CHECKLIST
-        case["updatedAt"] = datetime.now(timezone.utc).isoformat()
-        await db.cases.update_one({"id": case_id}, {"$set": case})
+    # Check if we have a saved prosthetic checklist (with user progress)
+    if case.get("prostheticChecklist"):
+        return {"prostheticChecklist": case.get("prostheticChecklist")}
+    
+    # Generate filtered checklist from master JSON
+    if MASTER_CHECKLIST:
+        filtered_checklist = filter_checklist_for_case(MASTER_CHECKLIST, case)
+        if filtered_checklist:
+            # Save the filtered checklist to the case
+            case["prostheticChecklist"] = filtered_checklist
+            case["updatedAt"] = datetime.now(timezone.utc).isoformat()
+            await db.cases.update_one({"id": case_id}, {"$set": case})
+            return {"prostheticChecklist": filtered_checklist}
+    
+    # Fallback to default checklist if JSON loading failed
+    case["prostheticChecklist"] = DEFAULT_PROSTHETIC_CHECKLIST
+    case["updatedAt"] = datetime.now(timezone.utc).isoformat()
+    await db.cases.update_one({"id": case_id}, {"$set": case})
     
     return {"prostheticChecklist": case.get("prostheticChecklist")}
 
