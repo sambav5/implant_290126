@@ -1040,31 +1040,80 @@ async def add_checklist_item(case_id: str, phase: ChecklistPhase, item: Checklis
 # ============ PROSTHETIC CHECKLIST ENDPOINTS ============
 @api_router.get("/cases/{case_id}/prosthetic-checklist")
 async def get_prosthetic_checklist(case_id: str):
-    """Get filtered prosthetic checklist based on case planning conditions"""
+    """Get or initialize the dynamically filtered checklist for a case"""
     case = await db.cases.find_one({"id": case_id}, {"_id": 0})
     if not case:
         raise HTTPException(status_code=404, detail="Case not found")
     
-    # Check if we have a saved prosthetic checklist (with user progress)
-    if case.get("prostheticChecklist"):
-        return {"prostheticChecklist": case.get("prostheticChecklist")}
+    # Check if case has a stored checklist with completion states
+    stored_checklist = case.get("prostheticChecklist")
     
-    # Generate filtered checklist from master JSON
+    # Generate filtered checklist based on case planning
     if MASTER_CHECKLIST:
         filtered_checklist = filter_checklist_for_case(MASTER_CHECKLIST, case)
-        if filtered_checklist:
-            # Save the filtered checklist to the case
-            case["prostheticChecklist"] = filtered_checklist
-            case["updatedAt"] = datetime.now(timezone.utc).isoformat()
-            await db.cases.update_one({"id": case_id}, {"$set": case})
-            return {"prostheticChecklist": filtered_checklist}
+        
+        # If there's a stored checklist, merge completion states
+        if stored_checklist:
+            filtered_checklist = merge_completion_states(filtered_checklist, stored_checklist)
+        
+        # Store the filtered checklist structure
+        case["prostheticChecklist"] = filtered_checklist
+        case["updatedAt"] = datetime.now(timezone.utc).isoformat()
+        await db.cases.update_one({"id": case_id}, {"$set": case})
+        
+        # Derive planning conditions for frontend display
+        planning_conditions = derive_planning_conditions(case)
+        
+        return {
+            "prostheticChecklist": filtered_checklist,
+            "planningConditions": planning_conditions,
+            "checklistVersion": MASTER_CHECKLIST.get("version", "1.0"),
+            "isDynamic": True
+        }
+    else:
+        # Fallback to legacy checklist if JSON not available
+        if not stored_checklist:
+            stored_checklist = DEFAULT_PROSTHETIC_CHECKLIST
+        return {
+            "prostheticChecklist": stored_checklist,
+            "isDynamic": False
+        }
+
+def merge_completion_states(filtered_checklist: dict, stored_checklist: dict) -> dict:
+    """Merge completion states from stored checklist into filtered checklist"""
+    for phase_key, phase_data in filtered_checklist.items():
+        stored_phase = stored_checklist.get(phase_key, {})
+        
+        for section_idx, section in enumerate(phase_data.get("sections", [])):
+            stored_sections = stored_phase.get("sections", [])
+            stored_section = stored_sections[section_idx] if section_idx < len(stored_sections) else {}
+            
+            for item_idx, item in enumerate(section.get("items", [])):
+                stored_items = stored_section.get("items", [])
+                # Find matching item by ID
+                matching_stored = next((si for si in stored_items if si.get("id") == item["id"]), None)
+                
+                if matching_stored:
+                    item["completed"] = matching_stored.get("completed", False)
+                    item["completedAt"] = matching_stored.get("completedAt")
     
-    # Fallback to default checklist if JSON loading failed
-    case["prostheticChecklist"] = DEFAULT_PROSTHETIC_CHECKLIST
-    case["updatedAt"] = datetime.now(timezone.utc).isoformat()
-    await db.cases.update_one({"id": case_id}, {"$set": case})
+    return filtered_checklist
+
+@api_router.get("/cases/{case_id}/prosthetic-checklist/master")
+async def get_master_checklist(case_id: str):
+    """Get the full master checklist (read-only, for reference)"""
+    case = await db.cases.find_one({"id": case_id}, {"_id": 0})
+    if not case:
+        raise HTTPException(status_code=404, detail="Case not found")
     
-    return {"prostheticChecklist": case.get("prostheticChecklist")}
+    if not MASTER_CHECKLIST:
+        raise HTTPException(status_code=500, detail="Master checklist not available")
+    
+    return {
+        "masterChecklist": MASTER_CHECKLIST,
+        "version": MASTER_CHECKLIST.get("version", "1.0"),
+        "isReadOnly": True
+    }
 
 @api_router.put("/cases/{case_id}/prosthetic-checklist")
 async def update_prosthetic_checklist(case_id: str, checklist: dict):
@@ -1076,7 +1125,7 @@ async def update_prosthetic_checklist(case_id: str, checklist: dict):
     case["prostheticChecklist"] = checklist
     case["updatedAt"] = datetime.now(timezone.utc).isoformat()
     
-    # Count completed items
+    # Count completed items (only visible items)
     total_items = 0
     completed_items = 0
     for phase_key, phase_data in checklist.items():
