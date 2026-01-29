@@ -48,17 +48,22 @@ export default function ProstheticChecklist() {
       const caseResponse = await axios.get(`${BACKEND_URL}/api/cases/${id}`);
       setCaseData(caseResponse.data);
 
-      // Load prosthetic checklist
+      // Load prosthetic checklist (now dynamic)
       const checklistResponse = await axios.get(`${BACKEND_URL}/api/cases/${id}/prosthetic-checklist`);
       setChecklist(checklistResponse.data.prostheticChecklist);
+      setIsDynamic(checklistResponse.data.isDynamic || false);
+      setPlanningConditions(checklistResponse.data.planningConditions || null);
       
-      // Initialize all sections as expanded
+      // Initialize all phases and sections as expanded
+      const phasesState = {};
       const sectionsState = {};
       Object.keys(checklistResponse.data.prostheticChecklist).forEach(phaseKey => {
+        phasesState[phaseKey] = true;
         checklistResponse.data.prostheticChecklist[phaseKey].sections.forEach((_, sectionIndex) => {
           sectionsState[`${phaseKey}-${sectionIndex}`] = true;
         });
       });
+      setExpandedPhases(phasesState);
       setExpandedSections(sectionsState);
     } catch (error) {
       toast.error('Failed to load checklist');
