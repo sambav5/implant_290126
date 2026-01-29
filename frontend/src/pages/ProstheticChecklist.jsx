@@ -267,6 +267,28 @@ export default function ProstheticChecklist() {
       </header>
 
       <main className="page-container py-6 space-y-4">
+        {/* Dynamic Checklist Notice */}
+        {isDynamic && (
+          <div className="bg-blue-50 border-l-4 border-blue-500 p-4 rounded-r-lg animate-fade-in">
+            <div className="flex items-start gap-3">
+              <TrendingUp className="h-5 w-5 text-blue-600 shrink-0 mt-0.5" />
+              <div className="flex-1">
+                <p className="text-sm font-medium text-blue-900">
+                  Checklist customized based on case planning
+                </p>
+                <p className="text-xs text-blue-700 mt-1">
+                  Only clinically relevant items for this specific case are shown. 
+                  {planningConditions && (
+                    <span className="block mt-1">
+                      Active conditions: {Object.keys(planningConditions).filter(k => planningConditions[k]).length} detected
+                    </span>
+                  )}
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
         {checklist && Object.keys(checklist).map((phaseKey) => {
           const phase = checklist[phaseKey];
           const progress = calculateProgress(phase);
