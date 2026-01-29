@@ -33,8 +33,8 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-# Load master checklist from JSON
-CHECKLIST_PATH = Path(__file__).parent / "config" / "implantMasterChecklist.v1.json"
+# Load master checklist from JSON - AUTHORITATIVE SOURCE
+CHECKLIST_PATH = Path(__file__).parent.parent / "src" / "config" / "implantMasterChecklist.v1.json"
 
 def load_master_checklist():
     """Load master checklist from JSON file"""
