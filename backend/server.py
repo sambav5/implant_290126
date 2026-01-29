@@ -37,12 +37,12 @@ logger = logging.getLogger(__name__)
 CHECKLIST_PATH = Path(__file__).parent.parent / "src" / "config" / "implantMasterChecklist.v1.json"
 
 def load_master_checklist():
-    """Load master checklist from JSON file"""
+    """Load master checklist from authoritative JSON file - READ ONLY"""
     try:
         with open(CHECKLIST_PATH, 'r') as f:
             return json.load(f)
     except Exception as e:
-        logger.error(f"Failed to load master checklist: {e}")
+        logger.error(f"Failed to load master checklist from {CHECKLIST_PATH}: {e}")
         return None
 
 MASTER_CHECKLIST = load_master_checklist()
