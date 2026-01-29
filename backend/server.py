@@ -56,36 +56,40 @@ def derive_planning_conditions(case_data: dict) -> dict:
     risk_assessment = case_data.get("riskAssessment", {})
     
     conditions = {
-        # Implant timing
-        "implantTiming": risk_assessment.get("implantTiming", "").lower() if risk_assessment.get("implantTiming") else None,
-        
-        # Loading protocol - infer from timing
-        "loadingProtocol": "immediate" if "immediate" in risk_assessment.get("implantTiming", "").lower() else "delayed",
+        # Imaging requirements
+        "requiresImaging": True,  # Always true for implant cases
         
         # Esthetic zone
-        "estheticZone": planning_data.get("estheticZone"),
+        "estheticZone": planning_data.get("estheticZone") == "high",
         
         # Bone availability
-        "boneAvailability": planning_data.get("boneAvailability"),
+        "gbr": planning_data.get("boneAvailability") == "insufficient",
+        "needsGBR": planning_data.get("boneAvailability") == "insufficient",
         
         # Soft tissue
-        "softTissueBiotype": planning_data.get("softTissueBiotype"),
+        "softTissueGraft": planning_data.get("softTissueBiotype") == "thin" and planning_data.get("estheticZone") == "high",
+        
+        # Surgical guide
+        "guideRequired": planning_data.get("estheticZone") == "high",
+        
+        # Implant timing - infer from risk assessment
+        "immediateProvisionalization": "immediate" in risk_assessment.get("implantTiming", "").lower() if risk_assessment.get("implantTiming") else False,
         
         # Restorative
-        "restorativeContext": planning_data.get("restorativeContext"),
         "prostheticType": planning_data.get("restorativeContext"),
         
-        # Systemic
-        "smokingStatus": planning_data.get("smokingStatus"),
-        "diabetesStatus": planning_data.get("diabetesStatus"),
-        "medications": planning_data.get("medications", []),
+        # Systemic factors
+        "smoker": planning_data.get("smokingStatus") in ["current", "former"],
+        "diabetic": planning_data.get("diabetesStatus") in ["controlled", "uncontrolled"],
+        "anticoagulated": "anticoagulants" in planning_data.get("medications", []),
+        "bisphosphonates": "bisphosphonates" in planning_data.get("medications", []),
         
-        # Risk modifiers
+        # Occlusal
         "bruxism": "bruxism" in risk_assessment.get("riskModifiers", []) if risk_assessment.get("riskModifiers") else False,
     }
     
-    # Clean up None values
-    return {k: v for k, v in conditions.items() if v is not None}
+    # Clean up None values and false booleans for cleaner output
+    return {k: v for k, v in conditions.items() if v is not None and v is not False}
 
 def matches_conditions(item_conditions: dict, case_conditions: dict) -> bool:
     """
