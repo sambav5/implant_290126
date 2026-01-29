@@ -104,15 +104,21 @@ def matches_conditions(item_conditions: dict, case_conditions: dict) -> bool:
         
         # Handle different value types
         if isinstance(expected_value, bool):
+            # For boolean conditions, must match exactly
             if case_value != expected_value:
                 return False
         elif isinstance(expected_value, str):
+            # For string conditions, case-insensitive match
             if str(case_value).lower() != expected_value.lower():
                 return False
         elif isinstance(expected_value, list):
+            # For list conditions, all expected items must be in case value
+            if not isinstance(case_value, list):
+                return False
             if not all(item in case_value for item in expected_value):
                 return False
         else:
+            # Exact match for other types
             if case_value != expected_value:
                 return False
     
