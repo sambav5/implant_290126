@@ -1193,7 +1193,10 @@ async def get_prosthetic_checklist(case_id: str):
         }
 
 def merge_completion_states(filtered_checklist: dict, stored_checklist: dict) -> dict:
-    """Merge completion states from stored checklist into filtered checklist"""
+    """
+    Merge completion states from stored checklist into filtered checklist.
+    Preserves auto-completion flags and manual overrides.
+    """
     for phase_key, phase_data in filtered_checklist.items():
         stored_phase = stored_checklist.get(phase_key, {})
         
@@ -1209,6 +1212,8 @@ def merge_completion_states(filtered_checklist: dict, stored_checklist: dict) ->
                 if matching_stored:
                     item["completed"] = matching_stored.get("completed", False)
                     item["completedAt"] = matching_stored.get("completedAt")
+                    item["autoCompleted"] = matching_stored.get("autoCompleted", False)
+                    item["autoCompleteReason"] = matching_stored.get("autoCompleteReason")
     
     return filtered_checklist
 
