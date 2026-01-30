@@ -52,8 +52,8 @@ def derive_planning_conditions(case_data: dict) -> dict:
     Derive planning conditions from case data to match checklist conditions.
     This function translates case data into the format expected by checklist conditions.
     """
-    planning_data = case_data.get("planningData", {})
-    risk_assessment = case_data.get("riskAssessment", {})
+    planning_data = case_data.get("planningData", {}) or {}
+    risk_assessment = case_data.get("riskAssessment") or {}
     
     conditions = {
         # Imaging requirements
@@ -81,8 +81,8 @@ def derive_planning_conditions(case_data: dict) -> dict:
         # Systemic factors
         "smoker": planning_data.get("smokingStatus") in ["current", "former"],
         "diabetic": planning_data.get("diabetesStatus") in ["controlled", "uncontrolled"],
-        "anticoagulated": "anticoagulants" in planning_data.get("medications", []),
-        "bisphosphonates": "bisphosphonates" in planning_data.get("medications", []),
+        "anticoagulated": "anticoagulants" in planning_data.get("medications", []) if planning_data.get("medications") else False,
+        "bisphosphonates": "bisphosphonates" in planning_data.get("medications", []) if planning_data.get("medications") else False,
         
         # Occlusal
         "bruxism": "bruxism" in risk_assessment.get("riskModifiers", []) if risk_assessment.get("riskModifiers") else False,
