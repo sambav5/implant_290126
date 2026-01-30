@@ -124,7 +124,99 @@ def matches_conditions(item_conditions: dict, case_conditions: dict) -> bool:
     
     return True
 
-def filter_checklist_for_case(master_checklist: dict, case_data: dict) -> dict:
+def get_auto_complete_mappings():
+    """
+    Define mappings between checklist item IDs and planning engine fields.
+    These items represent planning decisions already made during planning.
+    
+    ONLY planning/decision items should be auto-completed.
+    Physical actions, time-dependent steps, or surgical execution must NOT be auto-completed.
+    """
+    return {
+        # Planning decisions
+        "implant_system_selected": "planningData.boneAvailability",  # Implant system decided during planning
+        "esthetic_risk_assessed": "planningData.estheticZone",  # Esthetic assessment done
+        "occlusal_scheme_decided": "planningData.occlusion",  # Occlusion documented
+        "restorative_plan_defined": "planningData.restorativeContext",  # Restoration type chosen
+        "smoking_status_documented": "planningData.smokingStatus",  # Systemic factors recorded
+        "medical_history_reviewed": "planningData.diabetesStatus",  # Medical review done
+        "bone_assessment_complete": "planningData.boneAvailability",  # Bone evaluated
+        "soft_tissue_evaluation": "planningData.softTissueBiotype",  # Tissue assessed
+        "medications_reviewed": "planningData.medications",  # Medications documented
+        
+        # Risk assessment decisions
+        "timing_protocol_decided": "riskAssessment.implantTiming",  # Timing decision made
+        "case_complexity_assessed": "riskAssessment.caseComplexity",  # Complexity evaluated
+        "risk_modifiers_identified": "riskAssessment.riskModifiers",  # Risk factors identified
+    }
+
+def get_nested_value(data: dict, path: str):
+    """Get nested dictionary value using dot notation path"""
+    keys = path.split('.')
+    value = data
+    for key in keys:
+        if isinstance(value, dict):
+            value = value.get(key)
+        else:
+            return None
+        if value is None:
+            return None
+    return value
+
+def should_auto_complete(item_id: str, case_data: dict) -> tuple[bool, str]:
+    """
+    Check if a checklist item should be auto-completed based on planning data.
+    
+    Returns:
+        (should_complete: bool, reason: str)
+    """
+    mappings = get_auto_complete_mappings()
+    
+    if item_id not in mappings:
+        return False, None
+    
+    planning_field = mappings[item_id]
+    value = get_nested_value(case_data, planning_field)
+    
+    # Auto-complete if field has a non-null, non-empty value
+    if value is not None and value != "" and value != []:
+        return True, "Completed during planning"
+    
+    return False, None
+
+def apply_auto_completion(filtered_checklist: dict, case_data: dict, stored_checklist: dict = None) -> dict:
+    """
+    Apply auto-completion to eligible checklist items.
+    
+    Auto-completion runs ONLY if:
+    1. Item has never been manually interacted with
+    2. Planning data exists for the mapped field
+    
+    Manual user actions always override auto-completion.
+    """
+    for phase_key, phase_data in filtered_checklist.items():
+        stored_phase = stored_checklist.get(phase_key, {}) if stored_checklist else {}
+        
+        for section_idx, section in enumerate(phase_data.get("sections", [])):
+            stored_sections = stored_phase.get("sections", [])
+            stored_section = stored_sections[section_idx] if section_idx < len(stored_sections) else {}
+            
+            for item in section.get("items", []):
+                # Check if item was previously stored (user interaction exists)
+                stored_items = stored_section.get("items", [])
+                matching_stored = next((si for si in stored_items if si.get("id") == item["id"]), None)
+                
+                # Only auto-complete if no previous user interaction
+                if not matching_stored or matching_stored.get("completed") is None:
+                    should_complete, reason = should_auto_complete(item["id"], case_data)
+                    
+                    if should_complete:
+                        item["completed"] = True
+                        item["completedAt"] = datetime.now(timezone.utc).isoformat()
+                        item["autoCompleted"] = True
+                        item["autoCompleteReason"] = reason
+    
+    return filtered_checklist
     """
     Filter master checklist based on case planning conditions.
     Returns only phases, sections, and items that are relevant for this case.
