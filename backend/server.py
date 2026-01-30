@@ -1165,6 +1165,9 @@ async def get_prosthetic_checklist(case_id: str):
         # If there's a stored checklist, merge completion states
         if stored_checklist:
             filtered_checklist = merge_completion_states(filtered_checklist, stored_checklist)
+        else:
+            # First time initialization: Apply auto-completion for planning-related items
+            filtered_checklist = apply_auto_completion(filtered_checklist, case, stored_checklist)
         
         # Store the filtered checklist structure
         case["prostheticChecklist"] = filtered_checklist
