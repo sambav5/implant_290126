@@ -422,13 +422,24 @@ export default function ProstheticChecklist() {
                                           Advanced
                                         </span>
                                       )}
+                                      {item.autoCompleted && (
+                                        <span className="shrink-0 px-1.5 py-0.5 text-[10px] font-medium bg-blue-100 text-blue-700 rounded">
+                                          Auto-completed
+                                        </span>
+                                      )}
                                       {!showFullProtocol && item.importance !== 'essential' && (
                                         <TrendingUp className="h-4 w-4 text-blue-500 shrink-0" title="High Impact" />
                                       )}
                                     </div>
                                     {item.completedAt && (
                                       <p className="text-xs text-muted-foreground mt-1">
-                                        Completed: {new Date(item.completedAt).toLocaleString()}
+                                        {item.autoCompleted && item.autoCompleteReason ? (
+                                          <span className="italic text-blue-600">
+                                            {item.autoCompleteReason} • {new Date(item.completedAt).toLocaleString()}
+                                          </span>
+                                        ) : (
+                                          <span>Completed: {new Date(item.completedAt).toLocaleString()}</span>
+                                        )}
                                       </p>
                                     )}
                                   </div>
