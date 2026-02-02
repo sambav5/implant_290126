@@ -42,10 +42,21 @@ export default function ProstheticChecklist() {
   const [planningConditions, setPlanningConditions] = useState(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [showFullProtocol, setShowFullProtocol] = useState(false);
+  const [showFullProtocol, setShowFullProtocol] = useState(() => {
+    // Load toggle state from localStorage (per case)
+    const saved = localStorage.getItem(`checklistScope_${id}`);
+    return saved === 'full' ? true : false; // Default to Essential (false)
+  });
   const [showMasterChecklist, setShowMasterChecklist] = useState(false);
   const [expandedPhases, setExpandedPhases] = useState({});
   const [expandedSections, setExpandedSections] = useState({});
+
+  // Persist toggle state to localStorage
+  useEffect(() => {
+    if (id) {
+      localStorage.setItem(`checklistScope_${id}`, showFullProtocol ? 'full' : 'essential');
+    }
+  }, [showFullProtocol, id]);
 
   useEffect(() => {
     loadData();
