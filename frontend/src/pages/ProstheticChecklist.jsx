@@ -265,8 +265,8 @@ export default function ProstheticChecklist() {
             </div>
             <p className="text-xs text-center text-muted-foreground mt-2">
               {showFullProtocol 
-                ? 'Showing comprehensive 4-phase protocol with all lab coordination steps'
-                : 'Showing essential high-impact items only (80/20 principle)'}
+                ? 'Showing complete protocol - all essential and advanced steps'
+                : 'Showing essential items only - steps that prevent failure (Recommended)'}
             </p>
           </div>
           
