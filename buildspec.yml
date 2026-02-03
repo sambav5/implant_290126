@@ -8,7 +8,7 @@ phases:
 
     commands:
       - cd frontend
-      - npm install
+      - npm install -force
       - npm run build
       - cd ..
 
