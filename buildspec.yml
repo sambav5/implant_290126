@@ -1,0 +1,21 @@
+version: 0.2
+
+phases:
+  install:
+    runtime-versions:
+      nodejs: 18
+      python: 3.10
+
+    commands:
+      - cd frontend
+      - npm install
+      - npm run build
+      - cd ..
+
+      - cd backend
+      - pip install -r requirements.txt
+      - cd ..
+
+artifacts:
+  files:
+    - '**/*'
