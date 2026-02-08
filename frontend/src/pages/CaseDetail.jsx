@@ -291,35 +291,6 @@ export default function CaseDetail() {
             </div>
           </button>
           
-          {/* Checklists */}
-          <button
-            onClick={() => navigate(`/case/${id}/checklists`)}
-            className="card-clinical-interactive w-full animate-slide-up stagger-3"
-            data-testid="checklists-btn"
-          >
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-lg bg-emerald-500/10 flex items-center justify-center">
-                  <CheckSquare className="h-5 w-5 text-emerald-600" />
-                </div>
-                <div className="text-left">
-                  <h3 className="font-semibold">Checklists</h3>
-                  <p className="text-sm text-muted-foreground">
-                    {completedChecks}/{totalChecks.length} completed ({checklistProgress}%)
-                  </p>
-                </div>
-              </div>
-              <ChevronRight className="h-5 w-5 text-muted-foreground" />
-            </div>
-            {/* Progress bar */}
-            <div className="mt-3 h-1.5 bg-slate-100 rounded-full overflow-hidden">
-              <div 
-                className="h-full bg-emerald-500 rounded-full transition-all duration-500"
-                style={{ width: `${checklistProgress}%` }}
-              />
-            </div>
-          </button>
-          
           {/* Prosthetic Checklist - NEW 4-Phase */}
           <button
             onClick={() => navigate(`/case/${id}/prosthetic-checklist`)}
