@@ -64,7 +64,6 @@ const PLANNING_STEPS = [
         type: 'radio',
         options: [
           { value: 'high', label: 'High', description: 'Visible during smile/speech' },
-          { value: 'moderate', label: 'Moderate', description: 'Partially visible' },
           { value: 'low', label: 'Low', description: 'Not visible (posterior)' },
         ],
       },
