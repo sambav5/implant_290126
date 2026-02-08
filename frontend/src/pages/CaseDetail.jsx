@@ -338,39 +338,6 @@ export default function CaseDetail() {
               </div>
             </button>
           )}
-          
-          {/* PDF Export */}
-          <div className="card-clinical animate-slide-up stagger-5">
-            <div className="flex items-center gap-3 mb-3">
-              <div className="w-10 h-10 rounded-lg bg-slate-100 flex items-center justify-center">
-                <Download className="h-5 w-5 text-slate-600" />
-              </div>
-              <div>
-                <h3 className="font-semibold">Export PDF</h3>
-                <p className="text-sm text-muted-foreground">Download case summary</p>
-              </div>
-            </div>
-            <div className="flex gap-2">
-              <Button
-                variant="outline"
-                onClick={() => handleDownloadPDF('dentist')}
-                className="flex-1"
-                data-testid="download-dentist-pdf-btn"
-              >
-                <Download className="h-4 w-4 mr-2" />
-                Dentist Copy
-              </Button>
-              <Button
-                variant="outline"
-                onClick={() => handleDownloadPDF('lab')}
-                className="flex-1"
-                data-testid="download-lab-pdf-btn"
-              >
-                <Download className="h-4 w-4 mr-2" />
-                Lab Copy
-              </Button>
-            </div>
-          </div>
         </div>
         
         {/* Timeline (Recent Activity) */}
