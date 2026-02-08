@@ -200,94 +200,32 @@ test_plan:
 agent_communication:
   - agent: "main"
     message: |
-      Implementation Status: COMPLETE
+      UI CORRECTIONS IMPLEMENTATION COMPLETE ✅
       
-      The Clinical Depth Toggle feature is fully implemented in both backend and frontend.
-      All services are running successfully after resolving node_modules dependency issues.
+      All 4 corrections have been successfully implemented:
+      
+      1. ✅ Esthetic Zone: "Moderate" option removed (High/Low only)
+      2. ✅ Soft Tissue Biotype: "Moderate" option removed (Thick/Thin only)
+      3. ✅ Checklist card: Removed from Case Detail view (functionality preserved)
+      4. ✅ Export PDF card: Removed from Case Detail view (dropdown access preserved)
+      
+      Technical Details:
+      - Modified: PlanningWizard.jsx (options arrays updated)
+      - Modified: CaseDetail.jsx (UI cards removed)
+      - Backend: Unchanged (maintains backward compatibility)
+      - Routing: Preserved (all routes still exist)
+      - Services: Intact (PDF and checklist services unchanged)
+      
+      Validation:
+      ✅ Linting passed (no errors in both files)
+      ✅ Frontend compiled successfully
+      ✅ Backend unchanged (enums still accept "moderate")
+      ✅ All services running (backend, frontend, mongodb)
+      ✅ Backward compatibility maintained
       
       Ready for testing:
-      1. Create a new case
-      2. Complete the planning wizard with various input combinations
-      3. Verify Standard mode shows minimal output (4 elements)
-      4. Toggle to Detailed mode and verify all 6 sections appear
-      5. Test immediate placement eligibility logic
-      6. Verify backup awareness appears only for Complex cases
-      7. Test with different case complexity scenarios (Simple, Moderate, Complex)
-      
-      All constraints met:
-      ✅ No new mandatory inputs
-      ✅ No increase in form completion time
-      ✅ Toggle controls output depth only
-      ✅ Uses existing planning data
-      ✅ Clinical supportive tone maintained
-  - agent: "testing"
-    message: |
-      BACKEND TESTING COMPLETE - ALL TESTS PASSED ✅
-      
-      Clinical Depth Toggle Feature: FULLY FUNCTIONAL
-      
-      Comprehensive testing completed on all three test scenarios:
-      • Simple Case: ✅ Correct complexity detection, immediate placement eligible
-      • Moderate Case: ✅ Correct complexity detection, case-dependent placement
-      • Complex Case: ✅ Correct complexity detection, delayed placement recommended, backup awareness present
-      
-      All API endpoints working correctly:
-      • POST /api/cases (case creation): ✅
-      • PUT /api/cases/{case_id} (planning data update): ✅  
-      • POST /api/cases/{case_id}/analyze (risk analysis): ✅
-      
-      Response Structure Verification:
-      ✅ All standard mode fields present and populated
-      ✅ All detailed mode fields present and populated
-      ✅ Complexity-specific logic working (backup awareness for Complex only)
-      ✅ Immediate placement eligibility logic working correctly
-      ✅ Array length constraints respected (max 3 items)
-      ✅ Content quality appropriate for clinical use
-      
-      Backend implementation is production-ready. No issues found.
-      Ready for main agent to summarize and finish the implementation.
-  - agent: "main"
-    message: |
-      PDF REFACTORING IMPLEMENTATION - IN PROGRESS
-      
-      Task: Separate Dentist Copy and Lab Copy PDFs with distinct purposes
-      
-      Changes Made:
-      1. Created generateDentistPDF() - Clinical documentation with all medical/surgical info
-      2. Created generateLabPDF() - Prosthetic instructions only, no medical details
-      3. Updated pdfService.js with two distinct PDF generation functions
-      4. Maintained backward compatibility with downloadCasePDF()
-      
-      Dentist Copy Includes:
-      ✅ Case Information (full patient data)
-      ✅ Planning Data (complete clinical details)
-      ✅ Risk Assessment (with complexity and timing)
-      ✅ Clinical Considerations
-      ✅ Pre-Treatment Checklist
-      ✅ Treatment Checklist
-      ✅ Post-Treatment Checklist
-      ✅ Learning Reflections
-      ✅ Clinical disclaimer footer
-      
-      Lab Copy Includes ONLY:
-      ✅ Case Identification (name, tooth number, date)
-      ✅ Restoration Type (clear specification)
-      ✅ Implant Site Notes (location, esthetic zone, adjacent teeth)
-      ✅ Prosthetic Instructions (retention, emergence, margin, provisional)
-      ✅ Additional Lab Notes
-      ✅ Lab-specific disclaimer (no clinical responsibility)
-      
-      Lab Copy EXCLUDES:
-      ❌ Risk assessment details
-      ❌ Medical considerations (diabetes, smoking, medications)
-      ❌ Surgical checklists
-      ❌ Consent language
-      ❌ Post-op care instructions
-      ❌ Patient medical data
-      
-      Visual Differentiation:
-      - Dentist: Blue header "Clinical Case Documentation"
-      - Lab: Green header "Prosthetic Fabrication Order"
-      - Different disclaimers on each page
-      
-      Ready for testing to verify both PDFs generate correctly
+      1. Create new case and verify Planning Engine shows only High/Low and Thick/Thin
+      2. Navigate to Case Detail and verify Checklist and PDF cards are hidden
+      3. Verify PDF export still works via dropdown menu (⋮ icon in header)
+      4. Test direct navigation to /case/:id/checklists to verify feature still works
+      5. Load historical case with "moderate" values to verify backward compatibility
