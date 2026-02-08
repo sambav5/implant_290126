@@ -103,22 +103,17 @@
 #====================================================================================================
 
 user_problem_statement: |
-  Add a Clinical Depth toggle with two modes:
-  - Standard (default): Shows minimal output (primary issue, complexity, timing, brief rationale)
-  - Detailed (toggle ON): Reveals additional reasoning layers with 6 sections:
-    1. Primary Clinical Issue (Expanded)
-    2. Case Complexity + Drivers
-    3. Immediate Placement Eligibility Gate
-    4. Risk Modifiers Detected
-    5. Clinical Rationale
-    6. Soft Backup Awareness (Complex cases only)
+  UI Corrections (4 small changes):
+  1. Remove "Moderate" option from Esthetic Zone (keep High/Low only)
+  2. Remove "Moderate" option from Soft Tissue Biotype (keep Thin/Thick only)
+  3. Remove Checklist entry from Home Screen (UI only - preserve functionality)
+  4. Remove Export PDF option from Home Screen (UI only - preserve functionality)
   
-  Hard Constraints:
-  - No new mandatory inputs
-  - No increase in form completion time
-  - Toggle controls output depth only, not input form
-  - Supportive, senior-clinician voice
-  - Output readable in under 90 seconds
+  Constraints:
+  - UI-only changes
+  - No backend modifications
+  - Preserve all functionality and routing
+  - Maintain backward compatibility with existing "moderate" data
 
 backend:
   - task: "Clinical Depth Toggle - Backend Planning Engine"
