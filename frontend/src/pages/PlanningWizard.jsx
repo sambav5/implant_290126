@@ -73,7 +73,6 @@ const PLANNING_STEPS = [
         type: 'radio',
         options: [
           { value: 'thick', label: 'Thick', description: 'More forgiving, lower recession risk' },
-          { value: 'moderate', label: 'Moderate', description: 'Average characteristics' },
           { value: 'thin', label: 'Thin', description: 'Higher esthetic risk' },
         ],
       },
