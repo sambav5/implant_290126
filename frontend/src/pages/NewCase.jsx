@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import ToothSelector from '@/components/ToothSelector';
 import { caseApi } from '@/services/api';
 import { toast } from 'sonner';
+import { trackCaseCreated } from '@/lib/analytics';
 
 export default function NewCase() {
   const navigate = useNavigate();
