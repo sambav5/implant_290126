@@ -104,6 +104,7 @@ export default function NewCase() {
             value={formData.toothNumber}
             onChange={(value) => setFormData({ ...formData, toothNumber: value })}
             required
+            multiple
           />
           
           {/* Optional Fields */}
