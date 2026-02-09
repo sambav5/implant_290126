@@ -216,7 +216,7 @@ export default function ProstheticChecklist() {
               <ArrowLeft className="h-5 w-5" />
             </button>
             <div className="flex-1">
-              <h1 className="text-xl font-semibold text-foreground">Prosthetic Checklist</h1>
+              <h1 className="text-xl font-semibold text-foreground">Treatment Blueprint</h1>
               <p className="text-sm text-muted-foreground">{caseData?.caseName}</p>
             </div>
             {saving && (
