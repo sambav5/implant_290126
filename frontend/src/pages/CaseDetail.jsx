@@ -291,7 +291,7 @@ export default function CaseDetail() {
             </div>
           </button>
           
-          {/* Prosthetic Checklist - NEW 4-Phase */}
+          {/* Treatment Blueprint */}
           <button
             onClick={() => navigate(`/case/${id}/prosthetic-checklist`)}
             className="card-clinical-interactive w-full animate-slide-up stagger-4"
@@ -303,9 +303,9 @@ export default function CaseDetail() {
                   <CheckSquare className="h-5 w-5 text-purple-600" />
                 </div>
                 <div className="text-left">
-                  <h3 className="font-semibold">Prosthetic Checklist</h3>
+                  <h3 className="font-semibold">Treatment Blueprint</h3>
                   <p className="text-sm text-muted-foreground">
-                    4-phase workflow with lab coordination
+                    Your comprehensive implant workflow — in one place
                   </p>
                 </div>
               </div>
