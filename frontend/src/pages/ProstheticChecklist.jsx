@@ -112,6 +112,27 @@ export default function ProstheticChecklist() {
     await saveChecklist(updatedChecklist);
   };
 
+  const toggleSelectAllInSection = async (phaseKey, sectionIndex) => {
+    const updatedChecklist = { ...checklist };
+    const section = updatedChecklist[phaseKey].sections[sectionIndex];
+    
+    // Filter visible items based on showFullProtocol state
+    const visibleItems = section.items.filter(item => showFullProtocol || item.importance === 'essential');
+    
+    // Check if all visible items are completed
+    const allCompleted = visibleItems.every(item => item.completed);
+    
+    // Toggle all visible items
+    visibleItems.forEach(item => {
+      item.completed = !allCompleted;
+      item.completedAt = !allCompleted ? new Date().toISOString() : null;
+    });
+    
+    setChecklist(updatedChecklist);
+    await saveChecklist(updatedChecklist);
+    toast.success(allCompleted ? 'All items unchecked' : 'All items checked');
+  };
+
   const saveChecklist = async (updatedChecklist) => {
     setSaving(true);
     try {
