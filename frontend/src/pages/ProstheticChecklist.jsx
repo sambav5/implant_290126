@@ -418,6 +418,17 @@ export default function ProstheticChecklist() {
                         {/* Section Items */}
                         {isSectionExpanded && (
                           <div className={`px-4 pb-4 ${section.isLabSection ? 'bg-green-50/30' : ''}`}>
+                            {/* Select All Button */}
+                            <div className="py-2 mb-2 border-b border-slate-200">
+                              <button
+                                onClick={() => toggleSelectAllInSection(phaseKey, sectionIndex)}
+                                className="text-xs font-medium text-primary hover:text-primary/80 transition-colors"
+                              >
+                                {section.items.filter(item => showFullProtocol || item.importance === 'essential').every(item => item.completed)
+                                  ? '☑ Uncheck All'
+                                  : '☐ Select All'}
+                              </button>
+                            </div>
                             {section.items
                               .filter(item => showFullProtocol || item.importance === 'essential')
                               .map((item, itemIndex) => {
