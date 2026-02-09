@@ -138,6 +138,17 @@ export default function ProstheticChecklist() {
     setSaving(true);
     try {
       await axios.put(`${BACKEND_URL}/api/cases/${id}/prosthetic-checklist`, updatedChecklist);
+      
+      // Calculate progress and track if 100% complete
+      const progress = calculateOverallProgress();
+      if (progress.percentage === 100) {
+        trackTreatmentBlueprintCompleted(id, {
+          totalItems: progress.total,
+          completedItems: progress.completed,
+          percentage: progress.percentage
+        });
+      }
+      
       toast.success('Progress saved');
     } catch (error) {
       toast.error('Failed to save');
