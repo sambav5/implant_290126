@@ -313,31 +313,29 @@ export default function CaseDetail() {
             </div>
           </button>
           
-          {/* Learning Loop (only show if completed) */}
-          {caseData.status === 'completed' && (
-            <button
-              onClick={() => navigate(`/case/${id}/learning`)}
-              className="card-clinical-interactive w-full animate-slide-up stagger-5"
-              data-testid="learning-btn"
-            >
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-lg bg-accent/10 flex items-center justify-center">
-                    <Lightbulb className="h-5 w-5 text-accent" />
-                  </div>
-                  <div className="text-left">
-                    <h3 className="font-semibold">Learning Reflection</h3>
-                    <p className="text-sm text-muted-foreground">
-                      {caseData.feedback?.reflectionCompletedAt 
-                        ? 'View your reflections' 
-                        : 'Capture insights for future cases'}
-                    </p>
-                  </div>
+          {/* Learning Reflections */}
+          <button
+            onClick={() => navigate(`/case/${id}/learning`)}
+            className="card-clinical-interactive w-full animate-slide-up stagger-5"
+            data-testid="learning-btn"
+          >
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-lg bg-accent/10 flex items-center justify-center">
+                  <Lightbulb className="h-5 w-5 text-accent" />
                 </div>
-                <ChevronRight className="h-5 w-5 text-muted-foreground" />
+                <div className="text-left">
+                  <h3 className="font-semibold">Learning Reflections</h3>
+                  <p className="text-sm text-muted-foreground">
+                    {caseData.feedback?.reflectionCompletedAt 
+                      ? 'View your reflections' 
+                      : 'Capture insights to make every case seamless'}
+                  </p>
+                </div>
               </div>
-            </button>
-          )}
+              <ChevronRight className="h-5 w-5 text-muted-foreground" />
+            </div>
+          </button>
         </div>
         
         {/* Timeline (Recent Activity) */}
