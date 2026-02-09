@@ -78,6 +78,10 @@ export default function LearningLoop() {
     setSaving(true);
     try {
       await feedbackApi.update(id, feedback);
+      
+      // Track feedback submission
+      trackFeedbackSubmitted(id, feedback);
+      
       toast.success('Reflection saved! Your insights will improve future cases.');
       navigate(`/case/${id}`);
     } catch (error) {
