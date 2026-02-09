@@ -514,11 +514,11 @@ export default function PlanningWizard() {
             </div>
             
             <Button
-              onClick={() => navigate(`/case/${id}/checklists`)}
+              onClick={() => navigate(`/case/${id}/prosthetic-checklist`)}
               className="w-full btn-clinical bg-primary text-primary-foreground"
               data-testid="proceed-checklists-btn"
             >
-              Proceed to Checklists
+              Continue to Treatment Blueprint
               <ChevronRight className="h-5 w-5 ml-2" />
             </Button>
           </div>
