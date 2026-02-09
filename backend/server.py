@@ -1398,10 +1398,13 @@ app.include_router(api_router)
 app.add_middleware(
     CORSMiddleware,
     allow_credentials=True,
-    allow_origins=os.environ.get('CORS_ORIGINS', '*').split(','),
+    allow_origins=[
+        "https://main.d16x3iik3pv4ry.amplifyapp.com"
+    ],
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
 
 @app.on_event("shutdown")
 async def shutdown_db_client():
