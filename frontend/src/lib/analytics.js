@@ -1,34 +1,9 @@
 import posthog from "posthog-js";
 
-export const initAnalytics = () => {
-
-  if (!import.meta.env.VITE_POSTHOG_KEY && !import.meta.env.VITE_PUBLIC_POSTHOG_KEY) return;
-
-  const apiHost = import.meta.env.VITE_PUBLIC_POSTHOG_HOST || "https://app.posthog.com";
-  const apiKey = import.meta.env.VITE_PUBLIC_POSTHOG_KEY || import.meta.env.VITE_POSTHOG_KEY;
-
-  posthog.init(apiKey, {
-    api_host: apiHost,
-
-    autocapture: false,
-    capture_pageview: false,
-
-    mask_all_text: true,
-    mask_all_element_attributes: true
-  });
-};
-
-export const trackEvent = (event, props = {}) => {
-  posthog.capture(event, props);
-};
-
-export const identifyUser = (id) => {
-  posthog.identify(id);
-};
-
-export const trackPageView = (path) => {
-  posthog.capture("$pageview", { path });
-};
+/* ------------------------------------------------ */
+/* NOTE: PostHog is initialized via PostHogProvider */
+/* in index.js - no need to call init() here */
+/* ------------------------------------------------ */
 
 /* ------------------------------------------------ */
 /* Clinical Workflow Tracking */
@@ -81,4 +56,28 @@ export const trackFeedbackSubmitted = (caseId, feedbackData) => {
     has_double_check: !!feedbackData.whatToDoubleCheckNextTime,
     has_custom_suggestions: feedbackData.customChecklistSuggestions?.length > 0,
   });
+};
+
+/* ------------------------------------------------ */
+/* Page View Tracking (optional) */
+/* ------------------------------------------------ */
+
+export const trackPageView = (path) => {
+  posthog.capture("$pageview", { path });
+};
+
+/* ------------------------------------------------ */
+/* Generic Event Tracking */
+/* ------------------------------------------------ */
+
+export const trackEvent = (event, props = {}) => {
+  posthog.capture(event, props);
+};
+
+/* ------------------------------------------------ */
+/* User Identification */
+/* ------------------------------------------------ */
+
+export const identifyUser = (id) => {
+  posthog.identify(id);
 };
