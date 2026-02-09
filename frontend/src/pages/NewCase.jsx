@@ -38,6 +38,10 @@ export default function NewCase() {
       };
       
       const response = await caseApi.create(payload);
+      
+      // Track case creation
+      trackCaseCreated(response.data);
+      
       toast.success('Case created successfully');
       navigate(`/case/${response.data.id}`);
     } catch (error) {
