@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, ChevronDown, ChevronRight, CheckCircle2, Circle, FlaskConical, TrendingUp } from 'lucide-react';
+import { ArrowLeft, ChevronDown, ChevronRight, CheckCircle2, Circle, FlaskConical, TrendingUp, Home, Lightbulb } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import axios from 'axios';
