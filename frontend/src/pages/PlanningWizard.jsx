@@ -11,6 +11,7 @@ import { Progress } from '@/components/ui/progress';
 import { Switch } from '@/components/ui/switch';
 import { caseApi } from '@/services/api';
 import { toast } from 'sonner';
+import { trackPlanningCompleted, trackRiskAnalysisRun } from '@/lib/analytics';
 
 const PLANNING_STEPS = [
   {
