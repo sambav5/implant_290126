@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { caseApi, feedbackApi } from '@/services/api';
 import { toast } from 'sonner';
+import { trackFeedbackSubmitted } from '@/lib/analytics';
 
 export default function LearningLoop() {
   const { id } = useParams();
