@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import axios from 'axios';
 import { toast } from 'sonner';
+import { trackTreatmentBlueprintCompleted } from '@/lib/analytics';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8001';
 
