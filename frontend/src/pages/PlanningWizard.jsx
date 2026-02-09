@@ -234,8 +234,16 @@ export default function PlanningWizard() {
     setAnalyzing(true);
     try {
       await caseApi.update(id, { planningData });
+      
+      // Track planning completion
+      trackPlanningCompleted(id, planningData);
+      
       const response = await caseApi.analyze(id);
       setCaseData(prev => ({ ...prev, riskAssessment: response.data }));
+      
+      // Track risk analysis
+      trackRiskAnalysisRun(id, response.data);
+      
       setShowResults(true);
       toast.success('Assessment complete');
     } catch (error) {
