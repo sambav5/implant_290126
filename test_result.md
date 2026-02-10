@@ -229,3 +229,41 @@ agent_communication:
       3. Verify PDF export still works via dropdown menu (⋮ icon in header)
       4. Test direct navigation to /case/:id/checklists to verify feature still works
       5. Load historical case with "moderate" values to verify backward compatibility
+  
+  - agent: "main"
+    message: |
+      ROLE SWITCHER BUG FIX COMPLETE ✅
+      
+      Fixed: Role switcher now properly updates filter message and items when switching roles
+      
+      Root Cause:
+      - Each component using useActiveRole() had its own isolated state
+      - When RoleSwitcher changed the role, it only updated localStorage and its own state
+      - Other components (like ProstheticChecklist) didn't receive the update
+      - The storage event listener only worked for cross-tab changes, not same-tab changes
+      
+      Solution:
+      - Added custom event dispatch mechanism in useActiveRole hook
+      - When role changes, dispatch 'activeCaseRoleChanged' custom event
+      - All components using the hook listen for this event and update their state
+      - Also cleaned up unnecessary useEffect in ProstheticChecklist.jsx
+      
+      Files Modified:
+      - /app/frontend/src/hooks/useActiveRole.js
+        • Added custom event dispatch when role changes (line 14)
+        • Added custom event listener in useEffect (lines 27-29, 33)
+      - /app/frontend/src/pages/ProstheticChecklist.jsx
+        • Removed useless useEffect (lines 66-71 removed)
+      
+      Testing:
+      ✅ Backend running (port 8001)
+      ✅ Frontend compiled and running (port 3000)
+      ✅ MongoDB running
+      
+      Ready for verification:
+      1. Navigate to Treatment Blueprint page with team members assigned
+      2. Enable "Show My Tasks Only" filter
+      3. Switch between roles using the Role Switcher dropdown
+      4. Verify: Filter message updates to show current role name
+      5. Verify: Item list updates to show only tasks assigned to selected role
+      6. Verify: Switching roles immediately reflects in the UI without refresh
