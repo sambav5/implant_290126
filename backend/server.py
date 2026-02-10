@@ -477,6 +477,7 @@ class CaseUpdate(BaseModel):
     optionalSex: Optional[str] = None
     status: Optional[CaseStatus] = None
     planningData: Optional[PlanningData] = None
+    caseTeam: Optional[CaseTeam] = None  # NEW: Allow team updates
     consentAcknowledged: Optional[bool] = None
 
 class ChecklistUpdate(BaseModel):
