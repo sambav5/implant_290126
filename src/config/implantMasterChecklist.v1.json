@@ -11,79 +11,20 @@
           "id": "clinical_evaluation",
           "name": "Clinical Evaluation",
           "items": [
-            {
-              "id": "cbct_opg_review",
-              "text": "CBCT scan and OPG reviewed",
-              "importance": "essential",
-              "conditions": { "requiresImaging": true }
-            },
-            {
-              "id": "bone_quality_quantity",
-              "text": "Bone quality and quantity assessed",
-              "importance": "essential"
-            },
-            {
-              "id": "adjacent_opposing_teeth",
-              "text": "Adjacent and opposing teeth evaluated",
-              "importance": "essential"
-            },
-            {
-              "id": "soft_tissue_evaluation",
-              "text": "Soft tissues evaluated",
-              "importance": "essential"
-            },
-            {
-              "id": "medical_history_review",
-              "text": "Medical history reviewed (physician consent, blood tests, contraindicating medications, antibiotic prophylaxis)",
-              "importance": "essential"
-            },
-            {
-              "id": "esthetic_expectations",
-              "text": "Esthetic expectations discussed with patient",
-              "importance": "essential",
-              "conditions": { "estheticZone": true }
-            },
-            {
-              "id": "rx_finalized",
-              "text": "Treatment plan finalized (constraints, budget, timelines, post-op care)",
-              "importance": "essential"
-            },
-            {
-              "id": "informed_consent",
-              "text": "Informed consent obtained",
-              "importance": "essential"
-            },
-            {
-              "id": "prosthetic_driven_position",
-              "text": "Implant position planned prosthetically (restoration-driven)",
-              "importance": "essential"
-            },
-            {
-              "id": "diagnostic_impressions",
-              "text": "Diagnostic impressions made",
-              "importance": "advanced"
-            },
-            {
-              "id": "clinical_photos",
-              "text": "Clinical photographs taken",
-              "importance": "advanced"
-            },
-            {
-              "id": "implant_specs_locked",
-              "text": "Implant specifications finalized (diameter, length, platform, brand)",
-              "importance": "essential"
-            },
-            {
-              "id": "implant_timing_protocol",
-              "text": "Implant timing protocol decided",
-              "importance": "essential"
-            },
-            {
-              "id": "augmentation_planned",
-              "text": "Hard or soft tissue augmentation planned if required",
-              "importance": "advanced",
-              "conditions": { "needsGBR": true }
-            }
+            { "id": "cbct_opg_review", "text": "CBCT scan and OPG reviewed", "importance": "essential", "conditions": { "requiresImaging": true }, "assignedRole": "implantologist" },
+            { "id": "bone_quality_quantity", "text": "Bone quality and quantity assessed", "importance": "essential", "assignedRole": "implantologist" },
+            { "id": "adjacent_opposing_teeth", "text": "Adjacent and opposing teeth evaluated", "importance": "essential", "assignedRole": "prosthodontist" },
+            { "id": "soft_tissue_evaluation", "text": "Soft tissues evaluated", "importance": "essential", "assignedRole": "implantologist" },
+            { "id": "medical_history_review", "text": "Medical history reviewed (physician consent, blood tests, contraindicating medications, antibiotic prophylaxis)", "importance": "essential", "assignedRole": "clinician" },
+            { "id": "esthetic_expectations", "text": "Esthetic expectations discussed with patient", "importance": "essential", "conditions": { "estheticZone": true }, "assignedRole": "prosthodontist" },
+            { "id": "rx_finalized", "text": "Treatment plan finalized (constraints, budget, timelines, post-op care)", "importance": "essential", "assignedRole": "clinician" },
+            { "id": "informed_consent", "text": "Informed consent obtained", "importance": "essential", "assignedRole": "clinician" },
+            { "id": "prosthetic_driven_position", "text": "Implant position planned prosthetically (restoration-driven)", "importance": "essential", "assignedRole": "prosthodontist" },
+            { "id": "diagnostic_impressions", "text": "Diagnostic impressions made", "importance": "advanced", "assignedRole": "assistant" },
+            { "id": "clinical_photos", "text": "Clinical photographs taken", "importance": "advanced", "assignedRole": "assistant" },
+            { "id": "implant_specs_locked", "text": "Implant specifications finalized (diameter, length, platform, brand)", "importance": "essential", "assignedRole": "implantologist" },
+            { "id": "implant_timing_protocol", "text": "Implant timing protocol decided", "importance": "essential", "assignedRole": "implantologist" },
+            { "id": "augmentation_planned", "text": "Hard or soft tissue augmentation planned if required", "importance": "advanced", "conditions": { "needsGBR": true }, "assignedRole": "implantologist" }
           ]
         },
         {
@@ -91,108 +32,16 @@
           "name": "Lab Communication – Case Setup",
           "isLabSection": true,
           "items": [
-            {
-              "id": "precase_consult_form",
-              "text": "Pre-case consultation form sent to lab",
-              "importance": "essential"
-            },
-            {
-              "id": "virtual_surgery",
-              "text": "Virtual surgery planned with lab",
-              "importance": "advanced",
-              "conditions": { "guideRequired": true }
-            },
-            {
-              "id": "surgical_guide_discussion",
-              "text": "Need for surgical guide/stent discussed",
-              "importance": "essential",
-              "conditions": { "guideRequired": true }
-            },
-            {
-              "id": "provisionalization_specs",
-              "text": "Provisionalization specifications discussed",
-              "importance": "essential",
-              "conditions": { "provisionalization": true }
-            },
-            {
-              "id": "complete_denture_plan",
-              "text": "Plan for complete denture discussed (if applicable)",
-              "importance": "advanced",
-              "conditions": { "prostheticType": ["complete_denture"] }
-            },
-            {
-              "id": "abutment_capability",
-              "text": "Confirmed lab can accommodate abutment selection",
-              "importance": "essential"
-            },
-            {
-              "id": "margin_location_discussion",
-              "text": "Margin location requirements discussed",
-              "importance": "essential"
-            },
-            {
-              "id": "turnaround_policy",
-              "text": "Turnaround time and remake policy confirmed",
-              "importance": "essential"
-            },
-            {
-              "id": "esthetic_photos_shared",
-              "text": "Esthetic photos and concerns shared with lab",
-              "importance": "advanced",
-              "conditions": { "estheticZone": true }
-            },
-            {
-              "id": "lab_contact",
-              "text": "Lab point of contact established",
-              "importance": "essential"
-            }
-          ]
-        },
-        {
-          "id": "prosthetic_strategy",
-          "name": "Prosthetic Strategy & Planning",
-          "items": [
-            {
-              "id": "abutment_approach",
-              "text": "Abutment approach determined (stock vs custom)",
-              "importance": "essential"
-            },
-            {
-              "id": "restoration_material",
-              "text": "Restoration material selected",
-              "importance": "essential"
-            },
-            {
-              "id": "emergence_profile",
-              "text": "Emergence profile planned",
-              "importance": "essential"
-            },
-            {
-              "id": "esthetic_goals",
-              "text": "Esthetic goals defined",
-              "importance": "essential",
-              "conditions": { "estheticZone": true }
-            },
-            {
-              "id": "occlusal_scheme",
-              "text": "Occlusal scheme established",
-              "importance": "essential"
-            },
-            {
-              "id": "prosthetic_plan_documented",
-              "text": "Prosthetic treatment plan documented",
-              "importance": "essential"
-            },
-            {
-              "id": "prosthetic_consent",
-              "text": "Informed consent obtained for prosthetic plan",
-              "importance": "essential"
-            },
-            {
-              "id": "equipment_procured",
-              "text": "All equipment, implant kits, and backup materials procured",
-              "importance": "essential"
-            }
+            { "id": "precase_consult_form", "text": "Pre-case consultation form sent to lab", "importance": "essential", "assignedRole": "assistant" },
+            { "id": "virtual_surgery", "text": "Virtual surgery planned with lab", "importance": "advanced", "conditions": { "guideRequired": true }, "assignedRole": "implantologist" },
+            { "id": "surgical_guide_discussion", "text": "Need for surgical guide/stent discussed", "importance": "essential", "conditions": { "guideRequired": true }, "assignedRole": "implantologist" },
+            { "id": "provisionalization_specs", "text": "Provisionalization specifications discussed", "importance": "essential", "conditions": { "provisionalization": true }, "assignedRole": "prosthodontist" },
+            { "id": "complete_denture_plan", "text": "Plan for complete denture discussed (if applicable)", "importance": "advanced", "conditions": { "prostheticType": ["complete_denture"] }, "assignedRole": "prosthodontist" },
+            { "id": "abutment_capability", "text": "Confirmed lab can accommodate abutment selection", "importance": "essential", "assignedRole": "prosthodontist" },
+            { "id": "margin_location_discussion", "text": "Margin location requirements discussed", "importance": "essential", "assignedRole": "prosthodontist" },
+            { "id": "turnaround_policy", "text": "Turnaround time and remake policy confirmed", "importance": "essential", "assignedRole": "assistant" },
+            { "id": "esthetic_photos_shared", "text": "Esthetic photos and concerns shared with lab", "importance": "advanced", "conditions": { "estheticZone": true }, "assignedRole": "assistant" },
+            { "id": "lab_contact", "text": "Lab point of contact established", "importance": "essential", "assignedRole": "assistant" }
           ]
         }
       ]
@@ -207,292 +56,18 @@
           "id": "surgery_execution",
           "name": "Surgical Execution",
           "items": [
-            {
-              "id": "verify_site_tooth",
-              "text": "Surgical site and tooth number verified",
-              "importance": "essential"
-            },
-            {
-              "id": "preop_medications",
-              "text": "Pre-operative medications administered (antibiotics if indicated)",
-              "importance": "essential"
-            },
-            {
-              "id": "guide_available",
-              "text": "Surgical guide/stent available chairside",
-              "importance": "essential",
-              "conditions": { "guideRequired": true }
-            },
-            {
-              "id": "site_prepared_anesthesia",
-              "text": "Surgical site prepared and anesthetized",
-              "importance": "essential"
-            },
-            {
-              "id": "osteotomy_prepared",
-              "text": "Osteotomy prepared to planned depth",
-              "importance": "essential"
-            },
-            {
-              "id": "implant_positioned",
-              "text": "Implant placed at correct angulation",
-              "importance": "essential"
-            },
-            {
-              "id": "primary_stability",
-              "text": "Primary stability achieved",
-              "importance": "essential"
-            },
-            {
-              "id": "torque_recorded",
-              "text": "Insertion torque recorded",
-              "importance": "essential"
-            },
-            {
-              "id": "cover_or_healing_abutment",
-              "text": "Cover screw or healing abutment placed",
-              "importance": "essential"
-            },
-            {
-              "id": "implant_position_verified",
-              "text": "Implant position verified clinically and radiographically",
-              "importance": "essential"
-            },
-            {
-              "id": "soft_tissue_closure",
-              "text": "Soft tissue closure completed",
-              "importance": "essential"
-            },
-            {
-              "id": "surgery_documented",
-              "text": "Implant details and post-operative instructions documented",
-              "importance": "essential"
-            }
-          ]
-        },
-        {
-          "id": "patient_discharge",
-          "name": "Patient Discharge",
-          "items": [
-            {
-              "id": "postop_instructions",
-              "text": "Written post-operative instructions provided",
-              "importance": "essential"
-            },
-            {
-              "id": "pain_management",
-              "text": "Pain management plan discussed",
-              "importance": "essential"
-            },
-            {
-              "id": "followup_scheduled",
-              "text": "Follow-up appointment scheduled",
-              "importance": "essential"
-            }
-          ]
-        }
-      ]
-    },
-
-    {
-      "id": "follow_up",
-      "name": "Follow-Up",
-      "order": 3,
-      "sections": [
-        {
-          "id": "one_week",
-          "name": "1-Week Follow-Up",
-          "items": [
-            { "id": "suture_removal", "text": "Suture removal (if placed)", "importance": "essential" },
-            { "id": "no_pain_swelling", "text": "No pain, swelling, or mobility", "importance": "essential" },
-            {
-              "id": "provisional_ok",
-              "text": "Provisional restoration functional with no occlusal trauma",
-              "importance": "essential",
-              "conditions": { "provisionalization": true }
-            }
-          ]
-        },
-        {
-          "id": "six_to_eight_weeks",
-          "name": "6–8 Weeks Follow-Up",
-          "items": [
-            {
-              "id": "clinical_integration",
-              "text": "Clinical integration confirmed (no mobility)",
-              "importance": "essential"
-            },
-            {
-              "id": "isq_remeasure",
-              "text": "ISQ re-measured if baseline was borderline",
-              "importance": "advanced",
-              "conditions": { "borderlineISQ": true }
-            },
-            {
-              "id": "clear_for_prosthetics",
-              "text": "Cleared for prosthetic phase",
-              "importance": "essential"
-            }
-          ]
-        },
-        {
-          "id": "twelve_weeks",
-          "name": "12-Week Final Verification",
-          "items": [
-            {
-              "id": "peri_implant_health",
-              "text": "Peri-implant tissue health assessed (probing, BOP)",
-              "importance": "essential"
-            },
-            {
-              "id": "bone_level_radiograph",
-              "text": "Radiograph shows stable bone levels (±0.5mm)",
-              "importance": "essential"
-            }
-          ]
-        }
-      ]
-    },
-
-    {
-      "id": "prosthetic_rehab",
-      "name": "Prosthetic Rehabilitation",
-      "order": 4,
-      "sections": [
-        {
-          "id": "prosthetic_data_capture",
-          "name": "Prosthetic Data Capture",
-          "items": [
-            { "id": "implant_stability_check", "text": "Implant stability assessed", "importance": "essential" },
-            { "id": "soft_tissue_eval_prostho", "text": "Soft tissue and peri-implant mucosa evaluated", "importance": "essential" },
-            { "id": "healing_abutment_removed", "text": "Healing abutment removed and implant verified stable", "importance": "essential" },
-            {
-              "id": "impression_method",
-              "text": "Impression or digital scan performed",
-              "importance": "essential"
-            },
-            {
-              "id": "jaw_bite_shade",
-              "text": "Jaw relation, bite registration, and shade recorded",
-              "importance": "essential"
-            }
-          ]
-        },
-        {
-          "id": "lab_prosthetic_comm",
-          "name": "Lab Communication – Prosthetics",
-          "isLabSection": true,
-          "items": [
-            {
-              "id": "files_shipped",
-              "text": "Files or impressions shipped same day",
-              "importance": "essential"
-            },
-            {
-              "id": "abutment_specs",
-              "text": "Abutment specifications provided (material, margin depth, contour)",
-              "importance": "essential"
-            },
-            {
-              "id": "crown_specs",
-              "text": "Crown specifications provided (material, occlusion)",
-              "importance": "essential"
-            },
-            {
-              "id": "delivery_date",
-              "text": "Delivery date confirmed",
-              "importance": "essential"
-            }
-          ]
-        }
-      ]
-    },
-
-    {
-      "id": "clinical_tryin",
-      "name": "Clinical Try-In & Adjustment",
-      "order": 5,
-      "sections": [
-        {
-          "id": "tryin_checks",
-          "name": "Try-In Evaluation",
-          "items": [
-            { "id": "passive_fit", "text": "Passive fit verified", "importance": "essential" },
-            { "id": "margin_eval", "text": "Margins evaluated", "importance": "essential" },
-            { "id": "occlusion_check", "text": "Occlusion checked", "importance": "essential" },
-            { "id": "esthetic_eval", "text": "Esthetics evaluated", "importance": "essential" },
-            { "id": "soft_tissue_tryin", "text": "Soft tissue response assessed", "importance": "essential" },
-            { "id": "adjustments", "text": "Adjustments performed as required", "importance": "essential" },
-            { "id": "remakes_documented", "text": "Remakes documented if required", "importance": "advanced" },
-            { "id": "patient_approval", "text": "Patient approval obtained for esthetics", "importance": "essential" }
-          ]
-        }
-      ]
-    },
-
-    {
-      "id": "delivery",
-      "name": "Final Delivery",
-      "order": 6,
-      "sections": [
-        {
-          "id": "final_delivery",
-          "name": "Cementation / Seating",
-          "items": [
-            {
-              "id": "abutment_torqued",
-              "text": "Abutment torqued as per manufacturer specification",
-              "importance": "essential"
-            },
-            {
-              "id": "crown_seated",
-              "text": "Crown cemented or screw access sealed",
-              "importance": "essential"
-            },
-            {
-              "id": "final_occlusion",
-              "text": "Final occlusion verified (no lateral interference)",
-              "importance": "essential"
-            },
-            {
-              "id": "postop_radiograph",
-              "text": "Post-operative radiograph taken to verify margins and cement",
-              "importance": "essential"
-            }
-          ]
-        }
-      ]
-    },
-
-    {
-      "id": "immediate_post_delivery",
-      "name": "Immediate Post-Delivery Assessment",
-      "order": 7,
-      "sections": [
-        {
-          "id": "post_delivery_eval",
-          "name": "Post-Delivery Evaluation",
-          "items": [
-            { "id": "comfort", "text": "Patient comfort assessed", "importance": "essential" },
-            { "id": "phonetics", "text": "Phonetics evaluated", "importance": "essential" },
-            { "id": "mastication", "text": "Mastication assessed", "importance": "essential" },
-            { "id": "dynamic_occlusion", "text": "Dynamic occlusion verified", "importance": "essential" },
-            { "id": "sensitivity", "text": "Sensitivity checked", "importance": "essential" },
-            { "id": "esthetic_satisfaction", "text": "Esthetic satisfaction confirmed", "importance": "essential" }
-          ]
-        },
-        {
-          "id": "patient_handoff",
-          "name": "Patient Handoff",
-          "items": [
-            { "id": "home_care_demo", "text": "Home care demonstrated", "importance": "essential" },
-            {
-              "id": "nightguard_discussion",
-              "text": "Nightguard discussed due to bruxism",
-              "importance": "essential",
-              "conditions": { "bruxism": true }
-            },
-            { "id": "recall_scheduled", "text": "Recall scheduled", "importance": "essential" }
+            { "id": "verify_site_tooth", "text": "Surgical site and tooth number verified", "importance": "essential", "assignedRole": "assistant" },
+            { "id": "preop_medications", "text": "Pre-operative medications administered", "importance": "essential", "assignedRole": "assistant" },
+            { "id": "guide_available", "text": "Surgical guide/stent available chairside", "importance": "essential", "conditions": { "guideRequired": true }, "assignedRole": "assistant" },
+            { "id": "site_prepared_anesthesia", "text": "Surgical site prepared and anesthetized", "importance": "essential", "assignedRole": "implantologist" },
+            { "id": "osteotomy_prepared", "text": "Osteotomy prepared to planned depth", "importance": "essential", "assignedRole": "implantologist" },
+            { "id": "implant_positioned", "text": "Implant placed at correct angulation", "importance": "essential", "assignedRole": "implantologist" },
+            { "id": "primary_stability", "text": "Primary stability achieved", "importance": "essential", "assignedRole": "implantologist" },
+            { "id": "torque_recorded", "text": "Insertion torque recorded", "importance": "essential", "assignedRole": "assistant" },
+            { "id": "cover_or_healing_abutment", "text": "Cover screw or healing abutment placed", "importance": "essential", "assignedRole": "implantologist" },
+            { "id": "implant_position_verified", "text": "Implant position verified clinically and radiographically", "importance": "essential", "assignedRole": "implantologist" },
+            { "id": "soft_tissue_closure", "text": "Soft tissue closure completed", "importance": "essential", "assignedRole": "implantologist" },
+            { "id": "surgery_documented", "text": "Implant details and post-operative instructions documented", "importance": "essential", "assignedRole": "assistant" }
           ]
         }
       ]
@@ -507,10 +82,10 @@
           "id": "six_month_recall",
           "name": "6-Month Recall",
           "items": [
-            { "id": "maintenance_radiograph", "text": "Radiograph taken to assess bone stability", "importance": "essential" },
-            { "id": "probing", "text": "Probing performed (<4mm, no BOP)", "importance": "essential" },
-            { "id": "occlusion_check_maintenance", "text": "Occlusion checked", "importance": "essential" },
-            { "id": "professional_cleaning", "text": "Professional implant maintenance performed", "importance": "essential" }
+            { "id": "maintenance_radiograph", "text": "Radiograph taken to assess bone stability", "importance": "essential", "assignedRole": "implantologist" },
+            { "id": "probing", "text": "Probing performed (<4mm, no BOP)", "importance": "essential", "assignedRole": "implantologist" },
+            { "id": "occlusion_check_maintenance", "text": "Occlusion checked", "importance": "essential", "assignedRole": "prosthodontist" },
+            { "id": "professional_cleaning", "text": "Professional implant maintenance performed", "importance": "essential", "assignedRole": "assistant" }
           ]
         }
       ]
