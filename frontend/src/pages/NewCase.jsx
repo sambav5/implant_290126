@@ -41,6 +41,7 @@ export default function NewCase() {
         toothNumber: formData.toothNumber,
         optionalAge: formData.optionalAge ? parseInt(formData.optionalAge) : null,
         optionalSex: formData.optionalSex || null,
+        caseTeam: formData.caseTeam,
       };
       
       const response = await caseApi.create(payload);
