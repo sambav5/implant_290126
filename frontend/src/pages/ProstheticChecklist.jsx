@@ -1,11 +1,17 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, ChevronDown, ChevronRight, CheckCircle2, Circle, FlaskConical, TrendingUp, Home, Lightbulb } from 'lucide-react';
+import { ArrowLeft, ChevronDown, ChevronRight, CheckCircle2, Circle, FlaskConical, TrendingUp, Home, Lightbulb, Filter } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
 import axios from 'axios';
 import { toast } from 'sonner';
 import { trackTreatmentBlueprintCompleted } from '@/lib/analytics';
+import { RoleSwitcher } from '@/components/RoleSwitcher';
+import { RoleBadge } from '@/components/RoleBadge';
+import { useActiveRole } from '@/hooks/useActiveRole';
+import { canEditItem, getRoleName } from '@/utils/rolePermissions';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8001';
 
