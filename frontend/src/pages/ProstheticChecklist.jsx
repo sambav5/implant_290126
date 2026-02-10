@@ -152,18 +152,43 @@ export default function ProstheticChecklist() {
     // Filter visible items based on showFullProtocol state
     const visibleItems = section.items.filter(item => showFullProtocol || item.importance === 'essential');
     
-    // Check if all visible items are completed
-    const allCompleted = visibleItems.every(item => item.completed);
+    // Filter editable items (only items the active role can edit)
+    const editableItems = visibleItems.filter(item => {
+      const itemRole = item.assignedRole || 'clinician';
+      return canEditItem(itemRole, activeRole);
+    });
     
-    // Toggle all visible items
-    visibleItems.forEach(item => {
+    // If no editable items, show warning and return
+    if (editableItems.length === 0) {
+      toast.error('No items in this section are assigned to your role');
+      return;
+    }
+    
+    // Check if all editable items are completed
+    const allCompleted = editableItems.every(item => item.completed);
+    
+    // Toggle only editable items
+    editableItems.forEach(item => {
       item.completed = !allCompleted;
       item.completedAt = !allCompleted ? new Date().toISOString() : null;
+      
+      // Track who completed it
+      if (!allCompleted) {
+        item.completedByRole = activeRole;
+        item.completedByName = getRoleName(caseData?.caseTeam, activeRole);
+      } else {
+        item.completedByRole = null;
+        item.completedByName = null;
+      }
     });
     
     setChecklist(updatedChecklist);
     await saveChecklist(updatedChecklist);
-    toast.success(allCompleted ? 'All items unchecked' : 'All items checked');
+    
+    const message = allCompleted 
+      ? `Unchecked ${editableItems.length} items` 
+      : `Checked ${editableItems.length} items`;
+    toast.success(message);
   };
 
   const saveChecklist = async (updatedChecklist) => {
