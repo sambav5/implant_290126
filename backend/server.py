@@ -451,6 +451,7 @@ class Case(BaseModel):
     optionalSex: Optional[str] = None
     status: CaseStatus = CaseStatus.PLANNING
     planningData: PlanningData = Field(default_factory=PlanningData)
+    caseTeam: CaseTeam = Field(default_factory=CaseTeam)  # NEW: Team assignment
     preTreatmentChecklist: List[ChecklistItem] = []
     treatmentChecklist: List[ChecklistItem] = []
     postTreatmentChecklist: List[ChecklistItem] = []
