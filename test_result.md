@@ -183,6 +183,48 @@ frontend:
           All routing, functionality, and backend services preserved.
           Linting passed with no errors.
 
+  - task: "Bug Fix - Role Switcher Updates Filter"
+    implemented: true
+    working: true
+    file: "/app/frontend/src/hooks/useActiveRole.js, /app/frontend/src/pages/ProstheticChecklist.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: true
+        agent: "main"
+        comment: |
+          Fixed: Role switcher now properly updates filter message and filtered items when switching roles
+          
+          Root Cause Analysis:
+          - Each component using useActiveRole() hook maintained isolated state
+          - When RoleSwitcher changed role, it only updated localStorage and its own state
+          - Other components (ProstheticChecklist) didn't receive state updates
+          - Storage event listener only handled cross-tab changes, not same-tab changes
+          
+          Solution Implemented:
+          - Added custom event mechanism: 'activeCaseRoleChanged'
+          - When setActiveRole() is called, now dispatches custom event to all listeners
+          - All components using useActiveRole() hook listen for this custom event
+          - On event, components update their local state with new role
+          - Removed unnecessary useEffect from ProstheticChecklist
+          
+          Code Changes:
+          1. useActiveRole.js:
+             - Line 14: Dispatch custom event when role changes
+             - Lines 27-29: Listen for custom event
+             - Lines 33: Cleanup event listener
+          
+          2. ProstheticChecklist.jsx:
+             - Removed empty useEffect (previously lines 66-71)
+             - Component now re-renders automatically when activeRole changes
+          
+          Expected Behavior After Fix:
+          - Switch role in RoleSwitcher dropdown → All components update immediately
+          - Filter message shows correct role name in real-time
+          - Item list filters to show only selected role's tasks
+          - No page refresh required
+
 metadata:
   created_by: "main_agent"
   version: "1.0"
