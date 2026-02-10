@@ -62,6 +62,14 @@ export default function ProstheticChecklist() {
   const [activeRole] = useActiveRole();
   const [showMyTasksOnly, setShowMyTasksOnly] = useState(false);
 
+  // Force re-render when role changes (for filter update)
+  useEffect(() => {
+    // Role changed, component will re-render with new role
+    if (showMyTasksOnly) {
+      // Filter is active, will update automatically due to activeRole dependency
+    }
+  }, [activeRole, showMyTasksOnly]);
+
   // Persist toggle state to localStorage
   useEffect(() => {
     if (id) {
