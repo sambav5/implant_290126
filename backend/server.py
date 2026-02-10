@@ -274,61 +274,6 @@ def filter_checklist_for_case(master_checklist: dict, case_data: dict) -> dict:
             }
     
     return filtered_phases
-    """
-    Filter master checklist based on case planning conditions.
-    Returns only phases, sections, and items that are relevant for this case.
-    
-    CRITICAL: This is rendering + filtering ONLY. No clinical reasoning.
-    """
-    if not master_checklist:
-        return {}
-    
-    case_conditions = derive_planning_conditions(case_data)
-    filtered_phases = {}
-    
-    for phase in master_checklist.get("phases", []):
-        filtered_sections = []
-        
-        for section in phase.get("sections", []):
-            filtered_items = []
-            
-            for item in section.get("items", []):
-                item_conditions = item.get("conditions", {})
-                
-                # Only include item if conditions match
-                if matches_conditions(item_conditions, case_conditions):
-                    # Create a copy without the conditions field for client
-                    item_copy = {
-                        "id": item["id"],
-                        "text": item["text"],
-                        "importance": item.get("importance", "advanced"),
-                        "completed": False,
-                        "completedAt": None
-                    }
-                    filtered_items.append(item_copy)
-            
-            # Only include section if it has visible items
-            if filtered_items:
-                filtered_sections.append({
-                    "id": section.get("id"),
-                    "name": section.get("name"),
-                    "title": section.get("name"),  # Alias for compatibility
-                    "isLabSection": section.get("isLabSection", False),
-                    "items": filtered_items
-                })
-        
-        # Only include phase if it has visible sections
-        if filtered_sections:
-            filtered_phases[phase["id"]] = {
-                "id": phase["id"],
-                "name": phase.get("name"),
-                "title": phase.get("name"),  # Alias for compatibility
-                "description": phase.get("description", ""),
-                "order": phase.get("order", 0),
-                "sections": filtered_sections
-            }
-    
-    return filtered_phases
 
 # ============ ENUMS ============
 class BoneAvailability(str, Enum):
