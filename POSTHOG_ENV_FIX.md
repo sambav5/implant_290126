@@ -80,7 +80,7 @@ const options = {
 
 ```env
 # Backend URL
-REACT_APP_BACKEND_URL=https://home-nav-cleanup.preview.emergentagent.com
+REACT_APP_BACKEND_URL=https://emergent-bug-fix.preview.emergentagent.com
 
 # WebSocket
 WDS_SOCKET_PORT=443
