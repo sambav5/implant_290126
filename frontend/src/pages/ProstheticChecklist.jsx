@@ -276,6 +276,12 @@ export default function ProstheticChecklist() {
               <h1 className="text-xl font-semibold text-foreground">Treatment Blueprint</h1>
               <p className="text-sm text-muted-foreground">{caseData?.caseName}</p>
             </div>
+            
+            {/* Role Switcher */}
+            {caseData?.caseTeam && (
+              <RoleSwitcher caseTeam={caseData.caseTeam} />
+            )}
+            
             {saving && (
               <div className="text-sm text-muted-foreground animate-pulse">Saving...</div>
             )}
