@@ -1370,7 +1370,7 @@ app.add_middleware(
     CORSMiddleware,
     allow_credentials=True,
     allow_origins=[
-        "https://main.d16x3iik3pv4ry.amplifyapp.com"
+        "https://main.ds8tweicfvi74.amplifyapp.com"
     ],
     allow_methods=["*"],
     allow_headers=["*"],
