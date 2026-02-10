@@ -233,6 +233,7 @@ metadata:
 
 test_plan:
   current_focus:
+    - "Bug Fix - Role Switcher Updates Filter"
     - "UI Correction 1 & 2 - Remove Moderate Options"
     - "UI Correction 3 & 4 - Remove Home Screen Cards"
   stuck_tasks: []
