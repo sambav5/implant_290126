@@ -116,8 +116,22 @@ export default function ProstheticChecklist() {
   const toggleItem = async (phaseKey, sectionIndex, itemIndex) => {
     const updatedChecklist = { ...checklist };
     const item = updatedChecklist[phaseKey].sections[sectionIndex].items[itemIndex];
+    
+    // Toggle completion
     item.completed = !item.completed;
     item.completedAt = item.completed ? new Date().toISOString() : null;
+    
+    // Track who completed it
+    if (item.completed) {
+      item.completedByRole = activeRole;
+      item.completedByName = getRoleName(caseData?.caseTeam, activeRole);
+      
+      // Show activity feedback
+      toast.success(`Marked complete by ${item.completedByName}`);
+    } else {
+      item.completedByRole = null;
+      item.completedByName = null;
+    }
     
     setChecklist(updatedChecklist);
     await saveChecklist(updatedChecklist);
