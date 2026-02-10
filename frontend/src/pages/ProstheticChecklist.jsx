@@ -494,31 +494,52 @@ export default function ProstheticChecklist() {
                               </button>
                             </div>
                             {section.items
-                              .filter(item => showFullProtocol || item.importance === 'essential')
+                              .filter(item => {
+                                // Filter by protocol scope
+                                const isVisibleByScope = showFullProtocol || item.importance === 'essential';
+                                
+                                // Filter by "My Tasks Only"
+                                if (showMyTasksOnly) {
+                                  const itemRole = item.assignedRole || 'clinician';
+                                  return isVisibleByScope && itemRole === activeRole;
+                                }
+                                
+                                return isVisibleByScope;
+                              })
                               .map((item, itemIndex) => {
                                 const isAdvanced = item.importance === 'advanced';
+                                const itemRole = item.assignedRole || 'clinician';
+                                const canEdit = canEditItem(itemRole, activeRole);
+                                
                                 return (
                                 <div
                                   key={item.id}
                                   className={`flex items-start gap-3 py-3 border-b border-slate-100 last:border-0 ${
                                     item.completed ? 'opacity-60' : ''
-                                  } ${isAdvanced && showFullProtocol ? 'bg-slate-50/50' : ''}`}
+                                  } ${isAdvanced && showFullProtocol ? 'bg-slate-50/50' : ''}
+                                  ${!canEdit ? 'opacity-70' : ''}`}
                                 >
                                   <button
-                                    onClick={() => toggleItem(phaseKey, sectionIndex, section.items.indexOf(item))}
+                                    onClick={() => canEdit && toggleItem(phaseKey, sectionIndex, section.items.indexOf(item))}
                                     className="shrink-0 pt-0.5 touch-target"
+                                    disabled={!canEdit}
+                                    title={!canEdit ? `Assigned to ${itemRole}` : ''}
                                   >
                                     {item.completed ? (
-                                      <CheckCircle2 className="h-5 w-5 text-emerald-600" />
+                                      <CheckCircle2 className={`h-5 w-5 ${canEdit ? 'text-emerald-600' : 'text-emerald-400'}`} />
                                     ) : (
-                                      <Circle className="h-5 w-5 text-slate-300" />
+                                      <Circle className={`h-5 w-5 ${canEdit ? 'text-slate-300' : 'text-slate-200'}`} />
                                     )}
                                   </button>
                                   <div className="flex-1">
-                                    <div className="flex items-start gap-2">
+                                    <div className="flex items-start gap-2 flex-wrap">
                                       <p className={`text-sm flex-1 ${item.completed ? 'line-through text-muted-foreground' : 'text-foreground'}`}>
                                         {item.text}
                                       </p>
+                                      
+                                      {/* Role Badge */}
+                                      <RoleBadge role={itemRole} />
+                                      
                                       {item.importance === 'essential' && (
                                         <span className="shrink-0 px-2 py-0.5 text-xs font-medium bg-emerald-100 text-emerald-700 rounded-full">
                                           Essential
@@ -545,7 +566,10 @@ export default function ProstheticChecklist() {
                                             {item.autoCompleteReason} • {new Date(item.completedAt).toLocaleString()}
                                           </span>
                                         ) : (
-                                          <span>Completed: {new Date(item.completedAt).toLocaleString()}</span>
+                                          <span>
+                                            Completed: {new Date(item.completedAt).toLocaleString()}
+                                            {item.completedByName && ` by ${item.completedByName}`}
+                                          </span>
                                         )}
                                       </p>
                                     )}
