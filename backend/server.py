@@ -1369,9 +1369,7 @@ app.include_router(api_router)
 app.add_middleware(
     CORSMiddleware,
     allow_credentials=True,
-    allow_origins=[
-        "https://main.ds8tweicfvi74.amplifyapp.com"
-    ],
+    allow_origin_regex="https://.*\.amplifyapp\.com",
     allow_methods=["*"],
     allow_headers=["*"],
 )
