@@ -333,6 +333,28 @@ export default function ProstheticChecklist() {
             </p>
           </div>
           
+          {/* My Tasks Only Toggle */}
+          <div className="mb-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
+            <div className="flex items-center justify-between gap-3">
+              <div className="flex items-center gap-2">
+                <Filter className="h-4 w-4 text-blue-600" />
+                <Label htmlFor="myTasksToggle" className="text-sm font-medium text-blue-900 cursor-pointer">
+                  Show My Tasks Only
+                </Label>
+              </div>
+              <Switch
+                id="myTasksToggle"
+                checked={showMyTasksOnly}
+                onCheckedChange={setShowMyTasksOnly}
+              />
+            </div>
+            {showMyTasksOnly && (
+              <p className="text-xs text-blue-700 mt-2">
+                Filtering items assigned to {getRoleName(caseData?.caseTeam, activeRole)}
+              </p>
+            )}
+          </div>
+          
           {/* Overall Progress */}
           <div className="space-y-2">
             <div className="flex justify-between text-sm">
