@@ -18,6 +18,12 @@ export default function NewCase() {
     toothNumber: '',
     optionalAge: '',
     optionalSex: '',
+    caseTeam: {
+      clinician: 'Case Owner',
+      implantologist: '',
+      prosthodontist: '',
+      assistant: ''
+    }
   });
   
   const handleSubmit = async (e) => {
