@@ -364,6 +364,9 @@ class ChecklistItemBase(BaseModel):
     completed: bool = False
     notes: Optional[str] = None
     completedAt: Optional[str] = None
+    assignedRole: Optional[str] = "clinician"  # Default role
+    completedByRole: Optional[str] = None
+    completedByName: Optional[str] = None
 
 class ChecklistItem(ChecklistItemBase):
     isCustom: bool = False
@@ -375,6 +378,13 @@ class ChecklistItemCreate(BaseModel):
     notes: Optional[str] = None
     completedAt: Optional[str] = None
     isCustom: bool = True
+    assignedRole: str = "clinician"
+
+class CaseTeam(BaseModel):
+    clinician: Optional[str] = "Case Owner"
+    implantologist: Optional[str] = None
+    prosthodontist: Optional[str] = None
+    assistant: Optional[str] = None
 
 class PlanningData(BaseModel):
     boneAvailability: Optional[BoneAvailability] = None
