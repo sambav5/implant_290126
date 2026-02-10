@@ -57,6 +57,10 @@ export default function ProstheticChecklist() {
   const [showMasterChecklist, setShowMasterChecklist] = useState(false);
   const [expandedPhases, setExpandedPhases] = useState({});
   const [expandedSections, setExpandedSections] = useState({});
+  
+  // Role-based collaboration state
+  const [activeRole] = useActiveRole();
+  const [showMyTasksOnly, setShowMyTasksOnly] = useState(false);
 
   // Persist toggle state to localStorage
   useEffect(() => {
