@@ -163,6 +163,90 @@ export default function NewCase() {
               </div>
             </div>
           </div>
+          
+          {/* Case Team Assignment */}
+          <div className="pt-4 border-t border-border">
+            <p className="text-sm font-medium text-slate-700 mb-2">Assign Team For This Case</p>
+            <p className="text-xs text-muted-foreground mb-4">
+              Assign names to clinical roles for this case. You can always edit this later.
+            </p>
+            
+            <div className="space-y-3">
+              {/* Clinician */}
+              <div className="space-y-2">
+                <Label htmlFor="clinician" className="text-sm font-medium flex items-center gap-2">
+                  <span className="w-24">Clinician</span>
+                  <span className="px-2 py-0.5 text-xs font-medium bg-blue-100 text-blue-700 rounded border border-blue-200">
+                    Case Owner
+                  </span>
+                </Label>
+                <Input
+                  id="clinician"
+                  placeholder="Your name or designation"
+                  value={formData.caseTeam.clinician}
+                  onChange={(e) => setFormData({
+                    ...formData,
+                    caseTeam: { ...formData.caseTeam, clinician: e.target.value }
+                  })}
+                  className="input-clinical"
+                />
+              </div>
+              
+              {/* Implantologist */}
+              <div className="space-y-2">
+                <Label htmlFor="implantologist" className="text-sm font-medium flex items-center gap-2">
+                  <span className="w-24">Implantologist</span>
+                  <span className="text-xs text-muted-foreground">(Optional)</span>
+                </Label>
+                <Input
+                  id="implantologist"
+                  placeholder="Surgeon handling implant placement"
+                  value={formData.caseTeam.implantologist}
+                  onChange={(e) => setFormData({
+                    ...formData,
+                    caseTeam: { ...formData.caseTeam, implantologist: e.target.value }
+                  })}
+                  className="input-clinical"
+                />
+              </div>
+              
+              {/* Prosthodontist */}
+              <div className="space-y-2">
+                <Label htmlFor="prosthodontist" className="text-sm font-medium flex items-center gap-2">
+                  <span className="w-24">Prosthodontist</span>
+                  <span className="text-xs text-muted-foreground">(Optional)</span>
+                </Label>
+                <Input
+                  id="prosthodontist"
+                  placeholder="Specialist for final restoration"
+                  value={formData.caseTeam.prosthodontist}
+                  onChange={(e) => setFormData({
+                    ...formData,
+                    caseTeam: { ...formData.caseTeam, prosthodontist: e.target.value }
+                  })}
+                  className="input-clinical"
+                />
+              </div>
+              
+              {/* Assistant */}
+              <div className="space-y-2">
+                <Label htmlFor="assistant" className="text-sm font-medium flex items-center gap-2">
+                  <span className="w-24">Assistant</span>
+                  <span className="text-xs text-muted-foreground">(Optional)</span>
+                </Label>
+                <Input
+                  id="assistant"
+                  placeholder="Clinical assistant or coordinator"
+                  value={formData.caseTeam.assistant}
+                  onChange={(e) => setFormData({
+                    ...formData,
+                    caseTeam: { ...formData.caseTeam, assistant: e.target.value }
+                  })}
+                  className="input-clinical"
+                />
+              </div>
+            </div>
+          </div>
         </form>
       </main>
       
