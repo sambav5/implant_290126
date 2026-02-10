@@ -521,9 +521,16 @@ export default function ProstheticChecklist() {
                                 onClick={() => toggleSelectAllInSection(phaseKey, sectionIndex)}
                                 className="text-xs font-medium text-primary hover:text-primary/80 transition-colors"
                               >
-                                {section.items.filter(item => showFullProtocol || item.importance === 'essential').every(item => item.completed)
-                                  ? '☑ Uncheck All'
-                                  : '☐ Select All'}
+                                {(() => {
+                                  const visibleItems = section.items.filter(item => showFullProtocol || item.importance === 'essential');
+                                  const editableItems = visibleItems.filter(item => {
+                                    const itemRole = item.assignedRole || 'clinician';
+                                    return canEditItem(itemRole, activeRole);
+                                  });
+                                  const allEditableCompleted = editableItems.length > 0 && editableItems.every(item => item.completed);
+                                  
+                                  return allEditableCompleted ? '☑ Uncheck My Items' : '☐ Select My Items';
+                                })()}
                               </button>
                             </div>
                             {section.items
