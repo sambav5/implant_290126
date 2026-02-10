@@ -1213,6 +1213,7 @@ def merge_completion_states(filtered_checklist: dict, stored_checklist: dict) ->
     """
     Merge completion states from stored checklist into filtered checklist.
     Preserves auto-completion flags and manual overrides.
+    Also backfills assignedRole if missing in stored data.
     """
     for phase_key, phase_data in filtered_checklist.items():
         stored_phase = stored_checklist.get(phase_key, {})
@@ -1231,6 +1232,16 @@ def merge_completion_states(filtered_checklist: dict, stored_checklist: dict) ->
                     item["completedAt"] = matching_stored.get("completedAt")
                     item["autoCompleted"] = matching_stored.get("autoCompleted", False)
                     item["autoCompleteReason"] = matching_stored.get("autoCompleteReason")
+                    item["completedByRole"] = matching_stored.get("completedByRole")
+                    item["completedByName"] = matching_stored.get("completedByName")
+                    
+                    # Migration: If stored item doesn't have assignedRole, it inherits from filtered (master JSON)
+                    if not matching_stored.get("assignedRole"):
+                        # assignedRole already set from master JSON in filter_checklist_for_case
+                        pass
+                    else:
+                        # Keep the stored assignedRole if it exists (for backward compatibility)
+                        item["assignedRole"] = matching_stored.get("assignedRole")
     
     return filtered_checklist
 
