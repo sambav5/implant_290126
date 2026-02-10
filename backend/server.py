@@ -242,13 +242,16 @@ def filter_checklist_for_case(master_checklist: dict, case_data: dict) -> dict:
                 
                 # Only include item if conditions match
                 if matches_conditions(item_conditions, case_conditions):
-                    # Create a copy without the conditions field for client
+                    # Create a copy with assignedRole from master JSON
                     item_copy = {
                         "id": item["id"],
                         "text": item["text"],
                         "importance": item.get("importance", "advanced"),
+                        "assignedRole": item.get("assignedRole", "clinician"),  # From JSON
                         "completed": False,
-                        "completedAt": None
+                        "completedAt": None,
+                        "completedByRole": None,
+                        "completedByName": None
                     }
                     filtered_items.append(item_copy)
             
