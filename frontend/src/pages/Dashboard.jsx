@@ -111,7 +111,7 @@ export default function Dashboard() {
         <div className="page-container">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-2xl font-semibold text-foreground">ImplantFlow</h1>
+              <h1 className="text-2xl font-semibold text-foreground">Seamless</h1>
               <p className="text-sm text-muted-foreground">Clinical Decision Support</p>
             </div>
             <div className="flex items-center gap-2">
