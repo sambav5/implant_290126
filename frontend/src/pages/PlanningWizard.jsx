@@ -672,79 +672,172 @@ export default function PlanningWizard() {
           </div>
         )}
         
-        {/* Step Form */}
-        {!showResults && currentStepData && (
-          <div className="space-y-6 animate-fade-in">
-            <div>
-              <h2 className="text-2xl font-semibold mb-2">{currentStepData.title}</h2>
-              <p className="text-muted-foreground">{currentStepData.description}</p>
-            </div>
-            
-            {currentStepData.fields.map((field) => (
-              <div key={field.key} className="space-y-3">
-                <Label className="text-base font-medium">{field.label}</Label>
-                
-                {field.type === 'radio' && (
-                  <RadioGroup
-                    value={planningData[field.key] || ''}
-                    onValueChange={(value) => handleFieldChange(field.key, value)}
-                    className="space-y-2"
+        {/* Step Form - Progressive Accordion Flow */}
+        {!showResults && (
+          <div className="space-y-4">
+            {PLANNING_STEPS.map((step, sectionIndex) => {
+              const isExpanded = expandedSections[sectionIndex];
+              const isComplete = completedSections[sectionIndex];
+              const sectionProgress = step.fields.filter(field => isFieldFilled(field, planningData)).length;
+              const totalFields = step.fields.length;
+              
+              return (
+                <div 
+                  key={step.id} 
+                  ref={el => sectionRefs.current[sectionIndex] = el}
+                  className="card-clinical"
+                  style={{
+                    border: isComplete ? '2px solid var(--green-b)' : '1.5px solid var(--border)',
+                    background: isComplete ? 'var(--green-1)' : 'var(--card)'
+                  }}
+                >
+                  {/* Section Header */}
+                  <button
+                    onClick={() => toggleSection(sectionIndex)}
+                    className="w-full flex items-center justify-between p-4 text-left"
                   >
-                    {field.options.map((option) => (
-                      <label
-                        key={option.value}
-                        className={`flex items-start gap-3 p-4 rounded-lg border cursor-pointer transition-colors ${
-                          planningData[field.key] === option.value
-                            ? 'border-primary bg-primary/5'
-                            : 'border-border hover:border-primary/30'
-                        }`}
-                        data-testid={`${field.key}-${option.value}`}
+                    <div className="flex items-center gap-3 flex-1">
+                      <div 
+                        className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold"
+                        style={{
+                          background: isComplete ? 'var(--green)' : 'var(--border)',
+                          color: isComplete ? 'white' : 'var(--t2)'
+                        }}
                       >
-                        <RadioGroupItem value={option.value} className="mt-0.5" />
-                        <div>
-                          <p className="font-medium">{option.label}</p>
-                          {option.description && (
-                            <p className="text-sm text-muted-foreground">{option.description}</p>
-                          )}
-                        </div>
-                      </label>
-                    ))}
-                  </RadioGroup>
-                )}
-                
-                {field.type === 'checkbox' && (
-                  <div className="space-y-2">
-                    {field.options.map((option) => (
-                      <label
-                        key={option.value}
-                        className={`flex items-center gap-3 p-4 rounded-lg border cursor-pointer transition-colors ${
-                          (planningData[field.key] || []).includes(option.value)
-                            ? 'border-primary bg-primary/5'
-                            : 'border-border hover:border-primary/30'
-                        }`}
-                        data-testid={`${field.key}-${option.value}`}
-                      >
-                        <Checkbox
-                          checked={(planningData[field.key] || []).includes(option.value)}
-                          onCheckedChange={(checked) => handleCheckboxChange(field.key, option.value, checked)}
-                        />
-                        <span className="font-medium">{option.label}</span>
-                      </label>
-                    ))}
-                  </div>
-                )}
-                
-                {field.type === 'textarea' && (
-                  <Textarea
-                    value={planningData[field.key] || ''}
-                    onChange={(e) => handleFieldChange(field.key, e.target.value)}
-                    placeholder={field.placeholder}
-                    className="min-h-[100px]"
-                    data-testid={`${field.key}-textarea`}
-                  />
-                )}
+                        {isComplete ? '✓' : sectionIndex + 1}
+                      </div>
+                      <div className="flex-1">
+                        <h3 className="font-semibold" style={{color: isComplete ? 'var(--green)' : 'var(--t1)', fontFamily: "'Lora', serif"}}>
+                          {step.title}
+                        </h3>
+                        <p className="text-sm" style={{color: 'var(--t2)'}}>
+                          {isComplete ? 'Complete' : step.description}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <span className="text-xs mono" style={{color: 'var(--t3)'}}>
+                        {sectionProgress}/{totalFields}
+                      </span>
+                      <ChevronDown 
+                        className={`h-5 w-5 transition-transform ${isExpanded ? 'rotate-180' : ''}`}
+                        style={{color: 'var(--t3)'}}
+                      />
+                    </div>
+                  </button>
+                  
+                  {/* Section Fields */}
+                  {isExpanded && (
+                    <div className="px-4 pb-4 space-y-6 animate-fade-in">
+                      {step.fields.map((field, fieldIndex) => {
+                        const isFilled = isFieldFilled(field, planningData);
+                        
+                        return (
+                          <div 
+                            key={field.key} 
+                            ref={el => fieldRefs.current[field.key] = el}
+                            className="space-y-3"
+                            style={{
+                              opacity: isFilled ? 0.7 : 1,
+                              transition: 'opacity 0.3s ease'
+                            }}
+                          >
+                            <Label className="text-base font-medium flex items-center gap-2">
+                              {field.label}
+                              {isFilled && <span style={{color: 'var(--green)', fontSize: '14px'}}>✓</span>}
+                            </Label>
+                            
+                            {field.type === 'radio' && (
+                              <RadioGroup
+                                value={planningData[field.key] || ''}
+                                onValueChange={(value) => handleFieldChange(sectionIndex, field.key, value)}
+                                className="space-y-2"
+                              >
+                                {field.options.map((option) => (
+                                  <label
+                                    key={option.value}
+                                    className="flex items-start gap-3 p-4 rounded-lg cursor-pointer transition-all"
+                                    style={{
+                                      border: planningData[field.key] === option.value 
+                                        ? '2px solid var(--green)' 
+                                        : '1.5px solid var(--border)',
+                                      background: planningData[field.key] === option.value 
+                                        ? 'var(--green-1)' 
+                                        : 'var(--card)'
+                                    }}
+                                    data-testid={`${field.key}-${option.value}`}
+                                  >
+                                    <RadioGroupItem value={option.value} className="mt-0.5" />
+                                    <div>
+                                      <p className="font-medium" style={{color: 'var(--t1)'}}>{option.label}</p>
+                                      {option.description && (
+                                        <p className="text-sm" style={{color: 'var(--t2)'}}>{option.description}</p>
+                                      )}
+                                    </div>
+                                  </label>
+                                ))}
+                              </RadioGroup>
+                            )}
+                            
+                            {field.type === 'checkbox' && (
+                              <div className="space-y-2">
+                                {field.options.map((option) => (
+                                  <label
+                                    key={option.value}
+                                    className="flex items-center gap-3 p-4 rounded-lg cursor-pointer transition-all"
+                                    style={{
+                                      border: (planningData[field.key] || []).includes(option.value)
+                                        ? '2px solid var(--green)'
+                                        : '1.5px solid var(--border)',
+                                      background: (planningData[field.key] || []).includes(option.value)
+                                        ? 'var(--green-1)'
+                                        : 'var(--card)'
+                                    }}
+                                    data-testid={`${field.key}-${option.value}`}
+                                  >
+                                    <Checkbox
+                                      checked={(planningData[field.key] || []).includes(option.value)}
+                                      onCheckedChange={(checked) => handleCheckboxChange(sectionIndex, field.key, option.value, checked)}
+                                    />
+                                    <span className="font-medium" style={{color: 'var(--t1)'}}>{option.label}</span>
+                                  </label>
+                                ))}
+                              </div>
+                            )}
+                            
+                            {field.type === 'textarea' && (
+                              <Textarea
+                                value={planningData[field.key] || ''}
+                                onChange={(e) => handleTextareaChange(sectionIndex, field.key, e.target.value)}
+                                onBlur={() => handleTextareaBlur(sectionIndex, field.key)}
+                                placeholder={field.placeholder}
+                                className="min-h-[100px] input-clinical"
+                                data-testid={`${field.key}-textarea`}
+                              />
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+            
+            {/* Analyze Button */}
+            {allSectionsComplete && (
+              <div className="mt-6 animate-slide-up">
+                <Button
+                  onClick={handleAnalyze}
+                  disabled={analyzing}
+                  className="w-full btn-clinical btn-green-endo"
+                  data-testid="analyze-btn"
+                >
+                  {analyzing ? 'Analyzing...' : 'Generate Risk Assessment'}
+                  {!analyzing && <ChevronRight className="h-5 w-5 ml-2" />}
+                </Button>
               </div>
-            ))}
+            )}
           </div>
         )}
       </main>
