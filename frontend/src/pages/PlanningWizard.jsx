@@ -905,24 +905,6 @@ export default function PlanningWizard() {
                 </div>
               );
             })}
-            
-            {/* Analyze Button - Only show when all complete (alternative to using Next button) */}
-            {allSectionsComplete && (
-              <div className="mt-6 p-4 rounded-lg animate-slide-up" style={{background: 'var(--green-1)', border: '1.5px solid var(--green-b)'}}>
-                <p className="text-sm mb-3 text-center" style={{color: 'var(--green)'}}>
-                  ✓ All sections complete! Ready to generate assessment.
-                </p>
-                <Button
-                  onClick={handleAnalyze}
-                  disabled={analyzing}
-                  className="w-full btn-clinical btn-green-endo"
-                  data-testid="analyze-btn-inline"
-                >
-                  {analyzing ? 'Analyzing...' : 'Generate Risk Assessment'}
-                  {!analyzing && <ChevronRight className="h-5 w-5 ml-2" />}
-                </Button>
-              </div>
-            )}
           </div>
         )}
       </main>
