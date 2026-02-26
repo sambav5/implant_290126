@@ -43,16 +43,24 @@ export const CaseCard = ({ caseData, onClick }) => {
     >
       <div className="flex items-start justify-between gap-3">
         <div className="flex items-start gap-3 flex-1 min-w-0">
-          <div className="tooth-badge shrink-0">{caseData.toothNumber}</div>
+          <div className="shrink-0 flex items-center justify-center w-10 h-10 rounded-lg font-semibold text-sm" 
+               style={{
+                 background: 'var(--green-1)', 
+                 color: 'var(--green)', 
+                 border: '1.5px solid var(--green-b)',
+                 fontFamily: "'Lora', serif"
+               }}>
+            {caseData.toothNumber}
+          </div>
           <div className="flex-1 min-w-0">
-            <h3 className="font-semibold text-foreground truncate">{caseData.caseName}</h3>
-            <p className="text-sm text-muted-foreground mt-0.5">
+            <h3 className="font-semibold truncate" style={{color: 'var(--t1)', fontSize: '15px'}}>{caseData.caseName}</h3>
+            <p className="text-sm mt-0.5" style={{color: 'var(--t2)'}}>
               Tooth #{caseData.toothNumber}
               {caseData.optionalAge && ` • ${caseData.optionalAge}y`}
             </p>
           </div>
         </div>
-        <ChevronRight className="h-5 w-5 text-muted-foreground shrink-0" />
+        <ChevronRight className="h-5 w-5 shrink-0" style={{color: 'var(--t3)'}} />
       </div>
       
       <div className="flex items-center gap-2 mt-4 flex-wrap">
@@ -65,7 +73,7 @@ export const CaseCard = ({ caseData, onClick }) => {
           </Badge>
         )}
         {totalChecks > 0 && (
-          <span className="text-xs text-muted-foreground">
+          <span className="mono text-xs" style={{color: 'var(--t3)'}}>
             {completedChecks}/{totalChecks} checks
           </span>
         )}
