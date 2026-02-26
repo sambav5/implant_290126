@@ -175,10 +175,15 @@ export default function PlanningWizard() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [analyzing, setAnalyzing] = useState(false);
-  const [currentStep, setCurrentStep] = useState(0);
   const [planningData, setPlanningData] = useState({});
   const [showResults, setShowResults] = useState(false);
   const [detailedMode, setDetailedMode] = useState(false);
+  
+  // Progressive flow state
+  const [expandedSections, setExpandedSections] = useState({ 0: true }); // Start with first section expanded
+  const [completedSections, setCompletedSections] = useState({});
+  const fieldRefs = useRef({});
+  const sectionRefs = useRef({});
   
   useEffect(() => {
     loadCase();
