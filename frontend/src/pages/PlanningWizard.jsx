@@ -406,45 +406,50 @@ export default function PlanningWizard() {
   
   if (loading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="animate-pulse text-muted-foreground">Loading...</div>
+      <div className="min-h-screen flex items-center justify-center" style={{background: 'var(--bg)'}}>
+        <div className="animate-pulse mono" style={{color: 'var(--t3)'}}>Loading...</div>
       </div>
     );
   }
   
-  const progress = showResults ? 100 : Math.round(((currentStep + 1) / PLANNING_STEPS.length) * 100);
-  const currentStepData = PLANNING_STEPS[currentStep];
+  const progress = calculateProgress();
   const risk = caseData?.riskAssessment ? riskConfig[caseData.riskAssessment.overallRisk] : null;
+  const allSectionsComplete = PLANNING_STEPS.every((_, index) => completedSections[index]);
   
   return (
-    <div className="min-h-screen bg-background pb-32">
+    <div className="min-h-screen pb-32" style={{background: 'var(--bg)'}}>
       {/* Header */}
       <header className="glass-header sticky top-0 z-40 px-4 py-4">
         <div className="page-container">
           <div className="flex items-center gap-3">
             <button
               onClick={() => navigate(`/case/${id}`)}
-              className="p-2 -ml-2 hover:bg-slate-100 rounded-lg touch-target"
+              className="p-2 -ml-2 rounded-lg touch-target"
+              style={{background: 'transparent', border: 'none'}}
+              onMouseOver={(e) => e.currentTarget.style.background = 'var(--border)'}
+              onMouseOut={(e) => e.currentTarget.style.background = 'transparent'}
               data-testid="back-btn"
             >
-              <ArrowLeft className="h-5 w-5" />
+              <ArrowLeft className="h-5 w-5" style={{color: 'var(--t2)'}} />
             </button>
             <div className="flex-1 min-w-0">
-              <h1 className="text-xl font-semibold text-foreground truncate">Planning Engine</h1>
-              <p className="text-sm text-muted-foreground">{caseData?.caseName}</p>
+              <h1 className="text-xl font-semibold truncate" style={{fontFamily: "'Lora', serif", color: 'var(--t1)'}}>Planning Engine</h1>
+              <p className="text-sm" style={{color: 'var(--t2)'}}>{caseData?.caseName}</p>
             </div>
           </div>
           
           {/* Progress */}
-          <div className="mt-4">
-            <div className="flex justify-between text-sm mb-2">
-              <span className="text-muted-foreground">
-                {showResults ? 'Assessment Complete' : `Step ${currentStep + 1} of ${PLANNING_STEPS.length}`}
-              </span>
-              <span className="font-medium">{progress}%</span>
+          {!showResults && (
+            <div className="mt-4">
+              <div className="flex justify-between text-sm mb-2">
+                <span className="mono" style={{color: 'var(--t2)', fontSize: '10px', textTransform: 'uppercase'}}>
+                  Overall Progress
+                </span>
+                <span className="font-medium mono" style={{color: 'var(--t1)'}}>{progress}%</span>
+              </div>
+              <Progress value={progress} className="h-2" />
             </div>
-            <Progress value={progress} className="h-2" />
-          </div>
+          )}
         </div>
       </header>
       
