@@ -394,14 +394,14 @@ export default function ProstheticChecklist() {
       <main className="page-container py-6 space-y-4">
         {/* Dynamic Checklist Notice */}
         {isDynamic && (
-          <div className="bg-blue-50 border-l-4 border-blue-500 p-4 rounded-r-lg animate-fade-in">
+          <div className="rounded-lg p-4 animate-fade-in" style={{background: 'var(--blue-1)', borderLeft: '3px solid var(--blue)'}}>
             <div className="flex items-start gap-3">
-              <TrendingUp className="h-5 w-5 text-blue-600 shrink-0 mt-0.5" />
+              <TrendingUp className="h-5 w-5 shrink-0 mt-0.5" style={{color: 'var(--blue)'}} />
               <div className="flex-1">
-                <p className="text-sm font-medium text-blue-900">
+                <p className="text-sm font-medium" style={{color: 'var(--blue)'}}>
                   Checklist customized based on case planning
                 </p>
-                <p className="text-xs text-blue-700 mt-1">
+                <p className="text-xs mt-1 mono" style={{color: 'var(--blue)', opacity: 0.8}}>
                   Only clinically relevant items for this specific case are shown. 
                   {planningConditions && (
                     <span className="block mt-1">
