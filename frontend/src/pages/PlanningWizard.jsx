@@ -371,41 +371,96 @@ export default function PlanningWizard() {
   }
   
   const progress = calculateProgress();
+  const currentStepData = PLANNING_STEPS[currentStep];
   const risk = caseData?.riskAssessment ? riskConfig[caseData.riskAssessment.overallRisk] : null;
-  const allSectionsComplete = PLANNING_STEPS.every((_, index) => completedSections[index]);
+  const isCurrentStepComplete = completedSteps[currentStep];
   
   return (
     <div className="min-h-screen pb-32" style={{background: 'var(--bg)'}}>
       {/* Header */}
       <header className="glass-header sticky top-0 z-40 px-4 py-4">
         <div className="page-container">
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 mb-4">
             <button
               onClick={() => navigate(`/case/${id}`)}
               className="p-2 -ml-2 rounded-lg touch-target"
               style={{background: 'transparent', border: 'none'}}
               onMouseOver={(e) => e.currentTarget.style.background = 'var(--border)'}
               onMouseOut={(e) => e.currentTarget.style.background = 'transparent'}
-              data-testid="back-btn"
             >
               <ArrowLeft className="h-5 w-5" style={{color: 'var(--t2)'}} />
             </button>
             <div className="flex-1 min-w-0">
-              <h1 className="text-xl font-semibold truncate" style={{fontFamily: "'Lora', serif", color: 'var(--t1)'}}>Planning Engine</h1>
+              <h1 className="text-xl font-semibold truncate" style={{fontFamily: "'Lora', serif", color: 'var(--t1)'}}>
+                Planning Engine
+              </h1>
               <p className="text-sm" style={{color: 'var(--t2)'}}>{caseData?.caseName}</p>
             </div>
           </div>
           
-          {/* Progress */}
+          {/* Step Progress Indicator */}
           {!showResults && (
-            <div className="mt-4">
-              <div className="flex justify-between text-sm mb-2">
-                <span className="mono" style={{color: 'var(--t2)', fontSize: '10px', textTransform: 'uppercase'}}>
-                  Overall Progress
-                </span>
-                <span className="font-medium mono" style={{color: 'var(--t1)'}}>{progress}%</span>
+            <div className="mb-4">
+              <div className="flex items-center justify-between mb-3">
+                {PLANNING_STEPS.map((step, index) => {
+                  const isCompleted = completedSteps[index];
+                  const isActive = index === currentStep;
+                  const isPending = index > currentStep && !isCompleted;
+                  
+                  return (
+                    <div key={step.id} className="flex items-center flex-1">
+                      <div className="flex flex-col items-center">
+                        {/* Step Indicator */}
+                        <div 
+                          className="w-10 h-10 rounded-full flex items-center justify-center text-sm font-semibold transition-all"
+                          style={{
+                            background: isCompleted ? 'var(--green)' : isActive ? 'var(--blue)' : 'var(--border)',
+                            color: isCompleted || isActive ? 'white' : 'var(--t3)',
+                            border: isActive ? '2px solid var(--blue)' : 'none',
+                            boxShadow: isActive ? '0 0 0 4px var(--blue-1)' : 'none'
+                          }}
+                        >
+                          {isCompleted ? '✓' : index + 1}
+                        </div>
+                        
+                        {/* Step Label */}
+                        <span 
+                          className="text-xs mt-2 text-center mono hidden sm:block"
+                          style={{
+                            color: isCompleted ? 'var(--green)' : isActive ? 'var(--blue)' : 'var(--t3)',
+                            fontWeight: isActive ? 600 : 400,
+                            maxWidth: '80px'
+                          }}
+                        >
+                          {step.id.replace(/_/g, ' ').substring(0, 10)}
+                        </span>
+                      </div>
+                      
+                      {/* Connector Line */}
+                      {index < PLANNING_STEPS.length - 1 && (
+                        <div 
+                          className="flex-1 h-[2px] mx-2"
+                          style={{
+                            background: isCompleted ? 'var(--green)' : 'var(--border)',
+                            marginTop: '-24px'
+                          }}
+                        />
+                      )}
+                    </div>
+                  );
+                })}
               </div>
-              <Progress value={progress} className="h-2" />
+              
+              {/* Overall Progress Bar */}
+              <div className="mt-4">
+                <div className="flex justify-between text-xs mb-2">
+                  <span className="mono" style={{color: 'var(--t2)', textTransform: 'uppercase'}}>
+                    Step {currentStep + 1} of {PLANNING_STEPS.length}
+                  </span>
+                  <span className="font-medium mono" style={{color: 'var(--t1)'}}>{progress}%</span>
+                </div>
+                <Progress value={progress} className="h-2" />
+              </div>
             </div>
           )}
         </div>
