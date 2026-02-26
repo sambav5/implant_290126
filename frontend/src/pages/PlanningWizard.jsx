@@ -679,18 +679,6 @@ export default function PlanningWizard() {
                   )}
                 </div>
                 
-                {/* Section Divider - Add visual separator between sections */}
-                {sectionIndex < PLANNING_STEPS.length - 1 && (
-                  <div className="flex items-center gap-4 my-8">
-                    <div className="flex-1 h-[2px]" style={{background: 'var(--border2)'}}></div>
-                    <span className="text-xs mono" style={{color: 'var(--t3)', textTransform: 'uppercase'}}>
-                      Section {sectionIndex + 2}
-                    </span>
-                    <div className="flex-1 h-[2px]" style={{background: 'var(--border2)'}}></div>
-                  </div>
-                )}
-              </div>
-                
                 {/* 4. Risk Modifiers Detected */}
                 {caseData.riskAssessment.riskModifiers?.length > 0 && (
                   <div className="card-clinical">
