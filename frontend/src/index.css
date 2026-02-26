@@ -74,15 +74,22 @@
     }
     
     body {
-        @apply bg-background text-foreground antialiased;
-        font-family: 'Manrope', sans-serif;
+        background: var(--bg);
+        color: var(--t1);
+        @apply antialiased;
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
         font-weight: 400;
     }
     
     h1, h2, h3, h4, h5, h6 {
-        font-family: 'Sora', sans-serif;
+        font-family: 'Lora', serif;
         font-weight: 600;
-        letter-spacing: -0.02em;
+        letter-spacing: -0.01em;
+        color: var(--t1);
+    }
+    
+    .mono {
+        font-family: 'JetBrains Mono', 'Courier New', monospace;
     }
 }
 
