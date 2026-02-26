@@ -941,17 +941,25 @@ export default function PlanningWizard() {
                               </div>
                             )}
                             
-                            {field.type === 'textarea' && (
-                              <Textarea
-                                value={planningData[field.key] || ''}
-                                onChange={(e) => handleTextareaChange(sectionIndex, field.key, e.target.value)}
-                                onBlur={() => handleTextareaBlur(sectionIndex, field.key)}
-                                placeholder={field.placeholder}
-                                className="min-h-[100px] input-clinical"
-                                data-testid={`${field.key}-textarea`}
-                              />
-                            )}
-                          </div>
+                    {/* Textarea */}
+                    {field.type === 'textarea' && (
+                      <Textarea
+                        value={planningData[field.key] || ''}
+                        onChange={(e) => handleTextareaChange(field.key, e.target.value)}
+                        placeholder={field.placeholder}
+                        className="min-h-[120px] input-clinical text-base"
+                      />
+                    )}
+                    
+                    {/* Divider after each field */}
+                    {currentStepData.fields.indexOf(field) < currentStepData.fields.length - 1 && (
+                      <div className="pt-8">
+                        <div className="h-[1px]" style={{background: 'var(--border)'}}></div>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
             </div>
           </div>
         )}
