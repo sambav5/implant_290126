@@ -259,18 +259,18 @@ export default function CaseDetail() {
         {caseData.riskAssessment && (
           <div className="card-clinical animate-slide-up stagger-1">
             <div className="flex items-center gap-2 mb-3">
-              <Activity className={`h-5 w-5 ${risk.color}`} />
-              <h3 className="font-semibold">Risk Assessment</h3>
+              <Activity className="h-5 w-5" style={{color: risk.color}} />
+              <h3 className="font-semibold" style={{color: 'var(--t1)', fontFamily: "'Lora', serif"}}>Risk Assessment</h3>
             </div>
-            <p className="text-sm text-muted-foreground mb-3">
+            <p className="text-sm mb-3" style={{color: 'var(--t2)'}}>
               {caseData.riskAssessment.plainLanguageSummary}
             </p>
             {caseData.riskAssessment.considerations?.length > 0 && (
               <div className="space-y-2">
                 {caseData.riskAssessment.considerations.slice(0, 3).map((consideration, index) => (
                   <div key={index} className="flex items-start gap-2 text-sm">
-                    <AlertTriangle className="h-4 w-4 text-amber-500 shrink-0 mt-0.5" />
-                    <span>{consideration}</span>
+                    <AlertTriangle className="h-4 w-4 shrink-0 mt-0.5" style={{color: 'var(--amber)'}} />
+                    <span style={{color: 'var(--t1)'}}>{consideration}</span>
                   </div>
                 ))}
               </div>
@@ -288,17 +288,17 @@ export default function CaseDetail() {
           >
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                  <FileText className="h-5 w-5 text-primary" />
+                <div className="w-10 h-10 rounded-lg flex items-center justify-center" style={{background: 'var(--blue-1)'}}>
+                  <FileText className="h-5 w-5" style={{color: 'var(--blue)'}} />
                 </div>
                 <div className="text-left">
-                  <h3 className="font-semibold">Planning Engine</h3>
-                  <p className="text-sm text-muted-foreground">
+                  <h3 className="font-semibold" style={{color: 'var(--t1)'}}>Planning Engine</h3>
+                  <p className="text-sm" style={{color: 'var(--t2)'}}>
                     {caseData.riskAssessment ? 'Review and update' : 'Complete assessment'}
                   </p>
                 </div>
               </div>
-              <ChevronRight className="h-5 w-5 text-muted-foreground" />
+              <ChevronRight className="h-5 w-5" style={{color: 'var(--t3)'}} />
             </div>
           </button>
           
@@ -310,17 +310,17 @@ export default function CaseDetail() {
           >
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-lg bg-purple-500/10 flex items-center justify-center">
-                  <CheckSquare className="h-5 w-5 text-purple-600" />
+                <div className="w-10 h-10 rounded-lg flex items-center justify-center" style={{background: '#F3F0FF'}}>
+                  <CheckSquare className="h-5 w-5" style={{color: '#6D28D9'}} />
                 </div>
                 <div className="text-left">
-                  <h3 className="font-semibold">Treatment Blueprint</h3>
-                  <p className="text-sm text-muted-foreground">
+                  <h3 className="font-semibold" style={{color: 'var(--t1)'}}>Treatment Blueprint</h3>
+                  <p className="text-sm" style={{color: 'var(--t2)'}}>
                     Your comprehensive implant workflow — in one place
                   </p>
                 </div>
               </div>
-              <ChevronRight className="h-5 w-5 text-muted-foreground" />
+              <ChevronRight className="h-5 w-5" style={{color: 'var(--t3)'}} />
             </div>
           </button>
           
@@ -332,12 +332,20 @@ export default function CaseDetail() {
           >
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-lg bg-accent/10 flex items-center justify-center">
-                  <Lightbulb className="h-5 w-5 text-accent" />
+                <div className="w-10 h-10 rounded-lg flex items-center justify-center" style={{background: 'var(--amber-1)'}}>
+                  <Lightbulb className="h-5 w-5" style={{color: 'var(--amber)'}} />
                 </div>
                 <div className="text-left">
-                  <h3 className="font-semibold">Learning Reflections</h3>
-                  <p className="text-sm text-muted-foreground">
+                  <h3 className="font-semibold" style={{color: 'var(--t1)'}}>Learning Reflections</h3>
+                  <p className="text-sm" style={{color: 'var(--t2)'}}>
+                    Document your insights and learnings
+                  </p>
+                </div>
+              </div>
+              <ChevronRight className="h-5 w-5" style={{color: 'var(--t3)'}} />
+            </div>
+          </button>
+        </div>
                     {caseData.feedback?.reflectionCompletedAt 
                       ? 'View your reflections' 
                       : 'Capture insights to make every case seamless'}
