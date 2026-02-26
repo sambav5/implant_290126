@@ -903,6 +903,18 @@ export default function PlanningWizard() {
                     </div>
                   )}
                 </div>
+                
+                {/* Section Divider - Visual separator between sections */}
+                {sectionIndex < PLANNING_STEPS.length - 1 && (
+                  <div className="flex items-center gap-4 my-8">
+                    <div className="flex-1 h-[2px]" style={{background: 'var(--border2)'}}></div>
+                    <span className="text-xs mono" style={{color: 'var(--t3)', textTransform: 'uppercase', fontWeight: 500}}>
+                      Section {sectionIndex + 2}
+                    </span>
+                    <div className="flex-1 h-[2px]" style={{background: 'var(--border2)'}}></div>
+                  </div>
+                )}
+              </div>
               );
             })}
           </div>
