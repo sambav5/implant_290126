@@ -400,7 +400,7 @@
     }
 }
 
-/* Custom scrollbar */
+/* Custom scrollbar - EndoPilot Style */
 ::-webkit-scrollbar {
     width: 6px;
     height: 6px;
@@ -411,11 +411,12 @@
 }
 
 ::-webkit-scrollbar-thumb {
-    @apply bg-slate-300 rounded-full;
+    background: var(--border2);
+    border-radius: 3px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-    @apply bg-slate-400;
+    background: var(--t3);
 }
 
 /* Form element enhancements */
