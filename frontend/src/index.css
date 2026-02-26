@@ -6,34 +6,61 @@
 
 @layer base {
     :root {
-        --background: 220 14% 96%;
-        --foreground: 220 14% 14%;
-        --card: 0 0% 100%;
-        --card-foreground: 220 14% 14%;
-        --popover: 0 0% 100%;
-        --popover-foreground: 220 14% 14%;
-        --primary: 213 84% 55%;
-        --primary-foreground: 0 0% 100%;
-        --secondary: 214 32% 91%;
-        --secondary-foreground: 215 25% 27%;
-        --muted: 210 40% 96%;
-        --muted-foreground: 215 16% 47%;
-        --accent: 245 58% 69%;
+        /* EndoPilot Design System Colors */
+        --bg: #F4F2EE;
+        --card: #FAFAF8;
+        --border: #E3E0D8;
+        --border2: #CCCAB8;
+        
+        --t1: #1A1917;
+        --t2: #6A6860;
+        --t3: #A9A79F;
+        
+        --green: #1A6B4A;
+        --green-1: #EBF5F0;
+        --green-b: #BCD9CA;
+        
+        --amber: #D97706;
+        --amber-1: #FEF5E7;
+        --amber-b: #E0C48A;
+        
+        --red: #8B2112;
+        --red-1: #FDECEA;
+        --red-b: #F5CECA;
+        
+        --blue: #1A3F6F;
+        --blue-1: #EBF1FA;
+        --blue-b: #A8C4E6;
+        
+        /* Tailwind compatibility (HSL format) */
+        --background: 42 18% 95%;
+        --foreground: 24 7% 10%;
+        --card: 60 14% 98%;
+        --card-foreground: 24 7% 10%;
+        --popover: 60 14% 98%;
+        --popover-foreground: 24 7% 10%;
+        --primary: 158 58% 27%;
+        --primary-foreground: 150 30% 95%;
+        --secondary: 150 25% 90%;
+        --secondary-foreground: 158 58% 20%;
+        --muted: 30 12% 90%;
+        --muted-foreground: 30 5% 60%;
+        --accent: 158 58% 27%;
         --accent-foreground: 0 0% 100%;
-        --destructive: 0 84% 60%;
+        --destructive: 7 72% 31%;
         --destructive-foreground: 0 0% 100%;
-        --border: 214 32% 91%;
-        --input: 0 0% 100%;
-        --ring: 213 84% 55%;
+        --border: 30 20% 89%;
+        --input: 60 14% 98%;
+        --ring: 158 58% 27%;
         --radius: 0.75rem;
         
         /* Semantic colors */
-        --success: 160 84% 39%;
-        --warning: 38 92% 50%;
-        --info: 217 91% 60%;
-        --risk-high: 0 84% 60%;
-        --risk-moderate: 38 92% 50%;
-        --risk-low: 160 84% 39%;
+        --success: 158 58% 27%;
+        --warning: 30 96% 42%;
+        --info: 209 59% 27%;
+        --risk-high: 7 72% 31%;
+        --risk-moderate: 30 96% 42%;
+        --risk-low: 158 58% 27%;
     }
 }
 
