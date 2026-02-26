@@ -361,17 +361,17 @@ export default function CaseDetail() {
         {caseData.timeline?.length > 0 && (
           <div className="card-clinical animate-slide-up stagger-5">
             <div className="flex items-center gap-2 mb-4">
-              <Clock className="h-5 w-5 text-muted-foreground" />
-              <h3 className="font-semibold">Recent Activity</h3>
+              <Clock className="h-5 w-5" style={{color: 'var(--t3)'}} />
+              <h3 className="font-semibold" style={{color: 'var(--t1)', fontFamily: "'Lora', serif"}}>Recent Activity</h3>
             </div>
             <div className="space-y-4">
               {caseData.timeline.slice(-5).reverse().map((entry) => (
                 <div key={entry.id} className="timeline-entry">
-                  <p className="text-sm font-medium">{entry.action}</p>
+                  <p className="text-sm font-medium" style={{color: 'var(--t1)'}}>{entry.action}</p>
                   {entry.details && (
-                    <p className="text-xs text-muted-foreground">{entry.details}</p>
+                    <p className="text-xs" style={{color: 'var(--t2)'}}>{entry.details}</p>
                   )}
-                  <p className="text-xs text-muted-foreground mt-1">
+                  <p className="text-xs mono mt-1" style={{color: 'var(--t3)'}}>
                     {new Date(entry.timestamp).toLocaleString()}
                   </p>
                 </div>
@@ -381,9 +381,9 @@ export default function CaseDetail() {
         )}
         
         {/* Disclaimer */}
-        <div className="p-4 bg-muted/50 rounded-lg border border-border">
+        <div className="p-4 rounded-lg" style={{background: 'var(--card)', border: '1.5px solid var(--border)'}}>
           <div className="flex items-start gap-2">
-            <AlertTriangle className="h-4 w-4 text-muted-foreground shrink-0 mt-0.5" />
+            <AlertTriangle className="h-4 w-4 shrink-0 mt-0.5" style={{color: 'var(--t3)'}} />
             <p className="disclaimer-text">
               Decision support only. Final responsibility lies with the clinician.
             </p>
