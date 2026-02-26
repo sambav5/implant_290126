@@ -286,20 +286,23 @@ export default function ProstheticChecklist() {
   const overallProgress = calculateOverallProgress();
 
   return (
-    <div className="min-h-screen bg-background pb-24">
+    <div className="min-h-screen pb-24" style={{background: 'var(--bg)'}}>
       {/* Header */}
       <header className="glass-header sticky top-0 z-40 px-4 py-4 border-b">
         <div className="page-container">
           <div className="flex items-center gap-3 mb-3">
             <button
               onClick={() => navigate(`/case/${id}`)}
-              className="p-2 -ml-2 hover:bg-slate-100 rounded-lg touch-target"
+              className="p-2 -ml-2 rounded-lg touch-target"
+              style={{background: 'transparent', border: 'none'}}
+              onMouseOver={(e) => e.currentTarget.style.background = 'var(--border)'}
+              onMouseOut={(e) => e.currentTarget.style.background = 'transparent'}
             >
-              <ArrowLeft className="h-5 w-5" />
+              <ArrowLeft className="h-5 w-5" style={{color: 'var(--t2)'}} />
             </button>
             <div className="flex-1">
-              <h1 className="text-xl font-semibold text-foreground">Treatment Blueprint</h1>
-              <p className="text-sm text-muted-foreground">{caseData?.caseName}</p>
+              <h1 className="text-xl font-semibold" style={{fontFamily: "'Lora', serif", color: 'var(--t1)'}}>Treatment Blueprint</h1>
+              <p className="text-sm" style={{color: 'var(--t2)'}}>{caseData?.caseName}</p>
             </div>
             
             {/* Role Switcher */}
@@ -308,50 +311,42 @@ export default function ProstheticChecklist() {
             )}
             
             {saving && (
-              <div className="text-sm text-muted-foreground animate-pulse">Saving...</div>
+              <div className="text-sm animate-pulse mono" style={{color: 'var(--t3)'}}>Saving...</div>
             )}
           </div>
           
           {/* Scope Toggle */}
-          <div className="mb-4 p-3 bg-slate-50 rounded-lg border border-slate-200">
+          <div className="mb-4 p-3 rounded-lg" style={{background: 'var(--card)', border: '1.5px solid var(--border)'}}>
             <div className="flex items-center justify-between gap-3">
               <div className="flex-1">
                 <button
                   onClick={() => setShowFullProtocol(false)}
-                  className={`text-sm font-medium transition-colors ${
-                    !showFullProtocol ? 'text-emerald-700' : 'text-muted-foreground'
-                  }`}
+                  className="text-sm font-medium transition-colors"
+                  style={{color: !showFullProtocol ? 'var(--green)' : 'var(--t3)'}}
                 >
                   {!showFullProtocol && '✓ '}Essential Checklist ({getVisibleItemsCount().essential} items)
                 </button>
               </div>
               
-              {/* Toggle Switch */}
+              {/* Toggle Switch - EndoPilot Style */}
               <button
                 onClick={() => setShowFullProtocol(!showFullProtocol)}
-                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                  showFullProtocol ? 'bg-blue-600' : 'bg-emerald-500'
-                }`}
+                className={`toggle-endo ${showFullProtocol ? 'on' : ''}`}
               >
-                <span
-                  className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                    showFullProtocol ? 'translate-x-6' : 'translate-x-1'
-                  }`}
-                />
+                <span className="toggle-thumb" />
               </button>
               
               <div className="flex-1 text-right">
                 <button
                   onClick={() => setShowFullProtocol(true)}
-                  className={`text-sm font-medium transition-colors ${
-                    showFullProtocol ? 'text-blue-700' : 'text-muted-foreground'
-                  }`}
+                  className="text-sm font-medium transition-colors"
+                  style={{color: showFullProtocol ? 'var(--blue)' : 'var(--t3)'}}
                 >
                   {showFullProtocol && '✓ '}Full Protocol ({getVisibleItemsCount().total} items)
                 </button>
               </div>
             </div>
-            <p className="text-xs text-center text-muted-foreground mt-2">
+            <p className="text-xs text-center mt-2" style={{color: 'var(--t3)'}}>
               {showFullProtocol 
                 ? 'Showing complete protocol - all essential and advanced steps'
                 : 'Showing essential items only - steps that prevent failure (Recommended)'}
@@ -359,11 +354,11 @@ export default function ProstheticChecklist() {
           </div>
           
           {/* My Tasks Only Toggle */}
-          <div className="mb-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
+          <div className="mb-4 p-3 rounded-lg" style={{background: 'var(--blue-1)', border: '1.5px solid var(--blue-b)'}}>
             <div className="flex items-center justify-between gap-3">
               <div className="flex items-center gap-2">
-                <Filter className="h-4 w-4 text-blue-600" />
-                <Label htmlFor="myTasksToggle" className="text-sm font-medium text-blue-900 cursor-pointer">
+                <Filter className="h-4 w-4" style={{color: 'var(--blue)'}} />
+                <Label htmlFor="myTasksToggle" className="text-sm font-medium cursor-pointer" style={{color: 'var(--blue)'}}>
                   Show My Tasks Only
                 </Label>
               </div>
@@ -374,7 +369,7 @@ export default function ProstheticChecklist() {
               />
             </div>
             {showMyTasksOnly && (
-              <p className="text-xs text-blue-700 mt-2">
+              <p className="text-xs mt-2 mono" style={{color: 'var(--blue)', textTransform: 'uppercase', fontSize: '10px'}}>
                 Filtering items assigned to {getRoleName(caseData?.caseTeam, activeRole)}
               </p>
             )}
@@ -383,13 +378,13 @@ export default function ProstheticChecklist() {
           {/* Overall Progress */}
           <div className="space-y-2">
             <div className="flex justify-between text-sm">
-              <span className="font-medium">Overall Progress</span>
-              <span className="text-muted-foreground">
+              <span className="font-medium label-endo">Overall Progress</span>
+              <span className="mono" style={{color: 'var(--t3)', fontSize: '11px'}}>
                 {overallProgress.completed} / {overallProgress.total} items
               </span>
             </div>
             <Progress value={overallProgress.percentage} className="h-3" />
-            <p className="text-xs text-muted-foreground text-center">
+            <p className="text-xs text-center mono" style={{color: 'var(--t3)'}}>
               {overallProgress.percentage}% Complete
             </p>
           </div>
