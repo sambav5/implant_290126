@@ -466,48 +466,54 @@ export default function ProstheticChecklist() {
                     ).length;
 
                     return (
-                      <div key={sectionIndex} className="border-t border-slate-200">
+                      <div key={sectionIndex} style={{borderTop: '1.5px solid var(--border)'}}>
                         {/* Section Header */}
                         <button
                           onClick={() => toggleSection(phaseKey, sectionIndex)}
-                          className={`w-full p-4 flex items-center justify-between hover:bg-slate-50 ${
-                            section.isLabSection ? 'bg-green-50/50' : ''
-                          }`}
+                          className="w-full p-4 flex items-center justify-between transition-colors"
+                          style={{
+                            background: section.isLabSection ? 'var(--green-1)' : 'transparent'
+                          }}
+                          onMouseOver={(e) => e.currentTarget.style.background = section.isLabSection ? 'var(--green-1)' : 'var(--border)'}
+                          onMouseOut={(e) => e.currentTarget.style.background = section.isLabSection ? 'var(--green-1)' : 'transparent'}
                         >
                           <div className="flex items-center gap-3 flex-1 text-left">
                             {section.isLabSection && (
-                              <FlaskConical className="h-5 w-5 text-green-600 shrink-0" />
+                              <FlaskConical className="h-5 w-5 shrink-0" style={{color: 'var(--green)'}} />
                             )}
-                            <h3 className={`font-semibold ${section.isLabSection ? 'text-green-700' : 'text-slate-700'}`}>
+                            <h3 className="font-semibold" style={{color: section.isLabSection ? 'var(--green)' : 'var(--t1)'}}>
                               {section.isLabSection && '🏥 '}
                               {section.title}
                               {!showFullProtocol && totalVisibleItems < section.items.length && (
-                                <span className="ml-2 text-xs text-blue-600 font-normal">
+                                <span className="ml-2 text-xs font-normal mono" style={{color: 'var(--blue)'}}>
                                   (+{section.items.length - totalVisibleItems} more)
                                 </span>
                               )}
                             </h3>
                           </div>
                           <div className="flex items-center gap-2">
-                            <span className="text-xs text-muted-foreground">
+                            <span className="text-xs mono" style={{color: 'var(--t3)'}}>
                               {completedItems}/{totalVisibleItems}
                             </span>
                             {isSectionExpanded ? (
-                              <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                              <ChevronDown className="h-4 w-4" style={{color: 'var(--t3)'}} />
                             ) : (
-                              <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                              <ChevronRight className="h-4 w-4" style={{color: 'var(--t3)'}} />
                             )}
                           </div>
                         </button>
 
                         {/* Section Items */}
                         {isSectionExpanded && (
-                          <div className={`px-4 pb-4 ${section.isLabSection ? 'bg-green-50/30' : ''}`}>
+                          <div className="px-4 pb-4" style={{background: section.isLabSection ? 'rgba(235, 245, 240, 0.3)' : 'transparent'}}>
                             {/* Select All Button */}
-                            <div className="py-2 mb-2 border-b border-slate-200">
+                            <div className="py-2 mb-2" style={{borderBottom: '1px solid var(--border)'}}>
                               <button
                                 onClick={() => toggleSelectAllInSection(phaseKey, sectionIndex)}
-                                className="text-xs font-medium text-primary hover:text-primary/80 transition-colors"
+                                className="text-xs font-medium mono transition-colors"
+                                style={{color: 'var(--green)'}}
+                                onMouseOver={(e) => e.currentTarget.style.opacity = '0.8'}
+                                onMouseOut={(e) => e.currentTarget.style.opacity = '1'}
                               >
                                 {(() => {
                                   const visibleItems = section.items.filter(item => showFullProtocol || item.importance === 'essential');
