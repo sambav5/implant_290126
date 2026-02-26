@@ -421,30 +421,31 @@ export default function ProstheticChecklist() {
           const isExpanded = expandedPhases[phaseKey];
 
           return (
-            <div key={phaseKey} className={`rounded-lg border-2 ${colors.border} overflow-hidden`}>
+            <div key={phaseKey} className="rounded-xl overflow-hidden" style={{border: `2px solid ${colors.border}`}}>
               {/* Phase Header */}
               <button
                 onClick={() => togglePhase(phaseKey)}
-                className={`w-full p-4 ${colors.bg} flex items-center justify-between touch-target`}
+                className="w-full p-4 flex items-center justify-between touch-target"
+                style={{background: colors.bg}}
               >
                 <div className="flex items-center gap-3 flex-1 text-left">
-                  <div className={`p-2 rounded-lg bg-white shadow-sm`}>
+                  <div className="p-2 rounded-lg" style={{background: 'white', boxShadow: '0 1px 2px rgba(0,0,0,0.05)'}}>
                     {isExpanded ? (
-                      <ChevronDown className={`h-5 w-5 ${colors.text}`} />
+                      <ChevronDown className="h-5 w-5" style={{color: colors.text}} />
                     ) : (
-                      <ChevronRight className={`h-5 w-5 ${colors.text}`} />
+                      <ChevronRight className="h-5 w-5" style={{color: colors.text}} />
                     )}
                   </div>
                   <div className="flex-1">
-                    <h2 className={`font-bold text-lg ${colors.text}`}>{phase.title}</h2>
-                    <p className="text-sm text-slate-600">{phase.description}</p>
+                    <h2 className="font-bold text-lg" style={{color: colors.text, fontFamily: "'Lora', serif"}}>{phase.title}</h2>
+                    <p className="text-sm" style={{color: 'var(--t2)'}}>{phase.description}</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
-                  <div className={`px-3 py-1 rounded-full ${colors.badge} text-sm font-semibold ${colors.text}`}>
+                  <div className="px-3 py-1 rounded-full text-sm font-semibold mono" style={{background: colors.badge, color: colors.text}}>
                     {progress.percentage}%
                   </div>
-                  <div className="text-xs text-muted-foreground">
+                  <div className="text-xs mono" style={{color: 'var(--t3)'}}>
                     {progress.completed}/{progress.total}
                   </div>
                 </div>
@@ -452,7 +453,7 @@ export default function ProstheticChecklist() {
 
               {/* Phase Content */}
               {isExpanded && (
-                <div className="bg-white">
+                <div style={{background: 'var(--card)'}}>
                   {phase.sections.map((section, sectionIndex) => {
                     const sectionKey = `${phaseKey}-${sectionIndex}`;
                     const isSectionExpanded = expandedSections[sectionKey];
