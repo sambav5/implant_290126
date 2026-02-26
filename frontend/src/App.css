@@ -61,7 +61,7 @@
     background-color: var(--green);
 }
 
-/* Timeline styles */
+/* Timeline styles - EndoPilot */
 .timeline-entry {
     position: relative;
     padding-left: 24px;
@@ -74,7 +74,7 @@
     top: 24px;
     bottom: 0;
     width: 2px;
-    background-color: #E2E8F0;
+    background-color: var(--border);
 }
 
 .timeline-entry:last-child::before {
@@ -89,8 +89,8 @@
     width: 14px;
     height: 14px;
     border-radius: 50%;
-    background-color: #F5F6F8;
-    border: 2px solid #2F80ED;
+    background-color: var(--card);
+    border: 2px solid var(--green);
 }
 
 /* Risk indicator pulse */
