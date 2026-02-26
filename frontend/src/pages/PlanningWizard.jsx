@@ -975,15 +975,15 @@ export default function PlanningWizard() {
         )}
       </main>
       
-      {/* Bottom Navigation - Manual Controls */}
+      {/* Bottom Navigation */}
       {!showResults && (
         <div className="fixed bottom-0 left-0 right-0 p-4 border-t safe-area-pb" style={{background: 'var(--card)', borderColor: 'var(--border)'}}>
           <div className="page-container">
             <div className="flex gap-3">
               <Button
                 variant="outline"
-                onClick={goToPrevSection}
-                disabled={getCurrentSectionIndex() === 0}
+                onClick={goToPrevStep}
+                disabled={currentStep === 0}
                 className="flex-1 btn-clinical btn-secondary-endo"
                 data-testid="prev-btn"
               >
@@ -992,12 +992,12 @@ export default function PlanningWizard() {
               </Button>
               
               <Button
-                onClick={goToNextSection}
+                onClick={goToNextStep}
                 disabled={analyzing}
                 className="flex-1 btn-clinical btn-primary-endo"
                 data-testid="next-btn"
               >
-                {analyzing ? 'Analyzing...' : getCurrentSectionIndex() === PLANNING_STEPS.length - 1 ? 'Analyze' : 'Next'}
+                {analyzing ? 'Analyzing...' : currentStep === PLANNING_STEPS.length - 1 ? 'Analyze' : 'Next'}
                 {!analyzing && <ChevronRight className="h-5 w-5 ml-1" />}
               </Button>
             </div>
