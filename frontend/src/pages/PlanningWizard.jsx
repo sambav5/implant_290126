@@ -193,19 +193,18 @@ export default function PlanningWizard() {
       const response = await caseApi.getById(id);
       setCaseData(response.data);
       
-      // Initialize planning data
       const savedPlanningData = response.data.planningData || {};
       setPlanningData(savedPlanningData);
       
-      // Only check sections if there's actual data
+      // Check which steps are complete
       if (savedPlanningData && Object.keys(savedPlanningData).length > 0) {
-        checkAllSections(savedPlanningData);
-      } else {
-        // No saved data - mark all sections as incomplete
-        setCompletedSections({});
+        const completed = {};
+        PLANNING_STEPS.forEach((_, index) => {
+          completed[index] = isStepComplete(index, savedPlanningData);
+        });
+        setCompletedSteps(completed);
       }
       
-      // If assessment already exists, show results
       if (response.data.riskAssessment) {
         setShowResults(true);
       }
@@ -219,65 +218,29 @@ export default function PlanningWizard() {
   
   // Check if a field is filled
   const isFieldFilled = (field, data) => {
-    // Textareas are optional - always considered "filled"
-    if (field.type === 'textarea') {
-      return true;
-    }
+    if (field.type === 'textarea') return true; // Optional
     
     const value = data[field.key];
-    
     if (field.type === 'checkbox') {
       return Array.isArray(value) && value.length > 0;
     }
-    
-    // Radio fields are required - must have a value
     return value !== undefined && value !== null && value !== '';
   };
   
-  // Check if a section is complete
-  const isSectionComplete = (sectionIndex, data) => {
-    // If no data at all, section is not complete
-    if (!data || Object.keys(data).length === 0) {
-      return false;
-    }
-    
-    const section = PLANNING_STEPS[sectionIndex];
-    return section.fields.every(field => isFieldFilled(field, data));
+  // Check if a step is complete
+  const isStepComplete = (stepIndex, data) => {
+    if (!data || Object.keys(data).length === 0) return false;
+    const step = PLANNING_STEPS[stepIndex];
+    return step.fields.every(field => isFieldFilled(field, data));
   };
   
-  // Check all sections and update completion status
-  const checkAllSections = (data) => {
-    const completed = {};
-    PLANNING_STEPS.forEach((_, index) => {
-      completed[index] = isSectionComplete(index, data);
-    });
-    setCompletedSections(completed);
+  // Get next unfilled field in current step
+  const getNextUnfilledField = (stepIndex, data) => {
+    const step = PLANNING_STEPS[stepIndex];
+    return step.fields.find(field => !isFieldFilled(field, data));
   };
   
-  // Get the next unfilled field in a section
-  const getNextUnfilledField = (sectionIndex, data) => {
-    const section = PLANNING_STEPS[sectionIndex];
-    return section.fields.find(field => !isFieldFilled(field, data));
-  };
-  
-  // Scroll to element smoothly
-  const scrollToElement = (ref) => {
-    if (ref) {
-      ref.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    }
-  };
-  
-  // Focus on a field
-  const focusField = (fieldKey) => {
-    setTimeout(() => {
-      const fieldRef = fieldRefs.current[fieldKey];
-      if (fieldRef) {
-        scrollToElement(fieldRef);
-      }
-    }, 300); // Delay to allow for expansion animation
-  };
-  
-  // Auto-save progress
+  // Auto-save
   const autoSaveProgress = async (newData) => {
     try {
       await caseApi.update(id, { planningData: newData });
@@ -286,50 +249,47 @@ export default function PlanningWizard() {
     }
   };
   
-  // Handle field change with progressive flow
-  const handleFieldChange = async (sectionIndex, fieldKey, value) => {
+  // Focus field
+  const focusField = (fieldKey) => {
+    setTimeout(() => {
+      const fieldRef = fieldRefs.current[fieldKey];
+      if (fieldRef) {
+        fieldRef.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    }, 100);
+  };
+  
+  // Handle field change with auto-progression
+  const handleFieldChange = async (fieldKey, value) => {
     const newData = { ...planningData, [fieldKey]: value };
     setPlanningData(newData);
     
     // Auto-save
     autoSaveProgress(newData);
     
-    // Check if this completes the section
-    const sectionComplete = isSectionComplete(sectionIndex, newData);
-    setCompletedSections(prev => ({ ...prev, [sectionIndex]: sectionComplete }));
+    // Check if current step is now complete
+    const stepComplete = isStepComplete(currentStep, newData);
+    setCompletedSteps(prev => ({ ...prev, [currentStep]: stepComplete }));
     
-    // Find next unfilled field in current section
-    const nextField = getNextUnfilledField(sectionIndex, newData);
-    
-    if (nextField) {
-      // Move to next field in same section
-      focusField(nextField.key);
+    if (stepComplete) {
+      // Step completed! Show animation and auto-advance
+      setShowCompletionAnimation(true);
+      
+      setTimeout(() => {
+        setShowCompletionAnimation(false);
+        if (currentStep < PLANNING_STEPS.length - 1) {
+          setCurrentStep(prev => prev + 1);
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        } else {
+          // All steps complete
+          toast.success('All sections complete! Ready to analyze.');
+        }
+      }, 500);
     } else {
-      // Section complete! Collapse current, expand next
-      if (sectionIndex < PLANNING_STEPS.length - 1) {
-        setTimeout(() => {
-          // Collapse current section
-          setExpandedSections(prev => ({ ...prev, [sectionIndex]: false }));
-          
-          // Expand next section
-          const nextSectionIndex = sectionIndex + 1;
-          setExpandedSections(prev => ({ ...prev, [nextSectionIndex]: true }));
-          
-          // Scroll to next section and focus first field
-          setTimeout(() => {
-            const nextSectionRef = sectionRefs.current[nextSectionIndex];
-            if (nextSectionRef) {
-              scrollToElement(nextSectionRef);
-              const firstField = PLANNING_STEPS[nextSectionIndex].fields[0];
-              if (firstField) {
-                focusField(firstField.key);
-              }
-            }
-          }, 300);
-        }, 500); // Small delay to show completion state
-      } else {
-        // All sections complete!
-        toast.success('All fields completed! Ready to analyze.');
+      // Find and focus next unfilled field
+      const nextField = getNextUnfilledField(currentStep, newData);
+      if (nextField) {
+        focusField(nextField.key);
       }
     }
   };
