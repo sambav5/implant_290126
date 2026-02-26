@@ -10,7 +10,7 @@
     padding-bottom: max(1rem, env(safe-area-inset-bottom));
 }
 
-/* Floating action button */
+/* Floating action button - EndoPilot Style */
 .fab {
     position: fixed;
     bottom: 24px;
@@ -22,12 +22,14 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 4px 12px rgba(47, 128, 237, 0.35);
+    box-shadow: 0 2px 8px rgba(26, 107, 74, 0.2);
+    transition: all 0.2s ease;
 }
 
 .fab:hover {
-    box-shadow: 0 6px 20px rgba(47, 128, 237, 0.45);
+    box-shadow: 0 4px 12px rgba(26, 107, 74, 0.3);
     transform: translateY(-2px);
+    opacity: 0.9;
 }
 
 .fab:active {
