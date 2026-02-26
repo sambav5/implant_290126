@@ -316,15 +316,38 @@ export default function PlanningWizard() {
     }
   };
   
-  const handleCheckboxChange = (key, value, checked) => {
-    setPlanningData(prev => {
-      const currentValues = prev[key] || [];
-      if (checked) {
-        return { ...prev, [key]: [...currentValues, value] };
-      } else {
-        return { ...prev, [key]: currentValues.filter(v => v !== value) };
-      }
-    });
+  const handleCheckboxChange = (sectionIndex, key, value, checked) => {
+    const currentValues = planningData[key] || [];
+    const newValues = checked
+      ? [...currentValues, value]
+      : currentValues.filter(v => v !== value);
+    
+    handleFieldChange(sectionIndex, key, newValues);
+  };
+  
+  const handleTextareaChange = (sectionIndex, key, value) => {
+    handleFieldChange(sectionIndex, key, value);
+  };
+  
+  const handleTextareaBlur = (sectionIndex, key) => {
+    // On blur, check if section is complete and progress
+    const newData = planningData;
+    const sectionComplete = isSectionComplete(sectionIndex, newData);
+    
+    if (sectionComplete && sectionIndex < PLANNING_STEPS.length - 1) {
+      setTimeout(() => {
+        setExpandedSections(prev => ({ ...prev, [sectionIndex]: false }));
+        const nextSectionIndex = sectionIndex + 1;
+        setExpandedSections(prev => ({ ...prev, [nextSectionIndex]: true }));
+        
+        setTimeout(() => {
+          const nextSectionRef = sectionRefs.current[nextSectionIndex];
+          if (nextSectionRef) {
+            scrollToElement(nextSectionRef);
+          }
+        }, 300);
+      }, 500);
+    }
   };
   
   const saveProgress = async () => {
