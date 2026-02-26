@@ -102,8 +102,8 @@ export default function CaseDetail() {
   
   if (loading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="animate-pulse text-muted-foreground">Loading...</div>
+      <div className="min-h-screen flex items-center justify-center" style={{background: 'var(--bg)'}}>
+        <div className="animate-pulse mono" style={{color: 'var(--t3)'}}>Loading...</div>
       </div>
     );
   }
@@ -122,7 +122,7 @@ export default function CaseDetail() {
   const checklistProgress = totalChecks.length > 0 ? Math.round((completedChecks / totalChecks.length) * 100) : 0;
   
   return (
-    <div className="min-h-screen bg-background pb-24">
+    <div className="min-h-screen pb-24" style={{background: 'var(--bg)'}}>
       {/* Header */}
       <header className="glass-header sticky top-0 z-40 px-4 py-4">
         <div className="page-container">
@@ -130,14 +130,17 @@ export default function CaseDetail() {
             <div className="flex items-center gap-3">
               <button
                 onClick={() => navigate('/')}
-                className="p-2 -ml-2 hover:bg-slate-100 rounded-lg touch-target"
+                className="p-2 -ml-2 rounded-lg touch-target"
+                style={{background: 'transparent', border: 'none'}}
+                onMouseOver={(e) => e.currentTarget.style.background = 'var(--border)'}
+                onMouseOut={(e) => e.currentTarget.style.background = 'transparent'}
                 data-testid="back-btn"
               >
-                <ArrowLeft className="h-5 w-5" />
+                <ArrowLeft className="h-5 w-5" style={{color: 'var(--t2)'}} />
               </button>
               <div className="min-w-0">
-                <h1 className="text-xl font-semibold text-foreground truncate">{caseData.caseName}</h1>
-                <p className="text-sm text-muted-foreground">Tooth #{caseData.toothNumber}</p>
+                <h1 className="text-xl font-semibold truncate" style={{fontFamily: "'Lora', serif", color: 'var(--t1)'}}>{caseData.caseName}</h1>
+                <p className="text-sm mono" style={{color: 'var(--t2)'}}>Tooth #{caseData.toothNumber}</p>
               </div>
             </div>
             
