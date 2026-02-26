@@ -212,12 +212,17 @@ export default function PlanningWizard() {
   // Check if a field is filled
   const isFieldFilled = (field, data) => {
     const value = data[field.key];
+    
+    // Textareas are optional - always considered "filled"
+    if (field.type === 'textarea') {
+      return true;
+    }
+    
     if (field.type === 'checkbox') {
       return Array.isArray(value) && value.length > 0;
     }
-    if (field.type === 'textarea') {
-      return value && value.trim().length > 0;
-    }
+    
+    // Radio fields are required
     return value !== undefined && value !== '';
   };
   
