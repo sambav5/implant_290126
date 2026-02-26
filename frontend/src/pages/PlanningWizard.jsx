@@ -685,25 +685,145 @@ export default function PlanningWizard() {
           </div>
         )}
         
-        {/* Step Form - Progressive Accordion Flow */}
-        {!showResults && (
-          <div className="space-y-6">
-            {PLANNING_STEPS.map((step, sectionIndex) => {
-              const isExpanded = expandedSections[sectionIndex];
-              const isComplete = completedSections[sectionIndex];
-              const sectionProgress = step.fields.filter(field => isFieldFilled(field, planningData)).length;
-              const totalFields = step.fields.length;
-              
-              return (
-                <div key={step.id}>
+        {/* Current Step Content */}
+        {!showResults && currentStepData && (
+          <div className="animate-fade-in">
+            {/* Step Header */}
+            <div className="mb-8">
+              <h2 className="text-3xl font-semibold mb-3" style={{fontFamily: "'Lora', serif", color: 'var(--t1)'}}>
+                {currentStepData.title}
+              </h2>
+              <p className="text-base" style={{color: 'var(--t2)'}}>
+                {currentStepData.description}
+              </p>
+            </div>
+            
+            {/* Divider */}
+            <div className="flex items-center gap-4 mb-8">
+              <div className="flex-1 h-[2px]" style={{background: 'var(--border2)'}}></div>
+            </div>
+            
+            {/* Completion Animation Overlay */}
+            {showCompletionAnimation && (
+              <div className="fixed inset-0 z-50 flex items-center justify-center" style={{background: 'rgba(26, 25, 23, 0.5)'}}>
+                <div className="card-clinical p-8 text-center animate-slide-up" style={{background: 'var(--green-1)', border: '2px solid var(--green)'}}>
+                  <div className="w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center" style={{background: 'var(--green)'}}>
+                    <CheckCircle2 className="h-10 w-10" style={{color: 'white'}} />
+                  </div>
+                  <h3 className="text-xl font-semibold mb-2" style={{color: 'var(--green)', fontFamily: "'Lora', serif"}}>
+                    Step Complete!
+                  </h3>
+                  <p className="text-sm" style={{color: 'var(--green)'}}>Moving to next section...</p>
+                </div>
+              </div>
+            )}
+            
+            {/* Fields */}
+            <div className="space-y-8">
+              {currentStepData.fields.map((field) => {
+                const isFilled = isFieldFilled(field, planningData);
+                
+                return (
                   <div 
-                    ref={el => sectionRefs.current[sectionIndex] = el}
-                    className="card-clinical"
-                    style={{
-                      border: isComplete ? '2px solid var(--green-b)' : '1.5px solid var(--border)',
-                      background: isComplete ? 'var(--green-1)' : 'var(--card)'
-                    }}
+                    key={field.key} 
+                    ref={el => fieldRefs.current[field.key] = el}
+                    className="space-y-4"
                   >
+                    {/* Field Label */}
+                    <div className="flex items-center justify-between">
+                      <Label className="text-lg font-medium flex items-center gap-3" style={{color: 'var(--t1)'}}>
+                        {field.label}
+                        {field.type === 'textarea' && (
+                          <span className="text-xs mono" style={{color: 'var(--t3)', textTransform: 'none', fontWeight: 'normal'}}>
+                            (Optional)
+                          </span>
+                        )}
+                        {isFilled && field.type !== 'textarea' && (
+                          <span className="text-sm" style={{color: 'var(--green)'}}>✓ Complete</span>
+                        )}
+                      </Label>
+                    </div>
+                    
+                    {/* Radio Group */}
+                    {field.type === 'radio' && (
+                      <RadioGroup
+                        value={planningData[field.key] || ''}
+                        onValueChange={(value) => handleFieldChange(field.key, value)}
+                        className="space-y-3"
+                      >
+                        {field.options.map((option) => (
+                          <label
+                            key={option.value}
+                            className="flex items-start gap-4 p-5 rounded-lg cursor-pointer transition-all"
+                            style={{
+                              border: planningData[field.key] === option.value 
+                                ? '2px solid var(--green)' 
+                                : '1.5px solid var(--border)',
+                              background: planningData[field.key] === option.value 
+                                ? 'var(--green-1)' 
+                                : 'var(--card)'
+                            }}
+                          >
+                            <RadioGroupItem value={option.value} className="mt-0.5" />
+                            <div className="flex-1">
+                              <p className="font-semibold mb-1" style={{color: 'var(--t1)'}}>{option.label}</p>
+                              {option.description && (
+                                <p className="text-sm" style={{color: 'var(--t2)'}}>{option.description}</p>
+                              )}
+                            </div>
+                          </label>
+                        ))}
+                      </RadioGroup>
+                    )}
+                    
+                    {/* Checkbox Group */}
+                    {field.type === 'checkbox' && (
+                      <div className="space-y-3">
+                        {field.options.map((option) => (
+                          <label
+                            key={option.value}
+                            className="flex items-center gap-4 p-5 rounded-lg cursor-pointer transition-all"
+                            style={{
+                              border: (planningData[field.key] || []).includes(option.value)
+                                ? '2px solid var(--green)'
+                                : '1.5px solid var(--border)',
+                              background: (planningData[field.key] || []).includes(option.value)
+                                ? 'var(--green-1)'
+                                : 'var(--card)'
+                            }}
+                          >
+                            <Checkbox
+                              checked={(planningData[field.key] || []).includes(option.value)}
+                              onCheckedChange={(checked) => handleCheckboxChange(field.key, option.value, checked)}
+                            />
+                            <span className="font-semibold" style={{color: 'var(--t1)'}}>{option.label}</span>
+                          </label>
+                        ))}
+                      </div>
+                    )}
+                    
+                    {/* Textarea */}
+                    {field.type === 'textarea' && (
+                      <Textarea
+                        value={planningData[field.key] || ''}
+                        onChange={(e) => handleTextareaChange(field.key, e.target.value)}
+                        placeholder={field.placeholder}
+                        className="min-h-[120px] input-clinical text-base"
+                      />
+                    )}
+                    
+                    {/* Divider after each field */}
+                    {currentStepData.fields.indexOf(field) < currentStepData.fields.length - 1 && (
+                      <div className="pt-8">
+                        <div className="h-[1px]" style={{background: 'var(--border)'}}></div>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
                   {/* Section Header */}
                   <button
                     onClick={() => toggleSection(sectionIndex)}
