@@ -178,7 +178,15 @@ export default function CaseDetail() {
         <div className="card-clinical animate-slide-up">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
-              <div className="tooth-badge">{caseData.toothNumber}</div>
+              <div className="flex items-center justify-center w-10 h-10 rounded-lg font-semibold text-sm" 
+                   style={{
+                     background: 'var(--green-1)', 
+                     color: 'var(--green)', 
+                     border: '1.5px solid var(--green-b)',
+                     fontFamily: "'Lora', serif"
+                   }}>
+                {caseData.toothNumber}
+              </div>
               <div>
                 <Badge className={status.className}>{status.label}</Badge>
                 {risk && (
@@ -194,32 +202,32 @@ export default function CaseDetail() {
           <div className="grid grid-cols-2 gap-4 text-sm">
             {caseData.optionalAge && (
               <div>
-                <span className="text-muted-foreground">Age:</span>
-                <span className="ml-2 font-medium">{caseData.optionalAge} years</span>
+                <span className="label-endo">Age:</span>
+                <span className="ml-2 font-medium" style={{color: 'var(--t1)'}}>{caseData.optionalAge} years</span>
               </div>
             )}
             {caseData.optionalSex && (
               <div>
-                <span className="text-muted-foreground">Sex:</span>
-                <span className="ml-2 font-medium capitalize">{caseData.optionalSex}</span>
+                <span className="label-endo">Sex:</span>
+                <span className="ml-2 font-medium capitalize" style={{color: 'var(--t1)'}}>{caseData.optionalSex}</span>
               </div>
             )}
             <div>
-              <span className="text-muted-foreground">Created:</span>
-              <span className="ml-2 font-medium">
+              <span className="label-endo">Created:</span>
+              <span className="ml-2 font-medium" style={{color: 'var(--t1)'}}>
                 {new Date(caseData.createdAt).toLocaleDateString()}
               </span>
             </div>
           </div>
           
           {/* Status Change Buttons */}
-          <div className="flex gap-2 mt-4 pt-4 border-t border-border">
+          <div className="flex gap-2 mt-4 pt-4" style={{borderTop: '1px solid var(--border)'}}>
             {caseData.status === 'planning' && (
               <Button
                 variant="outline"
                 size="sm"
                 onClick={() => handleStatusChange('in_progress')}
-                className="flex-1"
+                className="flex-1 btn-clinical btn-secondary-endo"
                 data-testid="start-treatment-btn"
               >
                 <Play className="h-4 w-4 mr-2" />
@@ -231,7 +239,7 @@ export default function CaseDetail() {
                 variant="outline"
                 size="sm"
                 onClick={() => handleStatusChange('completed')}
-                className="flex-1"
+                className="flex-1 btn-clinical btn-green-endo"
                 data-testid="complete-case-btn"
               >
                 <CheckCircle2 className="h-4 w-4 mr-2" />
@@ -239,9 +247,9 @@ export default function CaseDetail() {
               </Button>
             )}
             {caseData.status === 'completed' && caseData.feedback?.reflectionCompletedAt && (
-              <div className="flex items-center gap-2 text-sm text-emerald-600">
+              <div className="flex items-center gap-2 text-sm" style={{color: 'var(--green)'}}>
                 <CheckCircle2 className="h-4 w-4" />
-                <span>Learning reflection completed</span>
+                <span className="mono" style={{fontSize: '10px', textTransform: 'uppercase'}}>Learning reflection completed</span>
               </div>
             )}
           </div>
