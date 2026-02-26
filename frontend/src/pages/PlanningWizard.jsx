@@ -294,105 +294,35 @@ export default function PlanningWizard() {
     }
   };
   
-  const handleCheckboxChange = (sectionIndex, key, value, checked) => {
+  const handleCheckboxChange = (key, value, checked) => {
     const currentValues = planningData[key] || [];
     const newValues = checked
       ? [...currentValues, value]
       : currentValues.filter(v => v !== value);
-    
-    handleFieldChange(sectionIndex, key, newValues);
+    handleFieldChange(key, newValues);
   };
   
-  const handleTextareaChange = (sectionIndex, key, value) => {
-    handleFieldChange(sectionIndex, key, value);
+  const handleTextareaChange = (key, value) => {
+    handleFieldChange(key, value);
   };
   
-  const handleTextareaBlur = (sectionIndex, key) => {
-    // On blur, check if section is complete and progress
-    const newData = planningData;
-    const sectionComplete = isSectionComplete(sectionIndex, newData);
-    
-    if (sectionComplete && sectionIndex < PLANNING_STEPS.length - 1) {
-      setTimeout(() => {
-        setExpandedSections(prev => ({ ...prev, [sectionIndex]: false }));
-        const nextSectionIndex = sectionIndex + 1;
-        setExpandedSections(prev => ({ ...prev, [nextSectionIndex]: true }));
-        
-        setTimeout(() => {
-          const nextSectionRef = sectionRefs.current[nextSectionIndex];
-          if (nextSectionRef) {
-            scrollToElement(nextSectionRef);
-          }
-        }, 300);
-      }, 500);
-    }
-  };
-  
-  const toggleSection = (sectionIndex) => {
-    setExpandedSections(prev => ({
-      ...prev,
-      [sectionIndex]: !prev[sectionIndex]
-    }));
-  };
-  
-  const goToNextSection = () => {
-    // Find first incomplete section or next section
-    const currentExpandedIndex = Object.keys(expandedSections).find(key => expandedSections[key] === true);
-    const currentIndex = currentExpandedIndex ? parseInt(currentExpandedIndex) : 0;
-    
-    if (currentIndex < PLANNING_STEPS.length - 1) {
-      // Collapse current, expand next
-      setExpandedSections(prev => ({
-        ...prev,
-        [currentIndex]: false,
-        [currentIndex + 1]: true
-      }));
-      
-      // Scroll to next section
-      setTimeout(() => {
-        const nextSectionRef = sectionRefs.current[currentIndex + 1];
-        if (nextSectionRef) {
-          scrollToElement(nextSectionRef);
-        }
-      }, 300);
+  const goToNextStep = () => {
+    if (currentStep < PLANNING_STEPS.length - 1) {
+      setCurrentStep(prev => prev + 1);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     } else {
-      // On last section, analyze
       handleAnalyze();
     }
   };
   
-  const goToPrevSection = () => {
+  const goToPrevStep = () => {
     if (showResults) {
-      // From results, go back to last section
       setShowResults(false);
-      setExpandedSections({ [PLANNING_STEPS.length - 1]: true });
-      return;
+      setCurrentStep(PLANNING_STEPS.length - 1);
+    } else if (currentStep > 0) {
+      setCurrentStep(prev => prev - 1);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
-    
-    const currentExpandedIndex = Object.keys(expandedSections).find(key => expandedSections[key] === true);
-    const currentIndex = currentExpandedIndex ? parseInt(currentExpandedIndex) : 0;
-    
-    if (currentIndex > 0) {
-      // Collapse current, expand previous
-      setExpandedSections(prev => ({
-        ...prev,
-        [currentIndex]: false,
-        [currentIndex - 1]: true
-      }));
-      
-      // Scroll to previous section
-      setTimeout(() => {
-        const prevSectionRef = sectionRefs.current[currentIndex - 1];
-        if (prevSectionRef) {
-          scrollToElement(prevSectionRef);
-        }
-      }, 300);
-    }
-  };
-  
-  const getCurrentSectionIndex = () => {
-    const expandedIndex = Object.keys(expandedSections).find(key => expandedSections[key] === true);
-    return expandedIndex ? parseInt(expandedIndex) : 0;
   };
   
   const handleAnalyze = async () => {
