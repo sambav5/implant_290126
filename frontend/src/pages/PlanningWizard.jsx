@@ -841,46 +841,6 @@ export default function PlanningWizard() {
           </div>
         )}
       </main>
-      
-      {/* Bottom Navigation */}
-      {!showResults && (
-        <div className="fixed bottom-0 left-0 right-0 p-4 bg-white border-t border-border safe-area-pb">
-          <div className="page-container">
-            <div className="flex gap-3">
-              <Button
-                variant="outline"
-                onClick={goToPrev}
-                disabled={currentStep === 0}
-                className="flex-1 btn-clinical"
-                data-testid="prev-btn"
-              >
-                <ChevronLeft className="h-5 w-5 mr-1" />
-                Back
-              </Button>
-              
-              <Button
-                onClick={goToNext}
-                disabled={analyzing}
-                className="flex-1 btn-clinical bg-primary text-primary-foreground"
-                data-testid="next-btn"
-              >
-                {analyzing ? 'Analyzing...' : currentStep === PLANNING_STEPS.length - 1 ? 'Analyze' : 'Next'}
-                {!analyzing && <ChevronRight className="h-5 w-5 ml-1" />}
-              </Button>
-            </div>
-            
-            {/* Save progress link */}
-            <button
-              onClick={saveProgress}
-              disabled={saving}
-              className="w-full mt-3 text-sm text-muted-foreground hover:text-primary"
-              data-testid="save-progress-btn"
-            >
-              {saving ? 'Saving...' : 'Save progress'}
-            </button>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
