@@ -8,9 +8,9 @@ import { caseApi } from '@/services/api';
 import { toast } from 'sonner';
 
 const statusConfig = {
-  planning: { label: 'Planning', className: 'status-planning' },
-  in_progress: { label: 'In Progress', className: 'status-in-progress' },
-  completed: { label: 'Completed', className: 'status-completed' },
+  planning: { label: 'Planning', className: 'status-planning px-2 py-1 text-xs rounded-md border mono' },
+  in_progress: { label: 'In Progress', className: 'status-in-progress px-2 py-1 text-xs rounded-md border mono' },
+  completed: { label: 'Completed', className: 'status-completed px-2 py-1 text-xs rounded-md border mono' },
 };
 
 const riskConfig = {
