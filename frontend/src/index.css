@@ -419,9 +419,18 @@
     background: var(--t3);
 }
 
-/* Form element enhancements */
+/* Form element enhancements - EndoPilot Style */
 input[type="checkbox"] {
-    @apply h-5 w-5 rounded border-slate-300 text-primary focus:ring-primary;
+    height: 20px;
+    width: 20px;
+    border-radius: 4px;
+    border: 1.5px solid var(--border);
+    accent-color: var(--green);
+}
+
+input[type="checkbox"]:focus {
+    outline: 2px solid var(--green-1);
+    outline-offset: 2px;
 }
 
 select {
