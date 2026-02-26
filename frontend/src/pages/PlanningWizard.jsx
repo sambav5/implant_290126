@@ -753,7 +753,7 @@ export default function PlanningWizard() {
         
         {/* Step Form - Progressive Accordion Flow */}
         {!showResults && (
-          <div className="space-y-4">
+          <div className="space-y-6">
             {PLANNING_STEPS.map((step, sectionIndex) => {
               const isExpanded = expandedSections[sectionIndex];
               const isComplete = completedSections[sectionIndex];
@@ -761,15 +761,15 @@ export default function PlanningWizard() {
               const totalFields = step.fields.length;
               
               return (
-                <div 
-                  key={step.id} 
-                  ref={el => sectionRefs.current[sectionIndex] = el}
-                  className="card-clinical"
-                  style={{
-                    border: isComplete ? '2px solid var(--green-b)' : '1.5px solid var(--border)',
-                    background: isComplete ? 'var(--green-1)' : 'var(--card)'
-                  }}
-                >
+                <div key={step.id}>
+                  <div 
+                    ref={el => sectionRefs.current[sectionIndex] = el}
+                    className="card-clinical"
+                    style={{
+                      border: isComplete ? '2px solid var(--green-b)' : '1.5px solid var(--border)',
+                      background: isComplete ? 'var(--green-1)' : 'var(--card)'
+                    }}
+                  >
                   {/* Section Header */}
                   <button
                     onClick={() => toggleSection(sectionIndex)}
