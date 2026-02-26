@@ -648,24 +648,24 @@ export default function ProstheticChecklist() {
       {/* Completion Buttons - Show when progress is 100% */}
       {overallProgress.percentage === 100 && (
         <div className="page-container py-4 space-y-3">
-          <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-4 text-center">
-            <CheckCircle2 className="h-8 w-8 text-emerald-600 mx-auto mb-2" />
-            <h3 className="font-semibold text-emerald-900 mb-1">Treatment Blueprint Complete! 🎉</h3>
-            <p className="text-sm text-emerald-700">All workflow steps have been checked off</p>
+          <div className="rounded-lg p-4 text-center" style={{background: 'var(--green-1)', border: '1.5px solid var(--green-b)'}}>
+            <CheckCircle2 className="h-8 w-8 mx-auto mb-2" style={{color: 'var(--green)'}} />
+            <h3 className="font-semibold mb-1" style={{color: 'var(--green)', fontFamily: "'Lora', serif"}}>Treatment Blueprint Complete! 🎉</h3>
+            <p className="text-sm" style={{color: 'var(--green)'}}>All workflow steps have been checked off</p>
           </div>
           
           <div className="grid grid-cols-2 gap-3">
             <Button
               onClick={() => navigate('/')}
               variant="outline"
-              className="w-full"
+              className="w-full btn-clinical btn-secondary-endo"
             >
               <Home className="h-4 w-4 mr-2" />
               Go to Home
             </Button>
             <Button
               onClick={() => navigate(`/case/${id}/learning`)}
-              className="w-full bg-primary text-primary-foreground"
+              className="w-full btn-clinical btn-green-endo"
             >
               <Lightbulb className="h-4 w-4 mr-2" />
               Learning Reflections
@@ -675,9 +675,9 @@ export default function ProstheticChecklist() {
       )}
 
       {/* Disclaimer */}
-      <div className="fixed bottom-0 left-0 right-0 p-4 bg-white border-t border-border">
+      <div className="fixed bottom-0 left-0 right-0 p-4 border-t" style={{background: 'var(--card)', borderColor: 'var(--border)'}}>
         <div className="page-container">
-          <p className="text-xs text-center text-muted-foreground">
+          <p className="text-xs text-center disclaimer-text">
             Workflow tracking only. Clinical judgment lies with the practitioner.
           </p>
         </div>
