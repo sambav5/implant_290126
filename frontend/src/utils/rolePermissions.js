@@ -22,10 +22,10 @@ export const ROLE_COLORS = {
 };
 
 export const ROLE_BG_COLORS = {
-  [ROLES.CLINICIAN]: 'bg-blue-100 text-blue-700 border-blue-200',
-  [ROLES.IMPLANTOLOGIST]: 'bg-purple-100 text-purple-700 border-purple-200',
-  [ROLES.PROSTHODONTIST]: 'bg-green-100 text-green-700 border-green-200',
-  [ROLES.ASSISTANT]: 'bg-amber-100 text-amber-700 border-amber-200',
+  [ROLES.CLINICIAN]: 'role-badge-clinician',
+  [ROLES.IMPLANTOLOGIST]: 'role-badge-implantologist',
+  [ROLES.PROSTHODONTIST]: 'role-badge-prosthodontist',
+  [ROLES.ASSISTANT]: 'role-badge-assistant',
 };
 
 /**
