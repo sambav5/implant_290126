@@ -16,28 +16,28 @@ import { canEditItem, getRoleName } from '@/utils/rolePermissions';
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8001';
 
 const PHASE_COLORS = {
-  // Authoritative master checklist phase IDs
-  pre_surgical_planning: { bg: 'bg-blue-50', border: 'border-blue-200', text: 'text-blue-700', badge: 'bg-blue-100' },
-  surgical_treatment: { bg: 'bg-purple-50', border: 'border-purple-200', text: 'text-purple-700', badge: 'bg-purple-100' },
-  prosthetic_rehab: { bg: 'bg-amber-50', border: 'border-amber-200', text: 'text-amber-700', badge: 'bg-amber-100' },
-  clinical_tryin: { bg: 'bg-teal-50', border: 'border-teal-200', text: 'text-teal-700', badge: 'bg-teal-100' },
-  delivery: { bg: 'bg-emerald-50', border: 'border-emerald-200', text: 'text-emerald-700', badge: 'bg-emerald-100' },
-  immediate_post_delivery: { bg: 'bg-green-50', border: 'border-green-200', text: 'text-green-700', badge: 'bg-green-100' },
-  follow_up: { bg: 'bg-cyan-50', border: 'border-cyan-200', text: 'text-cyan-700', badge: 'bg-cyan-100' },
-  maintenance: { bg: 'bg-indigo-50', border: 'border-indigo-200', text: 'text-indigo-700', badge: 'bg-indigo-100' },
+  // Authoritative master checklist phase IDs - EndoPilot Style
+  pre_surgical_planning: { bg: 'var(--blue-1)', border: 'var(--blue-b)', text: 'var(--blue)', badge: 'var(--blue-1)' },
+  surgical_treatment: { bg: '#F3F0FF', border: '#DDD6FE', text: '#6D28D9', badge: '#F3F0FF' },
+  prosthetic_rehab: { bg: 'var(--amber-1)', border: 'var(--amber-b)', text: 'var(--amber)', badge: 'var(--amber-1)' },
+  clinical_tryin: { bg: '#E0F2F1', border: '#B2DFDB', text: '#00695C', badge: '#E0F2F1' },
+  delivery: { bg: 'var(--green-1)', border: 'var(--green-b)', text: 'var(--green)', badge: 'var(--green-1)' },
+  immediate_post_delivery: { bg: '#E8F5E9', border: '#C8E6C9', text: '#2E7D32', badge: '#E8F5E9' },
+  follow_up: { bg: '#E1F5FE', border: '#B3E5FC', text: '#0277BD', badge: '#E1F5FE' },
+  maintenance: { bg: '#E8EAF6', border: '#C5CAE9', text: '#3F51B5', badge: '#E8EAF6' },
   // Legacy fallbacks (if needed)
-  phase1: { bg: 'bg-blue-50', border: 'border-blue-200', text: 'text-blue-700', badge: 'bg-blue-100' },
-  phase2: { bg: 'bg-amber-50', border: 'border-amber-200', text: 'text-amber-700', badge: 'bg-amber-100' },
-  phase3: { bg: 'bg-purple-50', border: 'border-purple-200', text: 'text-purple-700', badge: 'bg-purple-100' },
-  phase4: { bg: 'bg-emerald-50', border: 'border-emerald-200', text: 'text-emerald-700', badge: 'bg-emerald-100' },
+  phase1: { bg: 'var(--blue-1)', border: 'var(--blue-b)', text: 'var(--blue)', badge: 'var(--blue-1)' },
+  phase2: { bg: 'var(--amber-1)', border: 'var(--amber-b)', text: 'var(--amber)', badge: 'var(--amber-1)' },
+  phase3: { bg: '#F3F0FF', border: '#DDD6FE', text: '#6D28D9', badge: '#F3F0FF' },
+  phase4: { bg: 'var(--green-1)', border: 'var(--green-b)', text: 'var(--green)', badge: 'var(--green-1)' },
 };
 
-// Fallback colors for any undefined phases
+// Fallback colors for any undefined phases - EndoPilot Style
 const DEFAULT_PHASE_COLOR = { 
-  bg: 'bg-slate-50', 
-  border: 'border-slate-200', 
-  text: 'text-slate-700', 
-  badge: 'bg-slate-100' 
+  bg: 'var(--card)', 
+  border: 'var(--border)', 
+  text: 'var(--t1)', 
+  badge: 'var(--card)' 
 };
 
 export default function ProstheticChecklist() {
