@@ -120,35 +120,39 @@
     }
 }
 
-/* Tooth number badge */
+/* Tooth number badge - EndoPilot Style */
 .tooth-badge {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 32px;
-    height: 32px;
-    border-radius: 8px;
-    background-color: #2F80ED;
-    color: white;
-    font-family: 'Sora', sans-serif;
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    background: var(--green-1);
+    color: var(--green);
+    border: 1.5px solid var(--green-b);
+    font-family: 'Lora', serif;
     font-weight: 600;
-    font-size: 14px;
+    font-size: 16px;
 }
 
-/* Status badge styles */
+/* Status badge styles - EndoPilot */
 .status-planning {
-    background-color: #E0E7FF;
-    color: #4F46E5;
+    background: var(--blue-1);
+    color: var(--blue);
+    border-color: var(--blue-b);
 }
 
 .status-in-progress {
-    background-color: #FEF3C7;
-    color: #D97706;
+    background: var(--amber-1);
+    color: var(--amber);
+    border-color: var(--amber-b);
 }
 
 .status-completed {
-    background-color: #D1FAE5;
-    color: #059669;
+    background: var(--green-1);
+    color: var(--green);
+    border-color: var(--green-b);
 }
 
 /* Mobile menu transition */
