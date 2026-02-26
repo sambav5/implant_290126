@@ -39,15 +39,15 @@ import { downloadCasePDF } from '@/services/pdfService';
 import { toast } from 'sonner';
 
 const statusConfig = {
-  planning: { label: 'Planning', className: 'status-planning', icon: FileText },
-  in_progress: { label: 'In Progress', className: 'status-in-progress', icon: Play },
-  completed: { label: 'Completed', className: 'status-completed', icon: CheckCircle2 },
+  planning: { label: 'Planning', className: 'status-planning px-2 py-1 text-xs rounded-md border mono', icon: FileText },
+  in_progress: { label: 'In Progress', className: 'status-in-progress px-2 py-1 text-xs rounded-md border mono', icon: Play },
+  completed: { label: 'Completed', className: 'status-completed px-2 py-1 text-xs rounded-md border mono', icon: CheckCircle2 },
 };
 
 const riskConfig = {
-  low: { label: 'Low Risk', className: 'risk-badge-low', color: 'text-emerald-600' },
-  moderate: { label: 'Moderate', className: 'risk-badge-moderate', color: 'text-amber-600' },
-  high: { label: 'High Risk', className: 'risk-badge-high', color: 'text-red-600' },
+  low: { label: 'Low Risk', className: 'risk-badge-low', color: 'var(--green)' },
+  moderate: { label: 'Moderate', className: 'risk-badge-moderate', color: 'var(--amber)' },
+  high: { label: 'High Risk', className: 'risk-badge-high', color: 'var(--red)' },
 };
 
 export default function CaseDetail() {
