@@ -338,21 +338,13 @@ export default function CaseDetail() {
                 <div className="text-left">
                   <h3 className="font-semibold" style={{color: 'var(--t1)'}}>Learning Reflections</h3>
                   <p className="text-sm" style={{color: 'var(--t2)'}}>
-                    Document your insights and learnings
-                  </p>
-                </div>
-              </div>
-              <ChevronRight className="h-5 w-5" style={{color: 'var(--t3)'}} />
-            </div>
-          </button>
-        </div>
                     {caseData.feedback?.reflectionCompletedAt 
                       ? 'View your reflections' 
                       : 'Capture insights to make every case seamless'}
                   </p>
                 </div>
               </div>
-              <ChevronRight className="h-5 w-5 text-muted-foreground" />
+              <ChevronRight className="h-5 w-5" style={{color: 'var(--t3)'}} />
             </div>
           </button>
         </div>
