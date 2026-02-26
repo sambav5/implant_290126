@@ -548,10 +548,13 @@ export default function ProstheticChecklist() {
                                 return (
                                 <div
                                   key={item.id}
-                                  className={`flex items-start gap-3 py-3 border-b border-slate-100 last:border-0 ${
+                                  className={`flex items-start gap-3 py-3 last:border-0 ${
                                     item.completed ? 'opacity-60' : ''
-                                  } ${isAdvanced && showFullProtocol ? 'bg-slate-50/50' : ''}
-                                  ${!canEdit ? 'opacity-70' : ''}`}
+                                  } ${!canEdit ? 'opacity-70' : ''}`}
+                                  style={{
+                                    borderBottom: '1px solid var(--border)',
+                                    background: isAdvanced && showFullProtocol ? 'rgba(227, 224, 216, 0.2)' : 'transparent'
+                                  }}
                                 >
                                   <button
                                     onClick={() => canEdit && toggleItem(phaseKey, sectionIndex, section.items.indexOf(item))}
@@ -560,14 +563,15 @@ export default function ProstheticChecklist() {
                                     title={!canEdit ? `Assigned to ${itemRole}` : ''}
                                   >
                                     {item.completed ? (
-                                      <CheckCircle2 className={`h-5 w-5 ${canEdit ? 'text-emerald-600' : 'text-emerald-400'}`} />
+                                      <CheckCircle2 className="h-5 w-5" style={{color: canEdit ? 'var(--green)' : 'rgba(26, 107, 74, 0.4)'}} />
                                     ) : (
-                                      <Circle className={`h-5 w-5 ${canEdit ? 'text-slate-300' : 'text-slate-200'}`} />
+                                      <Circle className="h-5 w-5" style={{color: canEdit ? 'var(--border2)' : 'var(--border)'}} />
                                     )}
                                   </button>
                                   <div className="flex-1">
                                     <div className="flex items-start gap-2 flex-wrap">
-                                      <p className={`text-sm flex-1 ${item.completed ? 'line-through text-muted-foreground' : 'text-foreground'}`}>
+                                      <p className={`text-sm flex-1 ${item.completed ? 'line-through' : ''}`} 
+                                         style={{color: item.completed ? 'var(--t3)' : 'var(--t1)'}}>
                                         {item.text}
                                       </p>
                                       
@@ -575,28 +579,47 @@ export default function ProstheticChecklist() {
                                       <RoleBadge role={itemRole} />
                                       
                                       {item.importance === 'essential' && (
-                                        <span className="shrink-0 px-2 py-0.5 text-xs font-medium bg-emerald-100 text-emerald-700 rounded-full">
+                                        <span className="shrink-0 px-2 py-1 text-xs rounded-md mono" style={{
+                                          background: 'var(--green-1)',
+                                          color: 'var(--green)',
+                                          border: '1px solid var(--green-b)',
+                                          fontSize: '9px',
+                                          textTransform: 'uppercase',
+                                          fontWeight: 500
+                                        }}>
                                           Essential
                                         </span>
                                       )}
                                       {isAdvanced && showFullProtocol && (
-                                        <span className="shrink-0 px-1.5 py-0.5 text-[10px] font-medium bg-slate-200 text-slate-600 rounded">
+                                        <span className="shrink-0 px-2 py-1 rounded mono" style={{
+                                          background: 'var(--border)',
+                                          color: 'var(--t2)',
+                                          fontSize: '9px',
+                                          textTransform: 'uppercase',
+                                          fontWeight: 500
+                                        }}>
                                           Advanced
                                         </span>
                                       )}
                                       {item.autoCompleted && (
-                                        <span className="shrink-0 px-1.5 py-0.5 text-[10px] font-medium bg-blue-100 text-blue-700 rounded">
+                                        <span className="shrink-0 px-2 py-1 rounded mono" style={{
+                                          background: 'var(--blue-1)',
+                                          color: 'var(--blue)',
+                                          fontSize: '9px',
+                                          textTransform: 'uppercase',
+                                          fontWeight: 500
+                                        }}>
                                           Auto-completed
                                         </span>
                                       )}
                                       {!showFullProtocol && item.importance !== 'essential' && (
-                                        <TrendingUp className="h-4 w-4 text-blue-500 shrink-0" title="High Impact" />
+                                        <TrendingUp className="h-4 w-4 shrink-0" style={{color: 'var(--blue)'}} title="High Impact" />
                                       )}
                                     </div>
                                     {item.completedAt && (
-                                      <p className="text-xs text-muted-foreground mt-1">
+                                      <p className="text-xs mt-1 mono" style={{color: 'var(--t3)'}}>
                                         {item.autoCompleted && item.autoCompleteReason ? (
-                                          <span className="italic text-blue-600">
+                                          <span className="italic" style={{color: 'var(--blue)'}}>
                                             {item.autoCompleteReason} • {new Date(item.completedAt).toLocaleString()}
                                           </span>
                                         ) : (
