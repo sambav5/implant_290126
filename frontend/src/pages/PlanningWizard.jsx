@@ -350,19 +350,22 @@ export default function PlanningWizard() {
     }
   };
   
-  const saveProgress = async () => {
-    setSaving(true);
-    try {
-      await caseApi.update(id, { planningData });
-      toast.success('Progress saved');
-    } catch (error) {
-      toast.error('Failed to save');
-    } finally {
-      setSaving(false);
-    }
+  const toggleSection = (sectionIndex) => {
+    setExpandedSections(prev => ({
+      ...prev,
+      [sectionIndex]: !prev[sectionIndex]
+    }));
   };
   
   const handleAnalyze = async () => {
+    // Check if all sections are complete
+    const allComplete = PLANNING_STEPS.every((_, index) => isSectionComplete(index, planningData));
+    
+    if (!allComplete) {
+      toast.error('Please complete all required fields before analyzing');
+      return;
+    }
+    
     setAnalyzing(true);
     try {
       await caseApi.update(id, { planningData });
@@ -378,6 +381,9 @@ export default function PlanningWizard() {
       
       setShowResults(true);
       toast.success('Assessment complete');
+      
+      // Scroll to top to show results
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     } catch (error) {
       toast.error('Failed to analyze');
     } finally {
@@ -385,21 +391,17 @@ export default function PlanningWizard() {
     }
   };
   
-  const goToNext = () => {
-    if (currentStep < PLANNING_STEPS.length - 1) {
-      setCurrentStep(prev => prev + 1);
-    } else {
-      handleAnalyze();
-    }
-  };
-  
-  const goToPrev = () => {
-    if (showResults) {
-      setShowResults(false);
-      setCurrentStep(PLANNING_STEPS.length - 1);
-    } else if (currentStep > 0) {
-      setCurrentStep(prev => prev - 1);
-    }
+  // Calculate overall progress
+  const calculateProgress = () => {
+    if (showResults) return 100;
+    
+    const totalFields = PLANNING_STEPS.reduce((sum, step) => sum + step.fields.length, 0);
+    const filledFields = PLANNING_STEPS.reduce((sum, step) => {
+      const filled = step.fields.filter(field => isFieldFilled(field, planningData)).length;
+      return sum + filled;
+    }, 0);
+    
+    return Math.round((filledFields / totalFields) * 100);
   };
   
   if (loading) {
