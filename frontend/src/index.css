@@ -271,6 +271,25 @@
         letter-spacing: 0.02em;
     }
     
+    /* Status Badges - EndoPilot Style */
+    .status-planning {
+        background: var(--blue-1);
+        color: var(--blue);
+        border-color: var(--blue-b);
+    }
+    
+    .status-in-progress {
+        background: var(--amber-1);
+        color: var(--amber);
+        border-color: var(--amber-b);
+    }
+    
+    .status-completed {
+        background: var(--green-1);
+        color: var(--green);
+        border-color: var(--green-b);
+    }
+    
     /* Labels - Monospace Uppercase */
     .label-endo {
         font-family: 'JetBrains Mono', monospace;
