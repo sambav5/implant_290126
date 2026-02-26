@@ -36,7 +36,7 @@
     transform: scale(0.95);
 }
 
-/* Step indicator */
+/* Step indicator - EndoPilot Style */
 .step-indicator {
     display: flex;
     align-items: center;
@@ -47,17 +47,18 @@
     width: 8px;
     height: 8px;
     border-radius: 50%;
-    background-color: #E2E8F0;
+    background-color: var(--border);
+    transition: all 0.2s ease;
 }
 
 .step-dot.active {
-    background-color: #2F80ED;
+    background-color: var(--green);
     width: 24px;
     border-radius: 4px;
 }
 
 .step-dot.completed {
-    background-color: #10B981;
+    background-color: var(--green);
 }
 
 /* Timeline styles */
