@@ -193,11 +193,20 @@ export default function PlanningWizard() {
     try {
       const response = await caseApi.getById(id);
       setCaseData(response.data);
-      if (response.data.planningData) {
-        setPlanningData(response.data.planningData);
-        // Check which sections are complete on load
-        checkAllSections(response.data.planningData);
+      
+      // Initialize planning data
+      const savedPlanningData = response.data.planningData || {};
+      setPlanningData(savedPlanningData);
+      
+      // Only check sections if there's actual data
+      if (savedPlanningData && Object.keys(savedPlanningData).length > 0) {
+        checkAllSections(savedPlanningData);
+      } else {
+        // No saved data - mark all sections as incomplete
+        setCompletedSections({});
       }
+      
+      // If assessment already exists, show results
       if (response.data.riskAssessment) {
         setShowResults(true);
       }
