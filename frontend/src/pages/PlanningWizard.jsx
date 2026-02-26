@@ -357,6 +357,66 @@ export default function PlanningWizard() {
     }));
   };
   
+  const goToNextSection = () => {
+    // Find first incomplete section or next section
+    const currentExpandedIndex = Object.keys(expandedSections).find(key => expandedSections[key] === true);
+    const currentIndex = currentExpandedIndex ? parseInt(currentExpandedIndex) : 0;
+    
+    if (currentIndex < PLANNING_STEPS.length - 1) {
+      // Collapse current, expand next
+      setExpandedSections(prev => ({
+        ...prev,
+        [currentIndex]: false,
+        [currentIndex + 1]: true
+      }));
+      
+      // Scroll to next section
+      setTimeout(() => {
+        const nextSectionRef = sectionRefs.current[currentIndex + 1];
+        if (nextSectionRef) {
+          scrollToElement(nextSectionRef);
+        }
+      }, 300);
+    } else {
+      // On last section, analyze
+      handleAnalyze();
+    }
+  };
+  
+  const goToPrevSection = () => {
+    if (showResults) {
+      // From results, go back to last section
+      setShowResults(false);
+      setExpandedSections({ [PLANNING_STEPS.length - 1]: true });
+      return;
+    }
+    
+    const currentExpandedIndex = Object.keys(expandedSections).find(key => expandedSections[key] === true);
+    const currentIndex = currentExpandedIndex ? parseInt(currentExpandedIndex) : 0;
+    
+    if (currentIndex > 0) {
+      // Collapse current, expand previous
+      setExpandedSections(prev => ({
+        ...prev,
+        [currentIndex]: false,
+        [currentIndex - 1]: true
+      }));
+      
+      // Scroll to previous section
+      setTimeout(() => {
+        const prevSectionRef = sectionRefs.current[currentIndex - 1];
+        if (prevSectionRef) {
+          scrollToElement(prevSectionRef);
+        }
+      }, 300);
+    }
+  };
+  
+  const getCurrentSectionIndex = () => {
+    const expandedIndex = Object.keys(expandedSections).find(key => expandedSections[key] === true);
+    return expandedIndex ? parseInt(expandedIndex) : 0;
+  };
+  
   const handleAnalyze = async () => {
     // Check if all sections are complete
     const allComplete = PLANNING_STEPS.every((_, index) => isSectionComplete(index, planningData));
