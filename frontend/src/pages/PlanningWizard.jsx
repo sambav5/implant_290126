@@ -803,13 +803,16 @@ export default function PlanningWizard() {
                             ref={el => fieldRefs.current[field.key] = el}
                             className="space-y-3"
                             style={{
-                              opacity: isFilled ? 0.7 : 1,
+                              opacity: isFilled && field.type !== 'textarea' ? 0.7 : 1,
                               transition: 'opacity 0.3s ease'
                             }}
                           >
                             <Label className="text-base font-medium flex items-center gap-2">
                               {field.label}
-                              {isFilled && <span style={{color: 'var(--green)', fontSize: '14px'}}>✓</span>}
+                              {field.type === 'textarea' && (
+                                <span className="text-xs mono" style={{color: 'var(--t3)', textTransform: 'none', fontWeight: 'normal'}}>(Optional)</span>
+                              )}
+                              {isFilled && field.type !== 'textarea' && <span style={{color: 'var(--green)', fontSize: '14px'}}>✓</span>}
                             </Label>
                             
                             {field.type === 'radio' && (
