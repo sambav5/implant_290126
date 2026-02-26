@@ -275,38 +275,46 @@ agent_communication:
   
   - agent: "main"
     message: |
-      ROLE SWITCHER BUG FIX COMPLETE ✅
+      UI/UX DESIGN SYSTEM REFACTOR - IN PROGRESS 🎨
       
-      Fixed: Role switcher now properly updates filter message and items when switching roles
+      Implementing EndoPilot-inspired design system (design-only refactor):
       
-      Root Cause:
-      - Each component using useActiveRole() had its own isolated state
-      - When RoleSwitcher changed the role, it only updated localStorage and its own state
-      - Other components (like ProstheticChecklist) didn't receive the update
-      - The storage event listener only worked for cross-tab changes, not same-tab changes
+      **Phase 1: Design System Foundation** ✅
+      - Implemented EndoPilot color palette and CSS variables
+      - Added typography system (Lora serif, JetBrains Mono, Inter)
+      - Created reusable component classes
+      - Updated global styles and theme
       
-      Solution:
-      - Added custom event dispatch mechanism in useActiveRole hook
-      - When role changes, dispatch 'activeCaseRoleChanged' custom event
-      - All components using the hook listen for this event and update their state
-      - Also cleaned up unnecessary useEffect in ProstheticChecklist.jsx
+      **Phase 2: Component Redesign** ✅
+      - Dashboard page redesigned with new design language
+      - Updated case cards with refined styling
+      - Redesigned badges (status, risk, role)
+      - Updated buttons and input fields
+      - Refined section dividers and labels
       
-      Files Modified:
-      - /app/frontend/src/hooks/useActiveRole.js
-        • Added custom event dispatch when role changes (line 14)
-        • Added custom event listener in useEffect (lines 27-29, 33)
-      - /app/frontend/src/pages/ProstheticChecklist.jsx
-        • Removed useless useEffect (lines 66-71 removed)
+      **Design System Details:**
+      - Background: Warm off-white (#F4F2EE)
+      - Cards: Soft neutral (#FAFAF8) with subtle borders
+      - Typography: Serif headings, monospace labels, sans-serif body
+      - Border radius: 12px for cards, 10px for badges
+      - Spacing: Generous padding, clear hierarchy
+      - Colors: Soft greens, ambers, reds, blues (not harsh)
+      - Shadows: Minimal/none (flat, clean aesthetic)
       
-      Testing:
-      ✅ Backend running (port 8001)
-      ✅ Frontend compiled and running (port 3000)
-      ✅ MongoDB running
+      **Files Modified:**
+      1. /app/frontend/src/index.css - Design system, CSS variables, component classes
+      2. /app/frontend/src/App.css - FAB, timeline, badges, skeleton
+      3. /app/frontend/src/pages/Dashboard.jsx - EndoPilot styling
+      4. /app/frontend/src/components/RoleBadge.jsx - Monospace uppercase style
+      5. /app/frontend/src/utils/rolePermissions.js - Updated color classes
       
-      Ready for verification:
-      1. Navigate to Treatment Blueprint page with team members assigned
-      2. Enable "Show My Tasks Only" filter
-      3. Switch between roles using the Role Switcher dropdown
-      4. Verify: Filter message updates to show current role name
-      5. Verify: Item list updates to show only tasks assigned to selected role
-      6. Verify: Switching roles immediately reflects in the UI without refresh
+      **Remaining Work:**
+      - Update ProstheticChecklist page styling
+      - Update CaseDetail page styling
+      - Update NewCase/PlanningWizard pages
+      - Update RoleSwitcher component styling
+      - Update other components (ToothSelector, etc.)
+      - Test responsiveness across devices
+      
+      **Important:** NO business logic, state, routing, or functionality changed.
+      This is a pure visual/styling refactor.
