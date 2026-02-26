@@ -326,8 +326,7 @@ export default function PlanningWizard() {
   };
   
   const handleAnalyze = async () => {
-    // Check if all sections are complete
-    const allComplete = PLANNING_STEPS.every((_, index) => isSectionComplete(index, planningData));
+    const allComplete = PLANNING_STEPS.every((_, index) => isStepComplete(index, planningData));
     
     if (!allComplete) {
       toast.error('Please complete all required fields before analyzing');
@@ -337,20 +336,14 @@ export default function PlanningWizard() {
     setAnalyzing(true);
     try {
       await caseApi.update(id, { planningData });
-      
-      // Track planning completion
       trackPlanningCompleted(id, planningData);
       
       const response = await caseApi.analyze(id);
       setCaseData(prev => ({ ...prev, riskAssessment: response.data }));
-      
-      // Track risk analysis
       trackRiskAnalysisRun(id, response.data);
       
       setShowResults(true);
       toast.success('Assessment complete');
-      
-      // Scroll to top to show results
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } catch (error) {
       toast.error('Failed to analyze');
@@ -359,16 +352,13 @@ export default function PlanningWizard() {
     }
   };
   
-  // Calculate overall progress
   const calculateProgress = () => {
     if (showResults) return 100;
-    
     const totalFields = PLANNING_STEPS.reduce((sum, step) => sum + step.fields.length, 0);
     const filledFields = PLANNING_STEPS.reduce((sum, step) => {
       const filled = step.fields.filter(field => isFieldFilled(field, planningData)).length;
       return sum + filled;
     }, 0);
-    
     return Math.round((filledFields / totalFields) * 100);
   };
   
