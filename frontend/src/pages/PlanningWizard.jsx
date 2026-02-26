@@ -220,23 +220,28 @@ export default function PlanningWizard() {
   
   // Check if a field is filled
   const isFieldFilled = (field, data) => {
-    const value = data[field.key];
-    
     // Textareas are optional - always considered "filled"
     if (field.type === 'textarea') {
       return true;
     }
     
+    const value = data[field.key];
+    
     if (field.type === 'checkbox') {
       return Array.isArray(value) && value.length > 0;
     }
     
-    // Radio fields are required
-    return value !== undefined && value !== '';
+    // Radio fields are required - must have a value
+    return value !== undefined && value !== null && value !== '';
   };
   
   // Check if a section is complete
   const isSectionComplete = (sectionIndex, data) => {
+    // If no data at all, section is not complete
+    if (!data || Object.keys(data).length === 0) {
+      return false;
+    }
+    
     const section = PLANNING_STEPS[sectionIndex];
     return section.fields.every(field => isFieldFilled(field, data));
   };
