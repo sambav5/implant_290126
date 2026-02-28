@@ -241,13 +241,6 @@ export default function ProstheticChecklist() {
       }
     }
   };
-      item.completedByRole = null;
-      item.completedByName = null;
-    }
-    
-    setChecklist(updatedChecklist);
-    await saveChecklist(updatedChecklist);
-  };
 
   const toggleSelectAllInSection = async (phaseKey, sectionIndex) => {
     const updatedChecklist = { ...checklist };
