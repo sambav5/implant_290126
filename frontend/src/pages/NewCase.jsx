@@ -108,152 +108,154 @@ export default function NewCase() {
                   Case Name <span style={{color: 'var(--red)'}}>*</span>
                 </Label>
                 <Input
-              id="caseName"
-              placeholder="e.g., Upper Right Molar Replacement"
-              value={formData.caseName}
-              onChange={(e) => setFormData({ ...formData, caseName: e.target.value })}
-              className="input-clinical"
-              autoFocus
-              data-testid="case-name-input"
-            />
-            <p className="text-xs text-muted-foreground">
-              A nickname to identify this case
-            </p>
-          </div>
-          
-          {/* Tooth Number - Visual Selector */}
-          <ToothSelector
-            value={formData.toothNumber}
-            onChange={(value) => setFormData({ ...formData, toothNumber: value })}
-            required
-            multiple
-          />
-          
-          {/* Optional Fields */}
-          <div className="pt-4 border-t border-border">
-            <p className="text-sm font-medium text-muted-foreground mb-4">Optional Details</p>
-            
-            <div className="grid grid-cols-2 gap-4">
-              {/* Age */}
-              <div className="space-y-2">
-                <Label htmlFor="age" className="text-sm font-medium">
-                  Patient Age
-                </Label>
-                <Input
-                  id="age"
-                  type="number"
-                  placeholder="Years"
-                  min="1"
-                  max="120"
-                  value={formData.optionalAge}
-                  onChange={(e) => setFormData({ ...formData, optionalAge: e.target.value })}
+                  id="caseName"
+                  placeholder="e.g., Upper Right Molar Replacement"
+                  value={formData.caseName}
+                  onChange={(e) => setFormData({ ...formData, caseName: e.target.value })}
                   className="input-clinical"
-                  data-testid="age-input"
+                  autoFocus
+                  data-testid="case-name-input"
                 />
+                <p className="text-xs" style={{color: 'var(--t3)'}}>
+                  A nickname to identify this case
+                </p>
               </div>
               
-              {/* Sex */}
-              <div className="space-y-2">
-                <Label htmlFor="sex" className="text-sm font-medium">
-                  Patient Sex
-                </Label>
-                <Select
-                  value={formData.optionalSex}
-                  onValueChange={(value) => setFormData({ ...formData, optionalSex: value })}
-                >
-                  <SelectTrigger className="input-clinical" data-testid="sex-select">
-                    <SelectValue placeholder="Select" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="male">Male</SelectItem>
-                    <SelectItem value="female">Female</SelectItem>
-                    <SelectItem value="other">Other</SelectItem>
-                  </SelectContent>
-                </Select>
+              {/* Tooth Number - Visual Selector */}
+              <ToothSelector
+                value={formData.toothNumber}
+                onChange={(value) => setFormData({ ...formData, toothNumber: value })}
+                required
+                multiple
+              />
+            </div>
+            
+            {/* Optional Fields */}
+            <div className="pt-4" style={{borderTop: '1px solid var(--border)'}}>
+              <p className="text-sm font-medium mb-4 label-endo">Optional Details</p>
+              
+              <div className="grid grid-cols-2 gap-4">
+                {/* Age */}
+                <div className="space-y-2">
+                  <Label htmlFor="age" className="text-sm font-medium" style={{color: 'var(--t1)'}}>
+                    Patient Age
+                  </Label>
+                  <Input
+                    id="age"
+                    type="number"
+                    placeholder="Years"
+                    min="1"
+                    max="120"
+                    value={formData.optionalAge}
+                    onChange={(e) => setFormData({ ...formData, optionalAge: e.target.value })}
+                    className="input-clinical"
+                    data-testid="age-input"
+                  />
+                </div>
+                
+                {/* Sex */}
+                <div className="space-y-2">
+                  <Label htmlFor="sex" className="text-sm font-medium" style={{color: 'var(--t1)'}}>
+                    Patient Sex
+                  </Label>
+                  <Select
+                    value={formData.optionalSex}
+                    onValueChange={(value) => setFormData({ ...formData, optionalSex: value })}
+                  >
+                    <SelectTrigger className="input-clinical" data-testid="sex-select">
+                      <SelectValue placeholder="Select" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="male">Male</SelectItem>
+                      <SelectItem value="female">Female</SelectItem>
+                      <SelectItem value="other">Other</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
             </div>
-          </div>
-          
-          {/* Case Team Assignment */}
-          <div className="pt-4 border-t border-border">
-            <p className="text-sm font-medium text-slate-700 mb-2">Assign Team For This Case</p>
-            <p className="text-xs text-muted-foreground mb-4">
-              Assign names to clinical roles for this case. You can always edit this later.
-            </p>
             
-            <div className="space-y-3">
-              {/* Clinician */}
-              <div className="space-y-2">
-                <Label htmlFor="clinician" className="text-sm font-medium flex items-center gap-2">
-                  <span className="w-24">Clinician</span>
-                  <span className="px-2 py-0.5 text-xs font-medium bg-blue-100 text-blue-700 rounded border border-blue-200">
-                    Case Owner
-                  </span>
-                </Label>
-                <Input
-                  id="clinician"
-                  placeholder="Your name or designation"
-                  value={formData.caseTeam.clinician}
-                  onChange={(e) => setFormData({
-                    ...formData,
-                    caseTeam: { ...formData.caseTeam, clinician: e.target.value }
-                  })}
-                  className="input-clinical"
-                />
-              </div>
+            {/* Case Team Assignment */}
+            <div className="pt-4" style={{borderTop: '1px solid var(--border)'}}>
+              <p className="text-sm font-medium mb-2" style={{color: 'var(--t1)'}}>Assign Team For This Case</p>
+              <p className="text-xs mb-4" style={{color: 'var(--t3)'}}>
+                Assign names to clinical roles for this case. You can always edit this later.
+              </p>
               
-              {/* Implantologist */}
-              <div className="space-y-2">
-                <Label htmlFor="implantologist" className="text-sm font-medium flex items-center gap-2">
-                  <span className="w-24">Implantologist</span>
-                  <span className="text-xs text-muted-foreground">(Optional)</span>
-                </Label>
-                <Input
-                  id="implantologist"
-                  placeholder="Surgeon handling implant placement"
-                  value={formData.caseTeam.implantologist}
-                  onChange={(e) => setFormData({
-                    ...formData,
-                    caseTeam: { ...formData.caseTeam, implantologist: e.target.value }
-                  })}
-                  className="input-clinical"
-                />
-              </div>
-              
-              {/* Prosthodontist */}
-              <div className="space-y-2">
-                <Label htmlFor="prosthodontist" className="text-sm font-medium flex items-center gap-2">
-                  <span className="w-24">Prosthodontist</span>
-                  <span className="text-xs text-muted-foreground">(Optional)</span>
-                </Label>
-                <Input
-                  id="prosthodontist"
-                  placeholder="Specialist for final restoration"
-                  value={formData.caseTeam.prosthodontist}
-                  onChange={(e) => setFormData({
-                    ...formData,
-                    caseTeam: { ...formData.caseTeam, prosthodontist: e.target.value }
-                  })}
-                  className="input-clinical"
-                />
-              </div>
-              
-              {/* Assistant */}
-              <div className="space-y-2">
-                <Label htmlFor="assistant" className="text-sm font-medium flex items-center gap-2">
-                  <span className="w-24">Assistant</span>
-                  <span className="text-xs text-muted-foreground">(Optional)</span>
-                </Label>
-                <Input
-                  id="assistant"
-                  placeholder="Clinical assistant or coordinator"
-                  value={formData.caseTeam.assistant}
-                  onChange={(e) => setFormData({
-                    ...formData,
-                    caseTeam: { ...formData.caseTeam, assistant: e.target.value }
-                  })}
-                  className="input-clinical"
-                />
+              <div className="space-y-3">
+                {/* Clinician */}
+                <div className="space-y-2">
+                  <Label htmlFor="clinician" className="text-sm font-medium flex items-center gap-2" style={{color: 'var(--t1)'}}>
+                    <span className="w-24">Clinician</span>
+                    <span className="px-2 py-0.5 text-xs font-medium rounded" style={{background: 'var(--blue-1)', color: 'var(--blue)', border: '1px solid var(--blue-b)'}}>
+                      Case Owner
+                    </span>
+                  </Label>
+                  <Input
+                    id="clinician"
+                    placeholder="Your name or designation"
+                    value={formData.caseTeam.clinician}
+                    onChange={(e) => setFormData({
+                      ...formData,
+                      caseTeam: { ...formData.caseTeam, clinician: e.target.value }
+                    })}
+                    className="input-clinical"
+                  />
+                </div>
+                
+                {/* Implantologist */}
+                <div className="space-y-2">
+                  <Label htmlFor="implantologist" className="text-sm font-medium flex items-center gap-2" style={{color: 'var(--t1)'}}>
+                    <span className="w-24">Implantologist</span>
+                    <span className="text-xs" style={{color: 'var(--t3)'}}>(Optional)</span>
+                  </Label>
+                  <Input
+                    id="implantologist"
+                    placeholder="Surgeon handling implant placement"
+                    value={formData.caseTeam.implantologist}
+                    onChange={(e) => setFormData({
+                      ...formData,
+                      caseTeam: { ...formData.caseTeam, implantologist: e.target.value }
+                    })}
+                    className="input-clinical"
+                  />
+                </div>
+                
+                {/* Prosthodontist */}
+                <div className="space-y-2">
+                  <Label htmlFor="prosthodontist" className="text-sm font-medium flex items-center gap-2" style={{color: 'var(--t1)'}}>
+                    <span className="w-24">Prosthodontist</span>
+                    <span className="text-xs" style={{color: 'var(--t3)'}}>(Optional)</span>
+                  </Label>
+                  <Input
+                    id="prosthodontist"
+                    placeholder="Specialist for final restoration"
+                    value={formData.caseTeam.prosthodontist}
+                    onChange={(e) => setFormData({
+                      ...formData,
+                      caseTeam: { ...formData.caseTeam, prosthodontist: e.target.value }
+                    })}
+                    className="input-clinical"
+                  />
+                </div>
+                
+                {/* Assistant */}
+                <div className="space-y-2">
+                  <Label htmlFor="assistant" className="text-sm font-medium flex items-center gap-2" style={{color: 'var(--t1)'}}>
+                    <span className="w-24">Assistant</span>
+                    <span className="text-xs" style={{color: 'var(--t3)'}}>(Optional)</span>
+                  </Label>
+                  <Input
+                    id="assistant"
+                    placeholder="Clinical assistant or coordinator"
+                    value={formData.caseTeam.assistant}
+                    onChange={(e) => setFormData({
+                      ...formData,
+                      caseTeam: { ...formData.caseTeam, assistant: e.target.value }
+                    })}
+                    className="input-clinical"
+                  />
+                </div>
               </div>
             </div>
           </div>
@@ -261,12 +263,12 @@ export default function NewCase() {
       </main>
       
       {/* Bottom CTA */}
-      <div className="fixed bottom-0 left-0 right-0 p-4 bg-white border-t border-border safe-area-pb">
+      <div className="fixed bottom-0 left-0 right-0 p-4 safe-area-pb" style={{background: 'var(--card)', borderTop: '1.5px solid var(--border)'}}>
         <div className="page-container">
           <Button
             onClick={handleSubmit}
             disabled={!isValid || loading}
-            className="w-full btn-clinical bg-primary text-primary-foreground hover:bg-primary/90"
+            className="w-full btn-clinical btn-primary-endo"
             data-testid="create-case-btn"
           >
             {loading ? 'Creating...' : 'Create Case'}
