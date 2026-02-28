@@ -391,17 +391,18 @@ export default function CaseDetail() {
         <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center">
           {/* Backdrop */}
           <div 
-            className="absolute inset-0 bg-black/40 backdrop-blur-sm"
+            className="absolute inset-0"
+            style={{background: 'rgba(26, 25, 23, 0.6)'}}
             onClick={() => setActivityModalOpen(false)}
           />
           
           {/* Modal Content */}
           <div 
-            className="relative w-full sm:max-w-lg max-h-[80vh] overflow-hidden rounded-t-2xl sm:rounded-2xl animate-slide-up"
-            style={{background: 'var(--card)', border: '1.5px solid var(--border)'}}
+            className="relative w-full sm:max-w-lg max-h-[80vh] overflow-hidden rounded-t-2xl sm:rounded-2xl animate-slide-up shadow-xl"
+            style={{background: '#FAFAF8', border: '1.5px solid var(--border)'}}
           >
             {/* Header */}
-            <div className="sticky top-0 z-10 flex items-center justify-between p-4" style={{background: 'var(--card)', borderBottom: '1px solid var(--border)'}}>
+            <div className="sticky top-0 z-10 flex items-center justify-between p-4" style={{background: '#FAFAF8', borderBottom: '1px solid var(--border)'}}>
               <div className="flex items-center gap-2">
                 <Clock className="h-5 w-5" style={{color: 'var(--t2)'}} />
                 <h2 className="text-lg font-semibold" style={{fontFamily: "'Lora', serif", color: 'var(--t1)'}}>Recent Activity</h2>
@@ -418,7 +419,7 @@ export default function CaseDetail() {
             </div>
             
             {/* Activity List */}
-            <div className="p-4 overflow-y-auto" style={{maxHeight: 'calc(80vh - 64px)'}}>
+            <div className="p-4 overflow-y-auto" style={{maxHeight: 'calc(80vh - 64px)', background: '#FAFAF8'}}>
               <div className="space-y-4">
                 {caseData.timeline.slice().reverse().map((entry) => (
                   <div key={entry.id} className="timeline-entry">
