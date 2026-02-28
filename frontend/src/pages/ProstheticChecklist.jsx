@@ -449,7 +449,74 @@ export default function ProstheticChecklist() {
         </div>
       </header>
       
-      <main className="page-container py-4"  ref={checklistRef}>
+      
+      <main className="page-container py-4" ref={checklistRef}>
+        {/* Scope Toggle */}
+        <div className="mb-4 p-3 rounded-lg" style={{background: 'var(--card)', border: '1px solid var(--border)'}}>
+          <div className="flex items-center justify-between gap-3">
+            <button
+              onClick={() => setShowFullProtocol(false)}
+              className="text-sm transition-colors"
+              style={{color: !showFullProtocol ? 'var(--green)' : 'var(--t3)', fontWeight: !showFullProtocol ? 600 : 400}}
+            >
+              {!showFullProtocol && '✓ '}Essential
+            </button>
+            
+            <button
+              onClick={() => setShowFullProtocol(!showFullProtocol)}
+              className={`toggle-endo ${showFullProtocol ? 'on' : ''}`}
+            >
+              <span className="toggle-thumb" />
+            </button>
+            
+            <button
+              onClick={() => setShowFullProtocol(true)}
+              className="text-sm transition-colors"
+              style={{color: showFullProtocol ? 'var(--blue)' : 'var(--t3)', fontWeight: showFullProtocol ? 600 : 400}}
+            >
+              {showFullProtocol && '✓ '}Full Protocol
+            </button>
+          </div>
+        </div>
+        
+        {/* My Tasks Filter */}
+        {caseData?.caseTeam && (
+          <div className="mb-4 p-3 rounded-lg flex items-center justify-between" style={{background: 'var(--blue-1)', border: '1px solid var(--blue-b)'}}>
+            <div className="flex items-center gap-2">
+              <Filter className="h-4 w-4" style={{color: 'var(--blue)'}} />
+              <span className="text-sm font-medium" style={{color: 'var(--blue)'}}>My Tasks Only</span>
+            </div>
+            <Switch
+              checked={showMyTasksOnly}
+              onCheckedChange={setShowMyTasksOnly}
+            />
+          </div>
+        )}
+        
+        {/* Dynamic Notice */}
+        {isDynamic && (
+          <div className="mb-4 p-3 rounded-lg" style={{background: 'var(--blue-1)', borderLeft: '3px solid var(--blue)'}}>
+            <div className="flex items-start gap-2">
+              <TrendingUp className="h-4 w-4 shrink-0 mt-0.5" style={{color: 'var(--blue)'}} />
+              <p className="text-sm" style={{color: 'var(--blue)'}}>
+                Customized checklist based on case planning
+              </p>
+            </div>
+          </div>
+        )}
+        
+        {/* Active Phase Content */}
+        {checklist && renderPhaseContent()}
+        
+        {/* Overall Progress */}
+        <div className="mt-6 p-4 rounded-lg" style={{background: 'var(--card)', border: '1px solid var(--border)'}}>
+          <div className="flex justify-between text-sm mb-2">
+            <span className="label-endo">Overall Progress</span>
+            <span className="mono" style={{color: 'var(--t1)'}}>{overallProgress.completed}/{overallProgress.total}</span>
+          </div>
+          <Progress value={overallProgress.percentage} className="h-2" />
+        </div>
+      </main>
           <div className="mb-4 p-3 rounded-lg" style={{background: 'var(--card)', border: '1.5px solid var(--border)'}}>
             <div className="flex items-center justify-between gap-3">
               <div className="flex-1">
