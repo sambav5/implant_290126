@@ -62,42 +62,52 @@ export default function NewCase() {
   const isValid = formData.caseName.trim() && formData.toothNumber;
   
   return (
-    <div className="min-h-screen bg-background pb-24">
+    <div className="min-h-screen pb-24" style={{background: 'var(--bg)'}}>
       {/* Header */}
       <header className="glass-header sticky top-0 z-40 px-4 py-4">
         <div className="page-container">
           <div className="flex items-center gap-3">
             <button
               onClick={() => navigate(-1)}
-              className="p-2 -ml-2 hover:bg-slate-100 rounded-lg touch-target"
+              className="p-2 -ml-2 rounded-lg touch-target"
+              style={{background: 'transparent', border: 'none'}}
+              onMouseOver={(e) => e.currentTarget.style.background = 'var(--border)'}
+              onMouseOut={(e) => e.currentTarget.style.background = 'transparent'}
               data-testid="back-btn"
             >
-              <ArrowLeft className="h-5 w-5" />
+              <ArrowLeft className="h-5 w-5" style={{color: 'var(--t2)'}} />
             </button>
             <div>
-              <h1 className="text-xl font-semibold text-foreground">New Case</h1>
-              <p className="text-sm text-muted-foreground">Quick case creation</p>
+              <h1 className="text-xl font-semibold" style={{fontFamily: "'Lora', serif", color: 'var(--t1)'}}>New Case</h1>
+              <p className="text-sm" style={{color: 'var(--t2)'}}>Quick case creation</p>
             </div>
           </div>
         </div>
       </header>
       
-      <main className="page-container py-6">
+      <main className="page-container py-8">
         <form onSubmit={handleSubmit} className="space-y-6 animate-fade-in">
           {/* Quick tip */}
-          <div className="flex items-center gap-2 p-3 bg-primary/5 rounded-lg border border-primary/10">
-            <Zap className="h-5 w-5 text-primary shrink-0" />
-            <p className="text-sm text-muted-foreground">
-              Create a case in seconds. Add details later.
+          <div className="card-clinical flex items-start gap-3">
+            <Zap className="h-5 w-5 shrink-0 mt-0.5" style={{color: 'var(--blue)'}} />
+            <p className="text-sm" style={{color: 'var(--t2)'}}>
+              Create a case in seconds. Add details later in Planning Engine.
             </p>
           </div>
           
-          {/* Case Name */}
-          <div className="space-y-2">
-            <Label htmlFor="caseName" className="text-sm font-medium">
-              Case Name <span className="text-destructive">*</span>
-            </Label>
-            <Input
+          {/* Primary Fields */}
+          <div className="card-clinical space-y-6">
+            <div>
+              <h2 className="text-lg font-semibold mb-4" style={{fontFamily: "'Lora', serif", color: 'var(--t1)'}}>
+                Case Information
+              </h2>
+              
+              {/* Case Name */}
+              <div className="space-y-2 mb-6">
+                <Label htmlFor="caseName" className="text-sm font-medium" style={{color: 'var(--t1)'}}>
+                  Case Name <span style={{color: 'var(--red)'}}>*</span>
+                </Label>
+                <Input
               id="caseName"
               placeholder="e.g., Upper Right Molar Replacement"
               value={formData.caseName}
