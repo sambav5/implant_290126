@@ -19,19 +19,13 @@ const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8001'
 const PHASE_MAPPING = {
   preparation: ['pre_surgical_planning'],
   placement: ['surgical_treatment'],
-  healing: ['immediate_post_delivery'],
-  restoration: ['prosthetic_rehab', 'clinical_tryin'],
-  finalization: ['delivery'],
-  review: ['follow_up', 'maintenance']
+  review: ['maintenance']
 };
 
 const PHASE_CONFIG = [
   { id: 'preparation', label: 'Preparation', icon: '📋' },
   { id: 'placement', label: 'Placement', icon: '🦷' },
-  { id: 'healing', label: 'Healing', icon: '🔄' },
-  { id: 'restoration', label: 'Restoration', icon: '🎨' },
-  { id: 'finalization', label: 'Finalization', icon: '✓' },
-  { id: 'review', label: 'Review', icon: '👁️' }
+  { id: 'review', label: 'Follow-up', icon: '👁️' }
 ];
 
 // Phase colors configuration
