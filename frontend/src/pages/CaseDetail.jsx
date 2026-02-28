@@ -13,7 +13,8 @@ import {
   MoreVertical,
   Trash2,
   Play,
-  CheckCircle2
+  CheckCircle2,
+  X
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -56,6 +57,7 @@ export default function CaseDetail() {
   const [caseData, setCaseData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [activityModalOpen, setActivityModalOpen] = useState(false);
   
   useEffect(() => {
     loadCase();
