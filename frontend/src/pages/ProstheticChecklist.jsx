@@ -393,9 +393,10 @@ export default function ProstheticChecklist() {
   return (
     <div className="min-h-screen pb-24" style={{background: 'var(--bg)'}}>
       {/* Header */}
-      <header className="glass-header sticky top-0 z-40 px-4 py-4 border-b">
+      <header className="glass-header sticky top-0 z-40 px-4 py-3 border-b">
         <div className="page-container">
-          <div className="flex items-center gap-3 mb-3">
+          {/* Top Row: Back button, Title, Role Switcher */}
+          <div className="flex items-center gap-3 mb-4">
             <button
               onClick={() => navigate(`/case/${id}`)}
               className="p-2 -ml-2 rounded-lg touch-target"
@@ -406,21 +407,49 @@ export default function ProstheticChecklist() {
               <ArrowLeft className="h-5 w-5" style={{color: 'var(--t2)'}} />
             </button>
             <div className="flex-1">
-              <h1 className="text-xl font-semibold" style={{fontFamily: "'Lora', serif", color: 'var(--t1)'}}>Treatment Blueprint</h1>
-              <p className="text-sm" style={{color: 'var(--t2)'}}>{caseData?.caseName}</p>
+              <h1 className="text-lg font-semibold" style={{fontFamily: "'Lora', serif", color: 'var(--t1)'}}>Treatment Blueprint</h1>
+              <p className="text-xs" style={{color: 'var(--t3)'}}>{caseData?.caseName}</p>
             </div>
             
-            {/* Role Switcher */}
-            {caseData?.caseTeam && (
-              <RoleSwitcher caseTeam={caseData.caseTeam} />
-            )}
-            
-            {saving && (
-              <div className="text-sm animate-pulse mono" style={{color: 'var(--t3)'}}>Saving...</div>
-            )}
+            {caseData?.caseTeam && <RoleSwitcher caseTeam={caseData.caseTeam} />}
+            {saving && <div className="text-xs animate-pulse mono" style={{color: 'var(--t3)'}}>Saving...</div>}
           </div>
           
-          {/* Scope Toggle */}
+          {/* Phase Tabs */}
+          <div className="flex gap-1 overflow-x-auto pb-2 scrollbar-hide">
+            {PHASE_CONFIG.map((phase, index) => {
+              const isActive = activePhase === phase.id;
+              const isComplete = completedPhases[phase.id];
+              const showAnimation = showPhaseCompleteAnimation === phase.id;
+              
+              return (
+                <button
+                  key={phase.id}
+                  onClick={() => setActivePhase(phase.id)}
+                  className="flex-shrink-0 px-4 py-2 text-sm font-medium transition-all rounded-t-lg relative"
+                  style={{
+                    background: isActive ? 'var(--card)' : 'transparent',
+                    color: isComplete ? 'var(--green)' : isActive ? 'var(--t1)' : 'var(--t3)',
+                    borderBottom: isActive ? '2px solid var(--green)' : '2px solid transparent',
+                    fontWeight: isActive ? 600 : 400
+                  }}
+                >
+                  <div className="flex items-center gap-2">
+                    {isComplete && <Check className="h-3 w-3" style={{color: 'var(--green)'}} />}
+                    {phase.icon && <span>{phase.icon}</span>}
+                    <span>{phase.label}</span>
+                    {showAnimation && (
+                      <span className="inline-block animate-pulse" style={{color: 'var(--green)'}}>✓</span>
+                    )}
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      </header>
+      
+      <main className="page-container py-4"  ref={checklistRef}>
           <div className="mb-4 p-3 rounded-lg" style={{background: 'var(--card)', border: '1.5px solid var(--border)'}}>
             <div className="flex items-center justify-between gap-3">
               <div className="flex-1">
