@@ -362,6 +362,107 @@ export default function ProstheticChecklist() {
     };
   };
 
+  const renderPhaseContent = () => {
+    const backendPhases = getBackendPhasesForUIPhase(activePhase);
+    
+    return (
+      <div className="space-y-4">
+        {backendPhases.map(phaseKey => {
+          const phase = checklist[phaseKey];
+          if (!phase) return null;
+          
+          return (
+            <div key={phaseKey}>
+              {phase.sections.map((section, sectionIndex) => {
+                // Filter visible items
+                const visibleItems = section.items.filter(item => {
+                  const isVisibleByScope = showFullProtocol || item.importance === 'essential';
+                  const itemRole = item.assignedRole || 'clinician';
+                  const isVisibleByRole = !showMyTasksOnly || itemRole === activeRole;
+                  return isVisibleByScope && isVisibleByRole;
+                });
+                
+                if (visibleItems.length === 0) return null;
+                
+                return (
+                  <div key={sectionIndex} className="mb-6">
+                    {/* Section Header */}
+                    <div className="mb-3">
+                      <h3 className="text-base font-semibold flex items-center gap-2" style={{color: 'var(--t1)'}}>
+                        {section.isLabSection && <FlaskConical className="h-4 w-4" style={{color: 'var(--green)'}} />}
+                        {section.title}
+                      </h3>
+                    </div>
+                    
+                    {/* Items */}
+                    <div className="space-y-2">
+                      {visibleItems.map(item => {
+                        const itemRole = item.assignedRole || 'clinician';
+                        const canEdit = canEditItem(itemRole, activeRole);
+                        
+                        return (
+                          <div
+                            key={item.id}
+                            id={`item-${item.id}`}
+                            className="flex items-start gap-3 p-3 rounded-lg transition-all"
+                            style={{
+                              background: item.completed ? 'var(--card)' : 'var(--card)',
+                              border: '1px solid var(--border)',
+                              opacity: item.completed ? 0.6 : 1
+                            }}
+                          >
+                            <button
+                              onClick={() => canEdit && toggleItem(phaseKey, sectionIndex, section.items.indexOf(item))}
+                              className="shrink-0 pt-0.5"
+                              disabled={!canEdit}
+                            >
+                              {item.completed ? (
+                                <CheckCircle2 className="h-5 w-5" style={{color: 'var(--green)'}} />
+                              ) : (
+                                <Circle className="h-5 w-5" style={{color: 'var(--border2)'}} />
+                              )}
+                            </button>
+                            
+                            <div className="flex-1 min-w-0">
+                              <p className={`text-sm ${item.completed ? 'line-through' : ''}`} style={{color: item.completed ? 'var(--t3)' : 'var(--t1)'}}>
+                                {item.text}
+                              </p>
+                              
+                              <div className="flex items-center gap-2 mt-2 flex-wrap">
+                                <RoleBadge role={itemRole} />
+                                
+                                {item.importance === 'essential' && (
+                                  <span className="px-2 py-0.5 rounded mono" style={{background: 'var(--green-1)', color: 'var(--green)', fontSize: '9px', textTransform: 'uppercase'}}>
+                                    Essential
+                                  </span>
+                                )}
+                                
+                                {item.completedAt && (
+                                  <span className="text-xs mono" style={{color: 'var(--t3)'}}>
+                                    {item.completedByName && `by ${item.completedByName}`}
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                    
+                    {/* Separator between sections */}
+                    {sectionIndex < phase.sections.length - 1 && (
+                      <div className="h-px my-6" style={{background: 'var(--border)'}} />
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          );
+        })}
+      </div>
+    );
+  };
+
   const getVisibleItemsCount = () => {
     if (!checklist) return { essential: 0, total: 0 };
     
