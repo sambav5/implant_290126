@@ -87,36 +87,90 @@ export default function ProstheticChecklist() {
   useEffect(() => {
     loadData();
   }, [id]);
+  
+  // Check phase completion whenever checklist changes
+  useEffect(() => {
+    if (checklist) {
+      checkPhaseCompletion();
+    }
+  }, [checklist, showFullProtocol, showMyTasksOnly, activeRole]);
 
   const loadData = async () => {
     try {
-      // Load case data
       const caseResponse = await axios.get(`${BACKEND_URL}/api/cases/${id}`);
       setCaseData(caseResponse.data);
 
-      // Load prosthetic checklist (now dynamic)
       const checklistResponse = await axios.get(`${BACKEND_URL}/api/cases/${id}/prosthetic-checklist`);
       setChecklist(checklistResponse.data.prostheticChecklist);
       setIsDynamic(checklistResponse.data.isDynamic || false);
       setPlanningConditions(checklistResponse.data.planningConditions || null);
-      
-      // Initialize all phases and sections as expanded
-      const phasesState = {};
-      const sectionsState = {};
-      Object.keys(checklistResponse.data.prostheticChecklist).forEach(phaseKey => {
-        phasesState[phaseKey] = true;
-        checklistResponse.data.prostheticChecklist[phaseKey].sections.forEach((_, sectionIndex) => {
-          sectionsState[`${phaseKey}-${sectionIndex}`] = true;
-        });
-      });
-      setExpandedPhases(phasesState);
-      setExpandedSections(sectionsState);
     } catch (error) {
       toast.error('Failed to load checklist');
-      console.error(error);
+      navigate('/');
     } finally {
       setLoading(false);
     }
+  };
+  
+  // Get all backend phases for a UI phase
+  const getBackendPhasesForUIPhase = (uiPhase) => {
+    return PHASE_MAPPING[uiPhase] || [];
+  };
+  
+  // Get all visible items for a UI phase
+  const getVisibleItemsForPhase = (uiPhase) => {
+    const backendPhases = getBackendPhasesForUIPhase(uiPhase);
+    const items = [];
+    
+    backendPhases.forEach(backendPhase => {
+      const phase = checklist[backendPhase];
+      if (phase) {
+        phase.sections.forEach(section => {
+          section.items.forEach(item => {
+            const isVisibleByScope = showFullProtocol || item.importance === 'essential';
+            const itemRole = item.assignedRole || 'clinician';
+            const isVisibleByRole = !showMyTasksOnly || itemRole === activeRole;
+            
+            if (isVisibleByScope && isVisibleByRole) {
+              items.push({ ...item, phaseKey: backendPhase, section });
+            }
+          });
+        });
+      }
+    });
+    
+    return items;
+  };
+  
+  // Check if a phase is complete
+  const isPhaseComplete = (uiPhase) => {
+    const items = getVisibleItemsForPhase(uiPhase);
+    if (items.length === 0) return true;
+    return items.every(item => item.completed);
+  };
+  
+  // Check completion of all phases
+  const checkPhaseCompletion = () => {
+    const completed = {};
+    PHASE_CONFIG.forEach(phase => {
+      completed[phase.id] = isPhaseComplete(phase.id);
+    });
+    setCompletedPhases(completed);
+  };
+  
+  // Check if user is near bottom of page
+  const isNearBottom = () => {
+    if (!checklistRef.current) return false;
+    const rect = checklistRef.current.getBoundingClientRect();
+    const windowHeight = window.innerHeight;
+    const distanceFromBottom = rect.bottom - windowHeight;
+    return distanceFromBottom <= 120;
+  };
+  
+  // Get next incomplete item in current phase
+  const getNextIncompleteItem = (phaseId) => {
+    const items = getVisibleItemsForPhase(phaseId);
+    return items.find(item => !item.completed);
   };
 
   const togglePhase = (phaseKey) => {
