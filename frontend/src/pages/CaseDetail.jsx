@@ -357,17 +357,66 @@ export default function CaseDetail() {
               <h3 className="font-semibold" style={{color: 'var(--t1)', fontFamily: "'Lora', serif"}}>Recent Activity</h3>
             </div>
             <div className="space-y-4">
-              {caseData.timeline.slice(-5).reverse().map((entry) => (
-                <div key={entry.id} className="timeline-entry">
-                  <p className="text-sm font-medium" style={{color: 'var(--t1)'}}>{entry.action}</p>
-                  {entry.details && (
-                    <p className="text-xs" style={{color: 'var(--t2)'}}>{entry.details}</p>
-                  )}
-                  <p className="text-xs mono mt-1" style={{color: 'var(--t3)'}}>
-                    {new Date(entry.timestamp).toLocaleString()}
-                  </p>
-                </div>
-              ))}
+              {(() => {
+                // Filter out noisy "Case updated" entries and deduplicate
+                const meaningfulEntries = caseData.timeline
+                  .filter(entry => {
+                    // Skip generic "Case updated" with only technical field names
+                    if (entry.action === 'Case updated' && entry.details) {
+                      // Skip if details only contains field names like ['planningData', 'updatedAt']
+                      if (entry.details.startsWith('[') && entry.details.includes("'")) {
+                        return false;
+                      }
+                    }
+                    return true;
+                  })
+                  .slice(-5)
+                  .reverse();
+                
+                // Format entries with better labels
+                const formatAction = (action, details) => {
+                  const actionMap = {
+                    'Case created': { label: 'Case created', icon: '✓' },
+                    'Risk assessment completed': { label: 'Risk assessment completed', icon: '✓' },
+                    'Status changed': { label: 'Status updated', icon: '↻' },
+                    'Checklist updated': { label: 'Checklist progress saved', icon: '✓' },
+                    'Planning completed': { label: 'Planning completed', icon: '✓' },
+                    'Feedback submitted': { label: 'Learning reflection saved', icon: '✓' },
+                  };
+                  return actionMap[action] || { label: action, icon: '○' };
+                };
+                
+                const formatDetails = (action, details) => {
+                  if (!details) return null;
+                  // Clean up technical details
+                  if (details.startsWith('Overall:')) return details.replace('Overall:', 'Risk Level:');
+                  if (details.startsWith('to ')) return details.charAt(0).toUpperCase() + details.slice(1);
+                  return details;
+                };
+                
+                return meaningfulEntries.length > 0 ? (
+                  meaningfulEntries.map((entry) => {
+                    const formatted = formatAction(entry.action, entry.details);
+                    const cleanDetails = formatDetails(entry.action, entry.details);
+                    
+                    return (
+                      <div key={entry.id} className="timeline-entry">
+                        <p className="text-sm font-medium" style={{color: 'var(--t1)'}}>
+                          {formatted.label}
+                        </p>
+                        {cleanDetails && (
+                          <p className="text-xs" style={{color: 'var(--t2)'}}>{cleanDetails}</p>
+                        )}
+                        <p className="text-xs mono mt-1" style={{color: 'var(--t3)'}}>
+                          {new Date(entry.timestamp).toLocaleString()}
+                        </p>
+                      </div>
+                    );
+                  })
+                ) : (
+                  <p className="text-sm" style={{color: 'var(--t3)'}}>No recent activity</p>
+                );
+              })()}
             </div>
           </div>
         )}
