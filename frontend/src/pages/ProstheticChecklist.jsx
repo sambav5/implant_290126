@@ -34,6 +34,20 @@ const PHASE_CONFIG = [
   { id: 'review', label: 'Review', icon: '👁️' }
 ];
 
+// Phase colors configuration
+const PHASE_COLORS = {
+  pre_surgical_planning: { bg: 'var(--blue-1)', border: 'var(--blue-b)', text: 'var(--blue)', badge: 'var(--blue-2)' },
+  surgical_treatment: { bg: 'var(--red-1)', border: 'var(--red-b)', text: 'var(--red)', badge: 'var(--red-2)' },
+  immediate_post_delivery: { bg: 'var(--orange-1)', border: 'var(--orange-b)', text: 'var(--orange)', badge: 'var(--orange-2)' },
+  prosthetic_rehab: { bg: 'var(--purple-1)', border: 'var(--purple-b)', text: 'var(--purple)', badge: 'var(--purple-2)' },
+  clinical_tryin: { bg: 'var(--purple-1)', border: 'var(--purple-b)', text: 'var(--purple)', badge: 'var(--purple-2)' },
+  delivery: { bg: 'var(--green-1)', border: 'var(--green-b)', text: 'var(--green)', badge: 'var(--green-2)' },
+  follow_up: { bg: 'var(--teal-1)', border: 'var(--teal-b)', text: 'var(--teal)', badge: 'var(--teal-2)' },
+  maintenance: { bg: 'var(--teal-1)', border: 'var(--teal-b)', text: 'var(--teal)', badge: 'var(--teal-2)' }
+};
+
+const DEFAULT_PHASE_COLOR = { bg: 'var(--card)', border: 'var(--border)', text: 'var(--t1)', badge: 'var(--border)' };
+
 export default function ProstheticChecklist() {
   const { id } = useParams();
   const navigate = useNavigate();
