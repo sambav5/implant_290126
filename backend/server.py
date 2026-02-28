@@ -9,8 +9,9 @@ from pathlib import Path
 from pydantic import BaseModel, Field, ConfigDict
 from typing import List, Optional
 import uuid
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 from enum import Enum
+import random
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
@@ -440,6 +441,50 @@ class FeedbackUpdate(BaseModel):
 class AttachmentAdd(BaseModel):
     type: str  # "images", "cbctLinks", "stlLinks"
     url: str
+
+class OTPRequest(BaseModel):
+    phoneNumber: str
+
+class OTPVerifyRequest(BaseModel):
+    phoneNumber: str
+    otp: str
+
+class AuthSessionResponse(BaseModel):
+    token: str
+    clinicianName: str
+    phoneNumber: str
+
+
+# ============ SIMPLE AUTH STATE (DEV OTP FLOW) ============
+OTP_TTL_SECONDS = 300
+SESSION_TTL_SECONDS = 60 * 60 * 24 * 7
+otp_store: dict[str, dict] = {}
+session_store: dict[str, dict] = {}
+
+
+def sanitize_phone(phone_number: str) -> str:
+    """Normalize phone input while keeping a leading + if provided."""
+    cleaned = "".join(char for char in phone_number if char.isdigit() or char == "+")
+    if cleaned.startswith("+"):
+        return "+" + "".join(char for char in cleaned[1:] if char.isdigit())
+    return "".join(char for char in cleaned if char.isdigit())
+
+
+def ensure_valid_phone(phone_number: str) -> str:
+    normalized = sanitize_phone(phone_number)
+    digit_count = len("".join(char for char in normalized if char.isdigit()))
+    if digit_count < 10:
+        raise HTTPException(status_code=400, detail="Enter a valid WhatsApp phone number")
+    return normalized
+
+
+def generate_clinician_name(phone_number: str) -> str:
+    digits = "".join(char for char in phone_number if char.isdigit())
+    return f"Clinician-{digits[-4:]}"
+
+
+def is_expired(expires_at: datetime) -> bool:
+    return datetime.now(timezone.utc) > expires_at
 
 # ============ DEFAULT CHECKLISTS ============
 # ============ IMPLANT PROSTHETIC CHECKLIST (4-PHASE) ============
@@ -1009,6 +1054,66 @@ async def get_user_custom_checklist_items() -> List[str]:
 @api_router.get("/")
 async def root():
     return {"message": "Dental Implant Planning API", "disclaimer": "Decision support only. Final responsibility lies with the clinician."}
+
+
+@api_router.post("/auth/whatsapp/request-otp")
+async def request_whatsapp_otp(request: OTPRequest):
+    phone_number = ensure_valid_phone(request.phoneNumber)
+    otp = f"{random.randint(0, 999999):06d}"
+    expires_at = datetime.now(timezone.utc) + timedelta(seconds=OTP_TTL_SECONDS)
+
+    otp_store[phone_number] = {
+        "otp": otp,
+        "expiresAt": expires_at,
+        "attempts": 0,
+    }
+
+    logger.info("Generated WhatsApp OTP for %s", phone_number)
+
+    return {
+        "success": True,
+        "message": "OTP sent to WhatsApp number",
+        "expiresIn": OTP_TTL_SECONDS,
+        "devOtp": otp if os.environ.get("ENV") != "production" else None,
+    }
+
+
+@api_router.post("/auth/whatsapp/verify-otp", response_model=AuthSessionResponse)
+async def verify_whatsapp_otp(request: OTPVerifyRequest):
+    phone_number = ensure_valid_phone(request.phoneNumber)
+    otp_entry = otp_store.get(phone_number)
+
+    if not otp_entry:
+        raise HTTPException(status_code=400, detail="OTP not requested or expired")
+
+    if is_expired(otp_entry["expiresAt"]):
+        otp_store.pop(phone_number, None)
+        raise HTTPException(status_code=400, detail="OTP expired. Request a new one")
+
+    otp_entry["attempts"] += 1
+    if otp_entry["attempts"] > 5:
+        otp_store.pop(phone_number, None)
+        raise HTTPException(status_code=429, detail="Too many invalid attempts. Request a new OTP")
+
+    if request.otp != otp_entry["otp"]:
+        raise HTTPException(status_code=400, detail="Incorrect OTP")
+
+    otp_store.pop(phone_number, None)
+    token = str(uuid.uuid4())
+    clinician_name = generate_clinician_name(phone_number)
+
+    session_store[token] = {
+        "phoneNumber": phone_number,
+        "clinicianName": clinician_name,
+        "expiresAt": datetime.now(timezone.utc) + timedelta(seconds=SESSION_TTL_SECONDS),
+    }
+
+    return AuthSessionResponse(
+        token=token,
+        clinicianName=clinician_name,
+        phoneNumber=phone_number,
+    )
+
 
 # Case CRUD
 @api_router.post("/cases", response_model=Case)

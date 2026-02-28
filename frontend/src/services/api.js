@@ -3,6 +3,13 @@ import axios from 'axios';
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
 
+
+// Auth API
+export const authApi = {
+  requestWhatsappOtp: (phoneNumber) => axios.post(`${API}/auth/whatsapp/request-otp`, { phoneNumber }),
+  verifyWhatsappOtp: (phoneNumber, otp) => axios.post(`${API}/auth/whatsapp/verify-otp`, { phoneNumber, otp }),
+};
+
 // Case API
 export const caseApi = {
   getAll: () => axios.get(`${API}/cases`),
@@ -41,4 +48,5 @@ export default {
   checklist: checklistApi,
   feedback: feedbackApi,
   attachment: attachmentApi,
+  auth: authApi,
 };
