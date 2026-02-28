@@ -365,11 +365,27 @@ export default function ProstheticChecklist() {
   const renderPhaseContent = () => {
     const backendPhases = getBackendPhasesForUIPhase(activePhase);
     
+    // Debug: Log what phases we're looking for
+    console.log('Active UI Phase:', activePhase);
+    console.log('Looking for backend phases:', backendPhases);
+    console.log('Available checklist phases:', checklist ? Object.keys(checklist) : 'none');
+    
     return (
       <div className="space-y-4">
         {backendPhases.map(phaseKey => {
           const phase = checklist[phaseKey];
-          if (!phase) return null;
+          
+          // If phase doesn't exist, show debug info
+          if (!phase) {
+            console.warn(`Phase '${phaseKey}' not found in checklist`);
+            return (
+              <div key={phaseKey} className="p-4 rounded-lg" style={{background: 'var(--amber-1)', border: '1px solid var(--amber-b)'}}>
+                <p className="text-sm" style={{color: 'var(--amber)'}}>
+                  Phase '{phaseKey}' not found in checklist. Available phases: {Object.keys(checklist).join(', ')}
+                </p>
+              </div>
+            );
+          }
           
           return (
             <div key={phaseKey}>
