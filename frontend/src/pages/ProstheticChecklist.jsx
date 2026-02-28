@@ -194,10 +194,53 @@ export default function ProstheticChecklist() {
     if (item.completed) {
       item.completedByRole = activeRole;
       item.completedByName = getRoleName(caseData?.caseTeam, activeRole);
-      
-      // Show activity feedback
-      toast.success(`Marked complete by ${item.completedByName}`);
     } else {
+      item.completedByRole = null;
+      item.completedByName = null;
+    }
+    
+    setChecklist(updatedChecklist);
+    
+    // Auto-save
+    saveChecklist(updatedChecklist);
+    
+    // If item was just completed, check for next actions
+    if (item.completed) {
+      // Find next incomplete item in current phase
+      const nextItem = getNextIncompleteItem(activePhase);
+      
+      if (nextItem) {
+        // Scroll to next incomplete item
+        setTimeout(() => {
+          const element = document.getElementById(`item-${nextItem.id}`);
+          if (element) {
+            element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          }
+        }, 300);
+      } else {
+        // Phase is complete!
+        // Show completion animation in tab
+        setShowPhaseCompleteAnimation(activePhase);
+        
+        setTimeout(() => {
+          setShowPhaseCompleteAnimation(null);
+        }, 2000);
+        
+        // If user is near bottom, auto-advance to next phase
+        if (isNearBottom()) {
+          const currentIndex = PHASE_CONFIG.findIndex(p => p.id === activePhase);
+          if (currentIndex < PHASE_CONFIG.length - 1) {
+            setTimeout(() => {
+              const nextPhase = PHASE_CONFIG[currentIndex + 1];
+              setActivePhase(nextPhase.id);
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+              toast.success(`${PHASE_CONFIG[currentIndex].label} complete! Moving to ${nextPhase.label}.`);
+            }, 500);
+          }
+        }
+      }
+    }
+  };
       item.completedByRole = null;
       item.completedByName = null;
     }
