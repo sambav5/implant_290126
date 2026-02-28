@@ -72,6 +72,10 @@ export default function ProstheticChecklist() {
   // Role-based collaboration state
   const [activeRole] = useActiveRole();
   const [showMyTasksOnly, setShowMyTasksOnly] = useState(false);
+  
+  // Phase and section expansion state
+  const [expandedPhases, setExpandedPhases] = useState({});
+  const [expandedSections, setExpandedSections] = useState({});
 
   // Persist toggle state to localStorage
   useEffect(() => {
