@@ -349,79 +349,31 @@ export default function CaseDetail() {
               <ChevronRight className="h-5 w-5" style={{color: 'var(--t3)'}} />
             </div>
           </button>
+          
+          {/* Recent Activity - Clickable Card */}
+          {caseData.timeline?.length > 0 && (
+            <button
+              onClick={() => setActivityModalOpen(true)}
+              className="card-clinical-interactive w-full animate-slide-up stagger-5"
+              data-testid="recent-activity-btn"
+            >
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-lg flex items-center justify-center" style={{background: 'var(--card)', border: '1.5px solid var(--border)'}}>
+                    <Clock className="h-5 w-5" style={{color: 'var(--t2)'}} />
+                  </div>
+                  <div className="text-left">
+                    <h3 className="font-semibold" style={{color: 'var(--t1)'}}>Recent Activity</h3>
+                    <p className="text-sm" style={{color: 'var(--t2)'}}>
+                      {caseData.timeline.length} logged {caseData.timeline.length === 1 ? 'event' : 'events'}
+                    </p>
+                  </div>
+                </div>
+                <ChevronRight className="h-5 w-5" style={{color: 'var(--t3)'}} />
+              </div>
+            </button>
+          )}
         </div>
-        
-        {/* Timeline (Recent Activity) */}
-        {caseData.timeline?.length > 0 && (
-          <div className="card-clinical animate-slide-up stagger-5">
-            <div className="flex items-center gap-2 mb-4">
-              <Clock className="h-5 w-5" style={{color: 'var(--t3)'}} />
-              <h3 className="font-semibold" style={{color: 'var(--t1)', fontFamily: "'Lora', serif"}}>Recent Activity</h3>
-            </div>
-            <div className="space-y-4">
-              {(() => {
-                // Filter out noisy "Case updated" entries and deduplicate
-                const meaningfulEntries = caseData.timeline
-                  .filter(entry => {
-                    // Skip generic "Case updated" with only technical field names
-                    if (entry.action === 'Case updated' && entry.details) {
-                      // Skip if details only contains field names like ['planningData', 'updatedAt']
-                      if (entry.details.startsWith('[') && entry.details.includes("'")) {
-                        return false;
-                      }
-                    }
-                    return true;
-                  })
-                  .slice(-5)
-                  .reverse();
-                
-                // Format entries with better labels
-                const formatAction = (action, details) => {
-                  const actionMap = {
-                    'Case created': { label: 'Case created', icon: '✓' },
-                    'Risk assessment completed': { label: 'Risk assessment completed', icon: '✓' },
-                    'Status changed': { label: 'Status updated', icon: '↻' },
-                    'Checklist updated': { label: 'Checklist progress saved', icon: '✓' },
-                    'Planning completed': { label: 'Planning completed', icon: '✓' },
-                    'Feedback submitted': { label: 'Learning reflection saved', icon: '✓' },
-                  };
-                  return actionMap[action] || { label: action, icon: '○' };
-                };
-                
-                const formatDetails = (action, details) => {
-                  if (!details) return null;
-                  // Clean up technical details
-                  if (details.startsWith('Overall:')) return details.replace('Overall:', 'Risk Level:');
-                  if (details.startsWith('to ')) return details.charAt(0).toUpperCase() + details.slice(1);
-                  return details;
-                };
-                
-                return meaningfulEntries.length > 0 ? (
-                  meaningfulEntries.map((entry) => {
-                    const formatted = formatAction(entry.action, entry.details);
-                    const cleanDetails = formatDetails(entry.action, entry.details);
-                    
-                    return (
-                      <div key={entry.id} className="timeline-entry">
-                        <p className="text-sm font-medium" style={{color: 'var(--t1)'}}>
-                          {formatted.label}
-                        </p>
-                        {cleanDetails && (
-                          <p className="text-xs" style={{color: 'var(--t2)'}}>{cleanDetails}</p>
-                        )}
-                        <p className="text-xs mono mt-1" style={{color: 'var(--t3)'}}>
-                          {new Date(entry.timestamp).toLocaleString()}
-                        </p>
-                      </div>
-                    );
-                  })
-                ) : (
-                  <p className="text-sm" style={{color: 'var(--t3)'}}>No recent activity</p>
-                );
-              })()}
-            </div>
-          </div>
-        )}
         
         {/* Disclaimer */}
         <div className="p-4 rounded-lg" style={{background: 'var(--card)', border: '1.5px solid var(--border)'}}>
@@ -433,6 +385,57 @@ export default function CaseDetail() {
           </div>
         </div>
       </main>
+      
+      {/* Recent Activity Modal */}
+      {activityModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center">
+          {/* Backdrop */}
+          <div 
+            className="absolute inset-0 bg-black/40 backdrop-blur-sm"
+            onClick={() => setActivityModalOpen(false)}
+          />
+          
+          {/* Modal Content */}
+          <div 
+            className="relative w-full sm:max-w-lg max-h-[80vh] overflow-hidden rounded-t-2xl sm:rounded-2xl animate-slide-up"
+            style={{background: 'var(--card)', border: '1.5px solid var(--border)'}}
+          >
+            {/* Header */}
+            <div className="sticky top-0 z-10 flex items-center justify-between p-4" style={{background: 'var(--card)', borderBottom: '1px solid var(--border)'}}>
+              <div className="flex items-center gap-2">
+                <Clock className="h-5 w-5" style={{color: 'var(--t2)'}} />
+                <h2 className="text-lg font-semibold" style={{fontFamily: "'Lora', serif", color: 'var(--t1)'}}>Recent Activity</h2>
+              </div>
+              <button
+                onClick={() => setActivityModalOpen(false)}
+                className="p-2 rounded-lg touch-target"
+                style={{background: 'transparent'}}
+                onMouseOver={(e) => e.currentTarget.style.background = 'var(--border)'}
+                onMouseOut={(e) => e.currentTarget.style.background = 'transparent'}
+              >
+                <X className="h-5 w-5" style={{color: 'var(--t2)'}} />
+              </button>
+            </div>
+            
+            {/* Activity List */}
+            <div className="p-4 overflow-y-auto" style={{maxHeight: 'calc(80vh - 64px)'}}>
+              <div className="space-y-4">
+                {caseData.timeline.slice().reverse().map((entry) => (
+                  <div key={entry.id} className="timeline-entry">
+                    <p className="text-sm font-medium" style={{color: 'var(--t1)'}}>{entry.action}</p>
+                    {entry.details && (
+                      <p className="text-xs" style={{color: 'var(--t2)'}}>{entry.details}</p>
+                    )}
+                    <p className="text-xs mono mt-1" style={{color: 'var(--t3)'}}>
+                      {new Date(entry.timestamp).toLocaleString()}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
       
       {/* Delete Confirmation Dialog */}
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
