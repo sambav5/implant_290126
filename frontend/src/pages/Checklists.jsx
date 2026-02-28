@@ -21,22 +21,25 @@ const PHASE_CONFIG = {
     label: 'Pre-Treatment',
     shortLabel: 'Pre',
     description: 'Diagnostics, planning, consent',
-    color: 'text-blue-600',
-    bgColor: 'bg-blue-50',
+    cssColor: 'var(--blue)',
+    cssBg: 'var(--blue-1)',
+    cssBorder: 'var(--blue-b)',
   },
   treatment: {
     label: 'Treatment',
     shortLabel: 'Tx',
     description: 'Surgical steps, reminders',
-    color: 'text-amber-600',
-    bgColor: 'bg-amber-50',
+    cssColor: 'var(--amber)',
+    cssBg: 'var(--amber-1)',
+    cssBorder: 'var(--amber-b)',
   },
   post_treatment: {
     label: 'Post-Treatment',
     shortLabel: 'Post',
     description: 'Healing, follow-ups, restoration',
-    color: 'text-emerald-600',
-    bgColor: 'bg-emerald-50',
+    cssColor: 'var(--green)',
+    cssBg: 'var(--green-1)',
+    cssBorder: 'var(--green-b)',
   },
 };
 
@@ -52,7 +55,12 @@ const ChecklistItem = ({ item, onToggle, onUpdateNotes }) => {
   
   return (
     <div 
-      className={`checklist-item ${item.completed ? 'bg-emerald-50/50' : ''}`}
+      className="flex items-start gap-3 p-4 rounded-lg transition-all"
+      style={{
+        background: item.completed ? 'var(--green-1)' : 'var(--card)',
+        border: item.completed ? '1.5px solid var(--green-b)' : '1.5px solid var(--border)',
+        opacity: item.completed ? 0.8 : 1
+      }}
       data-testid={`checklist-item-${item.id}`}
     >
       <button
@@ -61,24 +69,26 @@ const ChecklistItem = ({ item, onToggle, onUpdateNotes }) => {
         data-testid={`toggle-${item.id}`}
       >
         {item.completed ? (
-          <CheckCircle2 className="h-6 w-6 text-emerald-600" />
+          <CheckCircle2 className="h-6 w-6" style={{color: 'var(--green)'}} />
         ) : (
-          <Circle className="h-6 w-6 text-slate-300" />
+          <Circle className="h-6 w-6" style={{color: 'var(--border2)'}} />
         )}
       </button>
       
       <div className="flex-1 min-w-0">
         <div className="flex items-start justify-between gap-2">
-          <p className={`text-sm ${item.completed ? 'text-muted-foreground line-through' : 'text-foreground'}`}>
+          <p className={`text-sm ${item.completed ? 'line-through' : ''}`} style={{color: item.completed ? 'var(--t3)' : 'var(--t1)'}}>
             {item.text}
           </p>
           {item.isCustom && (
-            <Badge variant="outline" className="shrink-0 text-xs">Custom</Badge>
+            <span className="shrink-0 px-2 py-0.5 rounded mono" style={{background: 'var(--blue-1)', color: 'var(--blue)', fontSize: '9px', textTransform: 'uppercase', border: '1px solid var(--blue-b)'}}>
+              Custom
+            </span>
           )}
         </div>
         
         {item.completedAt && (
-          <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
+          <p className="text-xs mt-1 flex items-center gap-1 mono" style={{color: 'var(--t3)'}}>
             <Clock className="h-3 w-3" />
             {new Date(item.completedAt).toLocaleString()}
           </p>
@@ -88,7 +98,8 @@ const ChecklistItem = ({ item, onToggle, onUpdateNotes }) => {
         {!showNotes && !item.notes && (
           <button
             onClick={() => setShowNotes(true)}
-            className="text-xs text-primary hover:underline mt-2"
+            className="text-xs hover:underline mt-2"
+            style={{color: 'var(--green)'}}
           >
             Add note
           </button>
@@ -101,7 +112,7 @@ const ChecklistItem = ({ item, onToggle, onUpdateNotes }) => {
             onChange={(e) => setNotes(e.target.value)}
             onBlur={handleNotesBlur}
             placeholder="Add a note..."
-            className="mt-2 text-sm min-h-[60px]"
+            className="mt-2 text-sm min-h-[60px] input-clinical"
             data-testid={`notes-${item.id}`}
           />
         )}
@@ -214,8 +225,8 @@ export default function Checklists() {
   
   if (loading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="animate-pulse text-muted-foreground">Loading...</div>
+      <div className="min-h-screen flex items-center justify-center" style={{background: 'var(--bg)'}}>
+        <div className="animate-pulse mono" style={{color: 'var(--t3)'}}>Loading...</div>
       </div>
     );
   }
@@ -236,21 +247,24 @@ export default function Checklists() {
   const overallProgress = overallTotal > 0 ? Math.round((overallCompleted / overallTotal) * 100) : 0;
   
   return (
-    <div className="min-h-screen bg-background pb-32">
+    <div className="min-h-screen pb-32" style={{background: 'var(--bg)'}}>
       {/* Header */}
       <header className="glass-header sticky top-0 z-40 px-4 py-4">
         <div className="page-container">
           <div className="flex items-center gap-3">
             <button
               onClick={() => navigate(`/case/${id}`)}
-              className="p-2 -ml-2 hover:bg-slate-100 rounded-lg touch-target"
+              className="p-2 -ml-2 rounded-lg touch-target"
+              style={{background: 'transparent', border: 'none'}}
+              onMouseOver={(e) => e.currentTarget.style.background = 'var(--border)'}
+              onMouseOut={(e) => e.currentTarget.style.background = 'transparent'}
               data-testid="back-btn"
             >
-              <ArrowLeft className="h-5 w-5" />
+              <ArrowLeft className="h-5 w-5" style={{color: 'var(--t2)'}} />
             </button>
             <div className="flex-1 min-w-0">
-              <h1 className="text-xl font-semibold text-foreground truncate">Checklists</h1>
-              <p className="text-sm text-muted-foreground">
+              <h1 className="text-xl font-semibold truncate" style={{fontFamily: "'Lora', serif", color: 'var(--t1)'}}>Checklists</h1>
+              <p className="text-sm mono" style={{color: 'var(--t2)'}}>
                 {overallCompleted}/{overallTotal} completed ({overallProgress}%)
               </p>
             </div>
@@ -261,22 +275,28 @@ export default function Checklists() {
       <main className="page-container py-6">
         {/* Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-3 mb-6">
+          <TabsList className="grid w-full grid-cols-3 mb-6" style={{background: 'var(--card)', border: '1.5px solid var(--border)', borderRadius: '12px', padding: '4px'}}>
             {Object.entries(PHASE_CONFIG).map(([key, config]) => {
               const checklist = getChecklist(key);
               const completed = checklist.filter(item => item.completed).length;
+              const isActive = activeTab === key;
               return (
                 <TabsTrigger 
                   key={key} 
                   value={key}
-                  className="text-xs sm:text-sm"
+                  className="text-xs sm:text-sm rounded-lg transition-all"
+                  style={{
+                    background: isActive ? 'var(--t1)' : 'transparent',
+                    color: isActive ? 'var(--card)' : 'var(--t2)',
+                    fontWeight: isActive ? 600 : 400
+                  }}
                   data-testid={`tab-${key}`}
                 >
                   <span className="hidden sm:inline">{config.label}</span>
                   <span className="sm:hidden">{config.shortLabel}</span>
-                  <Badge variant="secondary" className="ml-2 text-xs">
+                  <span className="ml-2 text-xs mono" style={{opacity: 0.8}}>
                     {completed}/{checklist.length}
-                  </Badge>
+                  </span>
                 </TabsTrigger>
               );
             })}
@@ -285,11 +305,11 @@ export default function Checklists() {
           {Object.keys(PHASE_CONFIG).map((phase) => (
             <TabsContent key={phase} value={phase} className="space-y-4 animate-fade-in">
               {/* Phase Header */}
-              <div className={`p-4 rounded-lg ${PHASE_CONFIG[phase].bgColor}`}>
-                <h2 className={`font-semibold ${PHASE_CONFIG[phase].color}`}>
+              <div className="p-4 rounded-lg" style={{background: PHASE_CONFIG[phase].cssBg, border: `1.5px solid ${PHASE_CONFIG[phase].cssBorder}`}}>
+                <h2 className="font-semibold" style={{color: PHASE_CONFIG[phase].cssColor, fontFamily: "'Lora', serif"}}>
                   {PHASE_CONFIG[phase].label}
                 </h2>
-                <p className="text-sm text-muted-foreground">
+                <p className="text-sm" style={{color: 'var(--t2)'}}>
                   {PHASE_CONFIG[phase].description}
                 </p>
               </div>
@@ -310,7 +330,8 @@ export default function Checklists() {
               <Button
                 variant="outline"
                 onClick={() => setAddItemDialogOpen(true)}
-                className="w-full border-dashed"
+                className="w-full btn-clinical btn-secondary-endo"
+                style={{borderStyle: 'dashed'}}
                 data-testid="add-item-btn"
               >
                 <Plus className="h-4 w-4 mr-2" />
@@ -321,9 +342,9 @@ export default function Checklists() {
         </Tabs>
         
         {/* Disclaimer */}
-        <div className="mt-8 p-4 bg-muted/50 rounded-lg border border-border">
+        <div className="mt-8 p-4 rounded-lg" style={{background: 'var(--card)', border: '1.5px solid var(--border)'}}>
           <div className="flex items-start gap-2">
-            <AlertTriangle className="h-4 w-4 text-muted-foreground shrink-0 mt-0.5" />
+            <AlertTriangle className="h-4 w-4 shrink-0 mt-0.5" style={{color: 'var(--t3)'}} />
             <p className="disclaimer-text">
               These checklists are decision support aids. Final clinical judgment 
               and responsibility lies with the treating clinician.
@@ -333,12 +354,12 @@ export default function Checklists() {
       </main>
       
       {/* Bottom Navigation */}
-      <div className="fixed bottom-0 left-0 right-0 p-4 bg-white border-t border-border safe-area-pb">
+      <div className="fixed bottom-0 left-0 right-0 p-4 safe-area-pb" style={{background: 'var(--card)', borderTop: '1.5px solid var(--border)'}}>
         <div className="page-container">
           {caseData?.status === 'completed' ? (
             <Button
               onClick={() => navigate(`/case/${id}/learning`)}
-              className="w-full btn-clinical bg-accent text-accent-foreground hover:bg-accent/90"
+              className="w-full btn-clinical btn-green-endo"
               data-testid="continue-learning-btn"
             >
               <Lightbulb className="h-5 w-5 mr-2" />
@@ -348,7 +369,7 @@ export default function Checklists() {
           ) : (
             <Button
               onClick={() => navigate(`/case/${id}`)}
-              className="w-full btn-clinical bg-primary text-primary-foreground hover:bg-primary/90"
+              className="w-full btn-clinical btn-primary-endo"
               data-testid="continue-btn"
             >
               Continue to Case Overview
