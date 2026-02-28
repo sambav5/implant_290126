@@ -157,15 +157,15 @@ const PLANNING_STEPS = [
 ];
 
 const riskConfig = {
-  low: { label: 'Low Risk', className: 'risk-badge-low', color: 'text-emerald-600', bgColor: 'bg-emerald-50' },
-  moderate: { label: 'Moderate', className: 'risk-badge-moderate', color: 'text-amber-600', bgColor: 'bg-amber-50' },
-  high: { label: 'High Risk', className: 'risk-badge-high', color: 'text-red-600', bgColor: 'bg-red-50' },
+  low: { label: 'Low Risk', className: 'risk-badge-low', color: 'var(--green)', bgColor: 'var(--green-1)' },
+  moderate: { label: 'Moderate', className: 'risk-badge-moderate', color: 'var(--amber)', bgColor: 'var(--amber-1)' },
+  high: { label: 'High Risk', className: 'risk-badge-high', color: 'var(--red)', bgColor: 'var(--red-1)' },
 };
 
 const complexityConfig = {
-  Simple: { color: 'text-emerald-600', bgColor: 'bg-emerald-50', borderColor: 'border-emerald-200' },
-  Moderate: { color: 'text-amber-600', bgColor: 'bg-amber-50', borderColor: 'border-amber-200' },
-  Complex: { color: 'text-red-600', bgColor: 'bg-red-50', borderColor: 'border-red-200' },
+  Simple: { color: 'var(--green)', bgColor: 'var(--green-1)', borderColor: 'var(--green-b)' },
+  Moderate: { color: 'var(--amber)', bgColor: 'var(--amber-1)', borderColor: 'var(--amber-b)' },
+  Complex: { color: 'var(--red)', bgColor: 'var(--red-1)', borderColor: 'var(--red-b)' },
 };
 
 export default function PlanningWizard() {
@@ -474,12 +474,12 @@ export default function PlanningWizard() {
             <div className="card-clinical">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                    {detailedMode ? <Lightbulb className="h-5 w-5 text-primary" /> : <Zap className="h-5 w-5 text-primary" />}
+                  <div className="w-10 h-10 rounded-lg flex items-center justify-center" style={{background: 'var(--green-1)'}}>
+                    {detailedMode ? <Lightbulb className="h-5 w-5" style={{color: 'var(--green)'}} /> : <Zap className="h-5 w-5" style={{color: 'var(--green)'}} />}
                   </div>
                   <div>
-                    <p className="font-semibold text-foreground">Clinical Depth</p>
-                    <p className="text-sm text-muted-foreground">
+                    <p className="font-semibold" style={{color: 'var(--t1)'}}>Clinical Depth</p>
+                    <p className="text-sm" style={{color: 'var(--t2)'}}>
                       {detailedMode ? 'Detailed reasoning' : 'Standard summary'}
                     </p>
                   </div>
@@ -499,29 +499,34 @@ export default function PlanningWizard() {
                 <div className="card-clinical">
                   <div className="flex items-start justify-between gap-4 mb-4">
                     <div>
-                      <p className="text-sm text-muted-foreground mb-1">Primary Clinical Issue</p>
-                      <h3 className="text-lg font-semibold text-foreground">
+                      <p className="text-sm mb-1 label-endo">Primary Clinical Issue</p>
+                      <h3 className="text-lg font-semibold" style={{fontFamily: "'Lora', serif", color: 'var(--t1)'}}>
                         {caseData.riskAssessment.primaryIssue || 'Standard Implant Placement'}
                       </h3>
                     </div>
-                    <Badge 
-                      className={`${complexityConfig[caseData.riskAssessment.caseComplexity]?.bgColor} ${complexityConfig[caseData.riskAssessment.caseComplexity]?.color} ${complexityConfig[caseData.riskAssessment.caseComplexity]?.borderColor} border`}
+                    <span 
+                      className="px-2 py-1 rounded text-xs font-medium"
+                      style={{
+                        background: complexityConfig[caseData.riskAssessment.caseComplexity]?.bgColor,
+                        color: complexityConfig[caseData.riskAssessment.caseComplexity]?.color,
+                        border: `1px solid ${complexityConfig[caseData.riskAssessment.caseComplexity]?.borderColor}`
+                      }}
                     >
                       {caseData.riskAssessment.caseComplexity || 'Moderate'}
-                    </Badge>
+                    </span>
                   </div>
                   
                   {/* Implant Timing */}
-                  <div className="flex items-center gap-2 p-3 bg-muted/50 rounded-lg mb-3">
-                    <Clock className="h-4 w-4 text-muted-foreground shrink-0" />
-                    <p className="text-sm">
+                  <div className="flex items-center gap-2 p-3 rounded-lg mb-3" style={{background: 'var(--card)', border: '1px solid var(--border)'}}>
+                    <Clock className="h-4 w-4 shrink-0" style={{color: 'var(--t3)'}} />
+                    <p className="text-sm" style={{color: 'var(--t1)'}}>
                       <span className="font-medium">Timing: </span>
                       {caseData.riskAssessment.implantTiming || 'Conventional placement protocol'}
                     </p>
                   </div>
                   
                   {/* Brief Rationale */}
-                  <p className="text-sm text-muted-foreground italic">
+                  <p className="text-sm italic" style={{color: 'var(--t2)'}}>
                     {caseData.riskAssessment.briefRationale || caseData.riskAssessment.plainLanguageSummary}
                   </p>
                 </div>
@@ -534,10 +539,10 @@ export default function PlanningWizard() {
                 {/* 1. Primary Clinical Issue (Expanded) */}
                 <div className="card-clinical">
                   <div className="flex items-center gap-2 mb-3">
-                    <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center text-xs font-semibold text-primary">1</div>
-                    <h4 className="font-semibold text-foreground">Primary Clinical Issue</h4>
+                    <div className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-semibold" style={{background: 'var(--green-1)', color: 'var(--green)'}}>1</div>
+                    <h4 className="font-semibold" style={{color: 'var(--t1)'}}>Primary Clinical Issue</h4>
                   </div>
-                  <p className="text-foreground leading-relaxed">
+                  <p className="leading-relaxed" style={{color: 'var(--t1)'}}>
                     {caseData.riskAssessment.primaryIssueExpanded || caseData.riskAssessment.plainLanguageSummary}
                   </p>
                 </div>
@@ -545,23 +550,28 @@ export default function PlanningWizard() {
                 {/* 2. Case Complexity + Drivers */}
                 <div className="card-clinical">
                   <div className="flex items-center gap-2 mb-3">
-                    <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center text-xs font-semibold text-primary">2</div>
-                    <h4 className="font-semibold text-foreground">Case Complexity</h4>
-                    <Badge 
-                      className={`ml-auto ${complexityConfig[caseData.riskAssessment.caseComplexity]?.bgColor} ${complexityConfig[caseData.riskAssessment.caseComplexity]?.color} ${complexityConfig[caseData.riskAssessment.caseComplexity]?.borderColor} border`}
+                    <div className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-semibold" style={{background: 'var(--green-1)', color: 'var(--green)'}}>2</div>
+                    <h4 className="font-semibold" style={{color: 'var(--t1)'}}>Case Complexity</h4>
+                    <span 
+                      className="ml-auto px-2 py-1 rounded text-xs font-medium"
+                      style={{
+                        background: complexityConfig[caseData.riskAssessment.caseComplexity]?.bgColor,
+                        color: complexityConfig[caseData.riskAssessment.caseComplexity]?.color,
+                        border: `1px solid ${complexityConfig[caseData.riskAssessment.caseComplexity]?.borderColor}`
+                      }}
                     >
                       {caseData.riskAssessment.caseComplexity || 'Moderate'}
-                    </Badge>
+                    </span>
                   </div>
                   
                   {caseData.riskAssessment.complexityDrivers?.length > 0 && (
                     <div className="space-y-2">
-                      <p className="text-sm text-muted-foreground">Contributing factors:</p>
+                      <p className="text-sm" style={{color: 'var(--t2)'}}>Contributing factors:</p>
                       <ul className="space-y-1.5">
                         {caseData.riskAssessment.complexityDrivers.map((driver, index) => (
                           <li key={index} className="flex items-start gap-2 text-sm">
-                            <span className="text-primary mt-1">•</span>
-                            <span>{driver}</span>
+                            <span style={{color: 'var(--green)'}} className="mt-1">•</span>
+                            <span style={{color: 'var(--t1)'}}>{driver}</span>
                           </li>
                         ))}
                       </ul>
@@ -572,29 +582,26 @@ export default function PlanningWizard() {
                 {/* 3. Implant Timing Recommendation */}
                 <div className="card-clinical">
                   <div className="flex items-center gap-2 mb-3">
-                    <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center text-xs font-semibold text-primary">3</div>
-                    <h4 className="font-semibold text-foreground">Implant Timing</h4>
+                    <div className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-semibold" style={{background: 'var(--green-1)', color: 'var(--green)'}}>3</div>
+                    <h4 className="font-semibold" style={{color: 'var(--t1)'}}>Implant Timing</h4>
                   </div>
                   
-                  <div className="flex items-center gap-2 p-3 bg-muted/50 rounded-lg mb-3">
-                    <Clock className="h-4 w-4 text-muted-foreground shrink-0" />
-                    <p className="text-sm font-medium">
+                  <div className="flex items-center gap-2 p-3 rounded-lg mb-3" style={{background: 'var(--card)', border: '1px solid var(--border)'}}>
+                    <Clock className="h-4 w-4 shrink-0" style={{color: 'var(--t3)'}} />
+                    <p className="text-sm font-medium" style={{color: 'var(--t1)'}}>
                       {caseData.riskAssessment.implantTiming || 'Conventional placement protocol'}
                     </p>
                   </div>
                   
                   {/* Immediate Placement Eligibility */}
                   {caseData.riskAssessment.immediatePlacementEligible !== null && (
-                    <div className={`p-3 rounded-lg border ${
-                      caseData.riskAssessment.immediatePlacementEligible 
-                        ? 'bg-emerald-50 border-emerald-200' 
-                        : 'bg-amber-50 border-amber-200'
-                    }`}>
-                      <p className={`text-sm font-medium mb-2 ${
-                        caseData.riskAssessment.immediatePlacementEligible 
-                          ? 'text-emerald-700' 
-                          : 'text-amber-700'
-                      }`}>
+                    <div className="p-3 rounded-lg" style={{
+                      background: caseData.riskAssessment.immediatePlacementEligible ? 'var(--green-1)' : 'var(--amber-1)',
+                      border: `1px solid ${caseData.riskAssessment.immediatePlacementEligible ? 'var(--green-b)' : 'var(--amber-b)'}`
+                    }}>
+                      <p className="text-sm font-medium mb-2" style={{
+                        color: caseData.riskAssessment.immediatePlacementEligible ? 'var(--green)' : 'var(--amber)'
+                      }}>
                         {caseData.riskAssessment.immediatePlacementEligible 
                           ? '✓ Immediate placement may be considered'
                           : '⚠ Immediate placement not recommended'}
@@ -602,7 +609,7 @@ export default function PlanningWizard() {
                       {caseData.riskAssessment.immediatePlacementReasons?.length > 0 && (
                         <ul className="space-y-1">
                           {caseData.riskAssessment.immediatePlacementReasons.map((reason, index) => (
-                            <li key={index} className="text-sm text-slate-600 flex items-start gap-2">
+                            <li key={index} className="text-sm flex items-start gap-2" style={{color: 'var(--t2)'}}>
                               <span className="mt-0.5">→</span>
                               <span>{reason}</span>
                             </li>
@@ -617,14 +624,14 @@ export default function PlanningWizard() {
                 {caseData.riskAssessment.riskModifiers?.length > 0 && (
                   <div className="card-clinical">
                     <div className="flex items-center gap-2 mb-3">
-                      <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center text-xs font-semibold text-primary">4</div>
-                      <h4 className="font-semibold text-foreground">Risk Modifiers Detected</h4>
+                      <div className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-semibold" style={{background: 'var(--green-1)', color: 'var(--green)'}}>4</div>
+                      <h4 className="font-semibold" style={{color: 'var(--t1)'}}>Risk Modifiers Detected</h4>
                     </div>
                     <div className="space-y-2">
                       {caseData.riskAssessment.riskModifiers.map((modifier, index) => (
-                        <div key={index} className="flex items-start gap-2 text-sm p-2 bg-muted/30 rounded">
-                          <Shield className="h-4 w-4 text-amber-500 shrink-0 mt-0.5" />
-                          <span>{modifier}</span>
+                        <div key={index} className="flex items-start gap-2 text-sm p-2 rounded" style={{background: 'var(--amber-1)'}}>
+                          <Shield className="h-4 w-4 shrink-0 mt-0.5" style={{color: 'var(--amber)'}} />
+                          <span style={{color: 'var(--t1)'}}>{modifier}</span>
                         </div>
                       ))}
                     </div>
@@ -635,14 +642,14 @@ export default function PlanningWizard() {
                 {caseData.riskAssessment.clinicalRationale?.length > 0 && (
                   <div className="card-clinical">
                     <div className="flex items-center gap-2 mb-3">
-                      <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center text-xs font-semibold text-primary">5</div>
-                      <h4 className="font-semibold text-foreground">Clinical Rationale</h4>
+                      <div className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-semibold" style={{background: 'var(--green-1)', color: 'var(--green)'}}>5</div>
+                      <h4 className="font-semibold" style={{color: 'var(--t1)'}}>Clinical Rationale</h4>
                     </div>
                     <ul className="space-y-2">
                       {caseData.riskAssessment.clinicalRationale.map((rationale, index) => (
                         <li key={index} className="flex items-start gap-2 text-sm">
-                          <Info className="h-4 w-4 text-primary shrink-0 mt-0.5" />
-                          <span>{rationale}</span>
+                          <Info className="h-4 w-4 shrink-0 mt-0.5" style={{color: 'var(--blue)'}} />
+                          <span style={{color: 'var(--t1)'}}>{rationale}</span>
                         </li>
                       ))}
                     </ul>
@@ -651,10 +658,10 @@ export default function PlanningWizard() {
                 
                 {/* 6. Backup Awareness (Complex cases only) */}
                 {caseData.riskAssessment.backupAwareness && (
-                  <div className="p-4 bg-slate-50 rounded-lg border border-slate-200">
+                  <div className="p-4 rounded-lg" style={{background: 'var(--card)', border: '1.5px solid var(--border)'}}>
                     <div className="flex items-start gap-2">
-                      <Lightbulb className="h-4 w-4 text-slate-500 shrink-0 mt-0.5" />
-                      <p className="text-sm text-slate-600 italic">
+                      <Lightbulb className="h-4 w-4 shrink-0 mt-0.5" style={{color: 'var(--t3)'}} />
+                      <p className="text-sm italic" style={{color: 'var(--t2)'}}>
                         {caseData.riskAssessment.backupAwareness}
                       </p>
                     </div>
@@ -664,9 +671,9 @@ export default function PlanningWizard() {
             )}
             
             {/* Disclaimer */}
-            <div className="p-4 bg-muted/50 rounded-lg border border-border">
+            <div className="p-4 rounded-lg" style={{background: 'var(--card)', border: '1.5px solid var(--border)'}}>
               <div className="flex items-start gap-2">
-                <AlertTriangle className="h-4 w-4 text-muted-foreground shrink-0 mt-0.5" />
+                <AlertTriangle className="h-4 w-4 shrink-0 mt-0.5" style={{color: 'var(--t3)'}} />
                 <p className="disclaimer-text">
                   Decision support only. These considerations are suggestions based on the information provided. 
                   Final clinical judgment lies with the treating clinician.
@@ -676,7 +683,7 @@ export default function PlanningWizard() {
             
             <Button
               onClick={() => navigate(`/case/${id}/prosthetic-checklist`)}
-              className="w-full btn-clinical bg-primary text-primary-foreground"
+              className="w-full btn-clinical btn-primary-endo"
               data-testid="proceed-checklists-btn"
             >
               Continue to Treatment Blueprint
