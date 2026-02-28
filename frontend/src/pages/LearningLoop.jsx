@@ -93,8 +93,8 @@ export default function LearningLoop() {
   
   if (loading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="animate-pulse text-muted-foreground">Loading...</div>
+      <div className="min-h-screen flex items-center justify-center" style={{background: 'var(--bg)'}}>
+        <div className="animate-pulse mono" style={{color: 'var(--t3)'}}>Loading...</div>
       </div>
     );
   }
@@ -102,21 +102,24 @@ export default function LearningLoop() {
   const isCompleted = caseData?.feedback?.reflectionCompletedAt;
   
   return (
-    <div className="min-h-screen bg-background pb-32">
+    <div className="min-h-screen pb-32" style={{background: 'var(--bg)'}}>
       {/* Header */}
       <header className="glass-header sticky top-0 z-40 px-4 py-4">
         <div className="page-container">
           <div className="flex items-center gap-3">
             <button
               onClick={() => navigate(`/case/${id}`)}
-              className="p-2 -ml-2 hover:bg-slate-100 rounded-lg touch-target"
+              className="p-2 -ml-2 rounded-lg touch-target"
+              style={{background: 'transparent', border: 'none'}}
+              onMouseOver={(e) => e.currentTarget.style.background = 'var(--border)'}
+              onMouseOut={(e) => e.currentTarget.style.background = 'transparent'}
               data-testid="back-btn"
             >
-              <ArrowLeft className="h-5 w-5" />
+              <ArrowLeft className="h-5 w-5" style={{color: 'var(--t2)'}} />
             </button>
             <div className="flex-1 min-w-0">
-              <h1 className="text-xl font-semibold text-foreground truncate">Learning Reflection</h1>
-              <p className="text-sm text-muted-foreground">{caseData?.caseName}</p>
+              <h1 className="text-xl font-semibold truncate" style={{fontFamily: "'Lora', serif", color: 'var(--t1)'}}>Learning Reflection</h1>
+              <p className="text-sm" style={{color: 'var(--t2)'}}>{caseData?.caseName}</p>
             </div>
           </div>
         </div>
@@ -126,18 +129,18 @@ export default function LearningLoop() {
         {/* Introduction */}
         <div className="card-clinical animate-slide-up">
           <div className="flex items-center gap-3 mb-4">
-            <div className="w-12 h-12 rounded-full bg-accent/10 flex items-center justify-center">
-              <Lightbulb className="h-6 w-6 text-accent" />
+            <div className="w-12 h-12 rounded-full flex items-center justify-center" style={{background: 'var(--amber-1)'}}>
+              <Lightbulb className="h-6 w-6" style={{color: 'var(--amber)'}} />
             </div>
             <div>
-              <h2 className="font-semibold">Build Your Clinical Memory</h2>
-              <p className="text-sm text-muted-foreground">
+              <h2 className="font-semibold" style={{fontFamily: "'Lora', serif", color: 'var(--t1)'}}>Build Your Clinical Memory</h2>
+              <p className="text-sm" style={{color: 'var(--t2)'}}>
                 Reflect on this case to improve future planning
               </p>
             </div>
           </div>
           
-          <p className="text-sm text-muted-foreground">
+          <p className="text-sm" style={{color: 'var(--t2)'}}>
             Your reflections help create personalized checklist items that appear in future similar cases. 
             This is your private clinical memory—building over time with each case you complete.
           </p>
@@ -145,31 +148,31 @@ export default function LearningLoop() {
         
         {/* What was unexpected */}
         <div className="space-y-3 animate-slide-up stagger-1">
-          <Label className="text-base font-medium">
+          <Label className="text-base font-medium" style={{color: 'var(--t1)'}}>
             What was harder or different than expected?
           </Label>
           <Textarea
             value={feedback.whatWasUnexpected}
             onChange={(e) => setFeedback(prev => ({ ...prev, whatWasUnexpected: e.target.value }))}
             placeholder="e.g., Bone quality was softer than CBCT suggested, required undersizing..."
-            className="min-h-[120px]"
+            className="min-h-[120px] input-clinical"
             data-testid="unexpected-textarea"
           />
-          <p className="text-xs text-muted-foreground">
+          <p className="text-xs" style={{color: 'var(--t3)'}}>
             This helps you remember case-specific learnings.
           </p>
         </div>
         
         {/* What to double-check */}
         <div className="space-y-3 animate-slide-up stagger-2">
-          <Label className="text-base font-medium">
+          <Label className="text-base font-medium" style={{color: 'var(--t1)'}}>
             What would you check more carefully next time?
           </Label>
           <Textarea
             value={feedback.whatToDoubleCheckNextTime}
             onChange={(e) => setFeedback(prev => ({ ...prev, whatToDoubleCheckNextTime: e.target.value }))}
             placeholder="e.g., Always verify bone density with CBCT in anterior maxilla..."
-            className="min-h-[120px]"
+            className="min-h-[120px] input-clinical"
             data-testid="doublecheck-textarea"
           />
         </div>
@@ -177,26 +180,26 @@ export default function LearningLoop() {
         {/* Checklist Suggestions */}
         <div className="space-y-3 animate-slide-up stagger-3">
           <div className="flex items-center gap-2">
-            <Sparkles className="h-5 w-5 text-accent" />
-            <Label className="text-base font-medium">
+            <Sparkles className="h-5 w-5" style={{color: 'var(--amber)'}} />
+            <Label className="text-base font-medium" style={{color: 'var(--t1)'}}>
               Suggest checklist items for future cases
             </Label>
           </div>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-sm" style={{color: 'var(--t2)'}}>
             These items will appear in your pre-treatment checklists for similar cases.
           </p>
           
           {/* Existing suggestions from past cases */}
           {existingSuggestions.length > 0 && (
-            <div className="p-4 bg-muted/50 rounded-lg">
-              <p className="text-xs font-medium text-muted-foreground mb-2">
+            <div className="p-4 rounded-lg" style={{background: 'var(--card)', border: '1.5px solid var(--border)'}}>
+              <p className="text-xs font-medium mb-2 label-endo">
                 From your past cases:
               </p>
               <div className="flex flex-wrap gap-2">
                 {existingSuggestions.map((suggestion, index) => (
-                  <Badge key={index} variant="secondary" className="text-xs">
+                  <span key={index} className="px-2 py-1 rounded text-xs" style={{background: 'var(--green-1)', color: 'var(--green)', border: '1px solid var(--green-b)'}}>
                     {suggestion}
-                  </Badge>
+                  </span>
                 ))}
               </div>
             </div>
@@ -208,13 +211,15 @@ export default function LearningLoop() {
               {feedback.customChecklistSuggestions.map((suggestion, index) => (
                 <div 
                   key={index} 
-                  className="flex items-center gap-2 p-3 bg-accent/5 rounded-lg border border-accent/20"
+                  className="flex items-center gap-2 p-3 rounded-lg"
+                  style={{background: 'var(--green-1)', border: '1.5px solid var(--green-b)'}}
                 >
-                  <Check className="h-4 w-4 text-accent shrink-0" />
-                  <span className="flex-1 text-sm">{suggestion}</span>
+                  <Check className="h-4 w-4 shrink-0" style={{color: 'var(--green)'}} />
+                  <span className="flex-1 text-sm" style={{color: 'var(--t1)'}}>{suggestion}</span>
                   <button
                     onClick={() => handleRemoveSuggestion(index)}
-                    className="text-muted-foreground hover:text-destructive text-sm"
+                    className="text-sm hover:underline"
+                    style={{color: 'var(--red)'}}
                     data-testid={`remove-suggestion-${index}`}
                   >
                     Remove
@@ -238,6 +243,7 @@ export default function LearningLoop() {
               variant="outline"
               onClick={handleAddSuggestion}
               disabled={!newSuggestion.trim()}
+              className="btn-clinical btn-secondary-endo"
               data-testid="add-suggestion-btn"
             >
               <Plus className="h-4 w-4" />
@@ -246,9 +252,9 @@ export default function LearningLoop() {
         </div>
         
         {/* Disclaimer */}
-        <div className="p-4 bg-muted/50 rounded-lg border border-border">
+        <div className="p-4 rounded-lg" style={{background: 'var(--card)', border: '1.5px solid var(--border)'}}>
           <div className="flex items-start gap-2">
-            <AlertTriangle className="h-4 w-4 text-muted-foreground shrink-0 mt-0.5" />
+            <AlertTriangle className="h-4 w-4 shrink-0 mt-0.5" style={{color: 'var(--t3)'}} />
             <p className="disclaimer-text">
               Your reflections are stored locally to this app and help personalize your checklists. 
               This is decision support to assist your clinical practice, not a substitute for professional judgment.
@@ -258,12 +264,12 @@ export default function LearningLoop() {
       </main>
       
       {/* Bottom CTA */}
-      <div className="fixed bottom-0 left-0 right-0 p-4 bg-white border-t border-border safe-area-pb">
+      <div className="fixed bottom-0 left-0 right-0 p-4 safe-area-pb" style={{background: 'var(--card)', borderTop: '1.5px solid var(--border)'}}>
         <div className="page-container">
           <Button
             onClick={handleSubmit}
             disabled={saving}
-            className="w-full btn-clinical bg-primary text-primary-foreground"
+            className="w-full btn-clinical btn-primary-endo"
             data-testid="save-reflection-btn"
           >
             {saving ? 'Saving...' : isCompleted ? 'Update Reflection' : 'Save Reflection'}
