@@ -10,7 +10,7 @@
     padding-bottom: max(1rem, env(safe-area-inset-bottom));
 }
 
-/* Floating action button */
+/* Floating action button - EndoPilot Style */
 .fab {
     position: fixed;
     bottom: 24px;
@@ -22,19 +22,21 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 4px 12px rgba(47, 128, 237, 0.35);
+    box-shadow: 0 2px 8px rgba(26, 107, 74, 0.2);
+    transition: all 0.2s ease;
 }
 
 .fab:hover {
-    box-shadow: 0 6px 20px rgba(47, 128, 237, 0.45);
+    box-shadow: 0 4px 12px rgba(26, 107, 74, 0.3);
     transform: translateY(-2px);
+    opacity: 0.9;
 }
 
 .fab:active {
     transform: scale(0.95);
 }
 
-/* Step indicator */
+/* Step indicator - EndoPilot Style */
 .step-indicator {
     display: flex;
     align-items: center;
@@ -45,20 +47,21 @@
     width: 8px;
     height: 8px;
     border-radius: 50%;
-    background-color: #E2E8F0;
+    background-color: var(--border);
+    transition: all 0.2s ease;
 }
 
 .step-dot.active {
-    background-color: #2F80ED;
+    background-color: var(--green);
     width: 24px;
     border-radius: 4px;
 }
 
 .step-dot.completed {
-    background-color: #10B981;
+    background-color: var(--green);
 }
 
-/* Timeline styles */
+/* Timeline styles - EndoPilot */
 .timeline-entry {
     position: relative;
     padding-left: 24px;
@@ -71,7 +74,7 @@
     top: 24px;
     bottom: 0;
     width: 2px;
-    background-color: #E2E8F0;
+    background-color: var(--border);
 }
 
 .timeline-entry:last-child::before {
@@ -86,11 +89,11 @@
     width: 14px;
     height: 14px;
     border-radius: 50%;
-    background-color: #F5F6F8;
-    border: 2px solid #2F80ED;
+    background-color: var(--card);
+    border: 2px solid var(--green);
 }
 
-/* Risk indicator pulse */
+/* Risk indicator pulse - EndoPilot */
 .risk-pulse-high {
     animation: pulse-red 2s infinite;
 }
@@ -101,51 +104,55 @@
 
 @keyframes pulse-red {
     0%, 100% {
-        box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4);
+        box-shadow: 0 0 0 0 rgba(139, 33, 18, 0.4);
     }
     50% {
-        box-shadow: 0 0 0 8px rgba(239, 68, 68, 0);
+        box-shadow: 0 0 0 8px rgba(139, 33, 18, 0);
     }
 }
 
 @keyframes pulse-amber {
     0%, 100% {
-        box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.4);
+        box-shadow: 0 0 0 0 rgba(217, 119, 6, 0.4);
     }
     50% {
-        box-shadow: 0 0 0 8px rgba(245, 158, 11, 0);
+        box-shadow: 0 0 0 8px rgba(217, 119, 6, 0);
     }
 }
 
-/* Tooth number badge */
+/* Tooth number badge - EndoPilot Style */
 .tooth-badge {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 32px;
-    height: 32px;
-    border-radius: 8px;
-    background-color: #2F80ED;
-    color: white;
-    font-family: 'Sora', sans-serif;
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    background: var(--green-1);
+    color: var(--green);
+    border: 1.5px solid var(--green-b);
+    font-family: 'Lora', serif;
     font-weight: 600;
-    font-size: 14px;
+    font-size: 16px;
 }
 
-/* Status badge styles */
+/* Status badge styles - EndoPilot */
 .status-planning {
-    background-color: #E0E7FF;
-    color: #4F46E5;
+    background: var(--blue-1);
+    color: var(--blue);
+    border-color: var(--blue-b);
 }
 
 .status-in-progress {
-    background-color: #FEF3C7;
-    color: #D97706;
+    background: var(--amber-1);
+    color: var(--amber);
+    border-color: var(--amber-b);
 }
 
 .status-completed {
-    background-color: #D1FAE5;
-    color: #059669;
+    background: var(--green-1);
+    color: var(--green);
+    border-color: var(--green-b);
 }
 
 /* Mobile menu transition */
@@ -159,9 +166,9 @@
     opacity: 1;
 }
 
-/* Loading skeleton */
+/* Loading skeleton - EndoPilot Style */
 .skeleton {
-    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+    background: linear-gradient(90deg, var(--border) 25%, var(--border2) 50%, var(--border) 75%);
     background-size: 200% 100%;
     animation: shimmer 1.5s infinite;
 }

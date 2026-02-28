@@ -8,9 +8,9 @@ import { caseApi } from '@/services/api';
 import { toast } from 'sonner';
 
 const statusConfig = {
-  planning: { label: 'Planning', className: 'status-planning' },
-  in_progress: { label: 'In Progress', className: 'status-in-progress' },
-  completed: { label: 'Completed', className: 'status-completed' },
+  planning: { label: 'Planning', className: 'status-planning px-2 py-1 text-xs rounded-md border mono' },
+  in_progress: { label: 'In Progress', className: 'status-in-progress px-2 py-1 text-xs rounded-md border mono' },
+  completed: { label: 'Completed', className: 'status-completed px-2 py-1 text-xs rounded-md border mono' },
 };
 
 const riskConfig = {
@@ -43,16 +43,24 @@ export const CaseCard = ({ caseData, onClick }) => {
     >
       <div className="flex items-start justify-between gap-3">
         <div className="flex items-start gap-3 flex-1 min-w-0">
-          <div className="tooth-badge shrink-0">{caseData.toothNumber}</div>
+          <div className="shrink-0 flex items-center justify-center w-10 h-10 rounded-lg font-semibold text-sm" 
+               style={{
+                 background: 'var(--green-1)', 
+                 color: 'var(--green)', 
+                 border: '1.5px solid var(--green-b)',
+                 fontFamily: "'Lora', serif"
+               }}>
+            {caseData.toothNumber}
+          </div>
           <div className="flex-1 min-w-0">
-            <h3 className="font-semibold text-foreground truncate">{caseData.caseName}</h3>
-            <p className="text-sm text-muted-foreground mt-0.5">
+            <h3 className="font-semibold truncate" style={{color: 'var(--t1)', fontSize: '15px'}}>{caseData.caseName}</h3>
+            <p className="text-sm mt-0.5" style={{color: 'var(--t2)'}}>
               Tooth #{caseData.toothNumber}
               {caseData.optionalAge && ` • ${caseData.optionalAge}y`}
             </p>
           </div>
         </div>
-        <ChevronRight className="h-5 w-5 text-muted-foreground shrink-0" />
+        <ChevronRight className="h-5 w-5 shrink-0" style={{color: 'var(--t3)'}} />
       </div>
       
       <div className="flex items-center gap-2 mt-4 flex-wrap">
@@ -65,7 +73,7 @@ export const CaseCard = ({ caseData, onClick }) => {
           </Badge>
         )}
         {totalChecks > 0 && (
-          <span className="text-xs text-muted-foreground">
+          <span className="mono text-xs" style={{color: 'var(--t3)'}}>
             {completedChecks}/{totalChecks} checks
           </span>
         )}
@@ -105,7 +113,7 @@ export default function Dashboard() {
   const completedCases = filteredCases.filter(c => c.status === 'completed');
   
   return (
-    <div className="min-h-screen bg-background pb-24">
+    <div className="min-h-screen pb-24" style={{background: 'var(--bg)'}}>
       {/* Header */}
       <header className="glass-header sticky top-0 z-40 px-4 py-4">
         <div className="page-container">
@@ -115,7 +123,7 @@ export default function Dashboard() {
               <p className="text-sm text-muted-foreground">Clinical Decision Support</p>
             </div>
             <div className="flex items-center gap-2">
-              <Activity className="h-5 w-5 text-primary" />
+              <Activity className="h-5 w-5" style={{color: 'var(--green)'}} />
             </div>
           </div>
         </div>
@@ -124,7 +132,7 @@ export default function Dashboard() {
       <main className="page-container py-6">
         {/* Search */}
         <div className="relative mb-6">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5" style={{color: 'var(--t3)'}} />
           <Input
             placeholder="Search cases..."
             value={searchQuery}
@@ -138,16 +146,16 @@ export default function Dashboard() {
         {!loading && cases.length > 0 && (
           <div className="grid grid-cols-3 gap-3 mb-6">
             <div className="card-clinical text-center">
-              <p className="text-2xl font-semibold text-foreground">{cases.length}</p>
-              <p className="text-xs text-muted-foreground">Total Cases</p>
+              <p className="text-2xl font-semibold" style={{color: 'var(--t1)'}}>{cases.length}</p>
+              <p className="label-endo">Total</p>
             </div>
             <div className="card-clinical text-center">
-              <p className="text-2xl font-semibold text-amber-600">{activeCases.length}</p>
-              <p className="text-xs text-muted-foreground">Active</p>
+              <p className="text-2xl font-semibold" style={{color: 'var(--amber)'}}>{activeCases.length}</p>
+              <p className="label-endo">Active</p>
             </div>
             <div className="card-clinical text-center">
-              <p className="text-2xl font-semibold text-emerald-600">{completedCases.length}</p>
-              <p className="text-xs text-muted-foreground">Completed</p>
+              <p className="text-2xl font-semibold" style={{color: 'var(--green)'}}>{completedCases.length}</p>
+              <p className="label-endo">Complete</p>
             </div>
           </div>
         )}
@@ -167,14 +175,14 @@ export default function Dashboard() {
         {/* Empty State */}
         {!loading && cases.length === 0 && (
           <div className="card-clinical text-center py-12 animate-fade-in">
-            <FileText className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-            <h2 className="text-lg font-semibold text-foreground mb-2">No cases yet</h2>
-            <p className="text-muted-foreground mb-6">
+            <FileText className="h-12 w-12 mx-auto mb-4" style={{color: 'var(--t3)'}} />
+            <h2 className="text-lg font-semibold mb-2" style={{color: 'var(--t1)'}}>No cases yet</h2>
+            <p className="mb-6" style={{color: 'var(--t2)'}}>
               Create your first implant case to get started
             </p>
             <Button
               onClick={() => navigate('/case/new')}
-              className="btn-clinical bg-primary text-primary-foreground hover:bg-primary/90"
+              className="btn-clinical btn-primary-endo"
               data-testid="create-first-case-btn"
             >
               <Plus className="h-5 w-5 mr-2" />
@@ -186,9 +194,10 @@ export default function Dashboard() {
         {/* Active Cases */}
         {!loading && activeCases.length > 0 && (
           <div className="mb-8">
-            <h2 className="text-sm font-medium text-muted-foreground uppercase tracking-wider mb-3">
-              Active Cases
-            </h2>
+            <div className="section-divider">
+              <span className="section-divider-label">Active Cases</span>
+              <div className="section-divider-line"></div>
+            </div>
             <div className="space-y-3">
               {activeCases.map((c, index) => (
                 <div key={c.id} className={`stagger-${Math.min(index + 1, 5)}`}>
@@ -205,9 +214,10 @@ export default function Dashboard() {
         {/* Completed Cases */}
         {!loading && completedCases.length > 0 && (
           <div>
-            <h2 className="text-sm font-medium text-muted-foreground uppercase tracking-wider mb-3">
-              Completed
-            </h2>
+            <div className="section-divider">
+              <span className="section-divider-label">Completed</span>
+              <div className="section-divider-line"></div>
+            </div>
             <div className="space-y-3">
               {completedCases.map(c => (
                 <CaseCard 
@@ -221,9 +231,9 @@ export default function Dashboard() {
         )}
         
         {/* Disclaimer */}
-        <div className="mt-8 p-4 bg-muted/50 rounded-lg border border-border">
+        <div className="mt-8 p-4 rounded-lg" style={{background: 'var(--card)', border: '1.5px solid var(--border)'}}>
           <div className="flex items-start gap-2">
-            <AlertTriangle className="h-4 w-4 text-muted-foreground shrink-0 mt-0.5" />
+            <AlertTriangle className="h-4 w-4 shrink-0 mt-0.5" style={{color: 'var(--t3)'}} />
             <p className="disclaimer-text">
               Decision support only. Final responsibility lies with the clinician.
               This app assists clinical thinking but does not make treatment decisions.
@@ -235,7 +245,8 @@ export default function Dashboard() {
       {/* FAB */}
       <Link
         to="/case/new"
-        className="fab bg-primary text-primary-foreground"
+        className="fab"
+        style={{background: 'var(--green)', color: 'white'}}
         data-testid="new-case-fab"
       >
         <Plus className="h-6 w-6" />

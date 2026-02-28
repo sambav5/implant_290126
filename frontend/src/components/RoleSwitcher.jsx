@@ -34,18 +34,25 @@ export function RoleSwitcher({ caseTeam }) {
     <div className="relative" ref={dropdownRef}>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-slate-700 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 transition-colors"
+        className="flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-lg transition-colors"
+        style={{
+          color: 'var(--t1)',
+          background: 'var(--card)',
+          border: '1.5px solid var(--border)'
+        }}
+        onMouseOver={(e) => e.currentTarget.style.background = 'var(--border)'}
+        onMouseOut={(e) => e.currentTarget.style.background = 'var(--card)'}
       >
         <User className="h-4 w-4" />
-        <span className="hidden sm:inline">Viewing as:</span>
+        <span className="hidden sm:inline mono" style={{fontSize: '10px', textTransform: 'uppercase'}}>Viewing as:</span>
         <span className="font-semibold">{currentRoleName}</span>
         <ChevronDown className={`h-4 w-4 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-64 bg-white border border-slate-200 rounded-lg shadow-lg z-50">
-          <div className="px-3 py-2 border-b border-slate-200 bg-slate-50 rounded-t-lg">
-            <p className="text-xs font-semibold text-slate-600 uppercase tracking-wide">Viewing As</p>
+        <div className="absolute right-0 mt-2 w-64 rounded-lg shadow-lg z-50" style={{background: 'var(--card)', border: '1.5px solid var(--border)'}}>
+          <div className="px-3 py-2 rounded-t-lg" style={{borderBottom: '1px solid var(--border)', background: 'var(--bg)'}}>
+            <p className="label-endo">Viewing As</p>
           </div>
           
           <div className="py-1">
@@ -57,19 +64,21 @@ export function RoleSwitcher({ caseTeam }) {
                 <button
                   key={role}
                   onClick={() => handleRoleChange(role)}
-                  className={`w-full flex items-center justify-between px-4 py-2.5 text-sm transition-colors ${
-                    isActive
-                      ? 'bg-blue-50 text-blue-700'
-                      : 'text-slate-700 hover:bg-slate-50'
-                  }`}
+                  className="w-full flex items-center justify-between px-4 py-2.5 text-sm transition-colors"
+                  style={{
+                    background: isActive ? 'var(--blue-1)' : 'transparent',
+                    color: isActive ? 'var(--blue)' : 'var(--t1)'
+                  }}
+                  onMouseOver={(e) => !isActive && (e.currentTarget.style.background = 'var(--border)')}
+                  onMouseOut={(e) => !isActive && (e.currentTarget.style.background = 'transparent')}
                 >
                   <div className="flex flex-col items-start">
                     <span className="font-medium">{ROLE_LABELS[role]}</span>
                     {caseTeam && caseTeam[role] && (
-                      <span className="text-xs text-slate-500">({caseTeam[role]})</span>
+                      <span className="text-xs mono" style={{color: 'var(--t3)'}}>({caseTeam[role]})</span>
                     )}
                   </div>
-                  {isActive && <Check className="h-4 w-4 text-blue-600" />}
+                  {isActive && <Check className="h-4 w-4" style={{color: 'var(--blue)'}} />}
                 </button>
               );
             })}

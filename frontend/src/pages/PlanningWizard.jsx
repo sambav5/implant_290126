@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, ChevronRight, ChevronLeft, AlertTriangle, Activity, Info, Clock, Zap, Shield, Lightbulb } from 'lucide-react';
+import { ArrowLeft, ChevronDown, ChevronRight, ChevronLeft, AlertTriangle, Activity, Info, Clock, Zap, Shield, Lightbulb, CheckCircle2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
@@ -173,12 +173,16 @@ export default function PlanningWizard() {
   const navigate = useNavigate();
   const [caseData, setCaseData] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
   const [analyzing, setAnalyzing] = useState(false);
-  const [currentStep, setCurrentStep] = useState(0);
   const [planningData, setPlanningData] = useState({});
   const [showResults, setShowResults] = useState(false);
   const [detailedMode, setDetailedMode] = useState(false);
+  
+  // Stepper state
+  const [currentStep, setCurrentStep] = useState(0);
+  const [completedSteps, setCompletedSteps] = useState({});
+  const [showCompletionAnimation, setShowCompletionAnimation] = useState(false);
+  const fieldRefs = useRef({});
   
   useEffect(() => {
     loadCase();
@@ -188,12 +192,21 @@ export default function PlanningWizard() {
     try {
       const response = await caseApi.getById(id);
       setCaseData(response.data);
-      if (response.data.planningData) {
-        setPlanningData(response.data.planningData);
+      
+      const savedPlanningData = response.data.planningData || {};
+      setPlanningData(savedPlanningData);
+      
+      // Check which steps are complete
+      if (savedPlanningData && Object.keys(savedPlanningData).length > 0) {
+        const completed = {};
+        PLANNING_STEPS.forEach((_, index) => {
+          completed[index] = isStepComplete(index, savedPlanningData);
+        });
+        setCompletedSteps(completed);
       }
+      
       if (response.data.riskAssessment) {
         setShowResults(true);
-        setCurrentStep(PLANNING_STEPS.length);
       }
     } catch (error) {
       toast.error('Failed to load case');
@@ -203,49 +216,135 @@ export default function PlanningWizard() {
     }
   };
   
-  const handleFieldChange = (key, value) => {
-    setPlanningData(prev => ({ ...prev, [key]: value }));
+  // Check if a field is filled
+  const isFieldFilled = (field, data) => {
+    if (field.type === 'textarea') return true; // Optional
+    
+    const value = data[field.key];
+    if (field.type === 'checkbox') {
+      return Array.isArray(value) && value.length > 0;
+    }
+    return value !== undefined && value !== null && value !== '';
+  };
+  
+  // Check if a step is complete
+  const isStepComplete = (stepIndex, data) => {
+    if (!data || Object.keys(data).length === 0) return false;
+    const step = PLANNING_STEPS[stepIndex];
+    return step.fields.every(field => isFieldFilled(field, data));
+  };
+  
+  // Get next unfilled field in current step
+  const getNextUnfilledField = (stepIndex, data) => {
+    const step = PLANNING_STEPS[stepIndex];
+    return step.fields.find(field => !isFieldFilled(field, data));
+  };
+  
+  // Auto-save
+  const autoSaveProgress = async (newData) => {
+    try {
+      await caseApi.update(id, { planningData: newData });
+    } catch (error) {
+      console.error('Auto-save failed:', error);
+    }
+  };
+  
+  // Focus field
+  const focusField = (fieldKey) => {
+    setTimeout(() => {
+      const fieldRef = fieldRefs.current[fieldKey];
+      if (fieldRef) {
+        fieldRef.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    }, 100);
+  };
+  
+  // Handle field change with auto-progression
+  const handleFieldChange = async (fieldKey, value) => {
+    const newData = { ...planningData, [fieldKey]: value };
+    setPlanningData(newData);
+    
+    // Auto-save
+    autoSaveProgress(newData);
+    
+    // Check if current step is now complete
+    const stepComplete = isStepComplete(currentStep, newData);
+    setCompletedSteps(prev => ({ ...prev, [currentStep]: stepComplete }));
+    
+    if (stepComplete) {
+      // Step completed! Show animation and auto-advance
+      setShowCompletionAnimation(true);
+      
+      setTimeout(() => {
+        setShowCompletionAnimation(false);
+        if (currentStep < PLANNING_STEPS.length - 1) {
+          setCurrentStep(prev => prev + 1);
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        } else {
+          // All steps complete
+          toast.success('All sections complete! Ready to analyze.');
+        }
+      }, 500);
+    } else {
+      // Find and focus next unfilled field
+      const nextField = getNextUnfilledField(currentStep, newData);
+      if (nextField) {
+        focusField(nextField.key);
+      }
+    }
   };
   
   const handleCheckboxChange = (key, value, checked) => {
-    setPlanningData(prev => {
-      const currentValues = prev[key] || [];
-      if (checked) {
-        return { ...prev, [key]: [...currentValues, value] };
-      } else {
-        return { ...prev, [key]: currentValues.filter(v => v !== value) };
-      }
-    });
+    const currentValues = planningData[key] || [];
+    const newValues = checked
+      ? [...currentValues, value]
+      : currentValues.filter(v => v !== value);
+    handleFieldChange(key, newValues);
   };
   
-  const saveProgress = async () => {
-    setSaving(true);
-    try {
-      await caseApi.update(id, { planningData });
-      toast.success('Progress saved');
-    } catch (error) {
-      toast.error('Failed to save');
-    } finally {
-      setSaving(false);
+  const handleTextareaChange = (key, value) => {
+    handleFieldChange(key, value);
+  };
+  
+  const goToNextStep = () => {
+    if (currentStep < PLANNING_STEPS.length - 1) {
+      setCurrentStep(prev => prev + 1);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } else {
+      handleAnalyze();
+    }
+  };
+  
+  const goToPrevStep = () => {
+    if (showResults) {
+      setShowResults(false);
+      setCurrentStep(PLANNING_STEPS.length - 1);
+    } else if (currentStep > 0) {
+      setCurrentStep(prev => prev - 1);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   };
   
   const handleAnalyze = async () => {
+    const allComplete = PLANNING_STEPS.every((_, index) => isStepComplete(index, planningData));
+    
+    if (!allComplete) {
+      toast.error('Please complete all required fields before analyzing');
+      return;
+    }
+    
     setAnalyzing(true);
     try {
       await caseApi.update(id, { planningData });
-      
-      // Track planning completion
       trackPlanningCompleted(id, planningData);
       
       const response = await caseApi.analyze(id);
       setCaseData(prev => ({ ...prev, riskAssessment: response.data }));
-      
-      // Track risk analysis
       trackRiskAnalysisRun(id, response.data);
       
       setShowResults(true);
       toast.success('Assessment complete');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     } catch (error) {
       toast.error('Failed to analyze');
     } finally {
@@ -253,64 +352,117 @@ export default function PlanningWizard() {
     }
   };
   
-  const goToNext = () => {
-    if (currentStep < PLANNING_STEPS.length - 1) {
-      setCurrentStep(prev => prev + 1);
-    } else {
-      handleAnalyze();
-    }
-  };
-  
-  const goToPrev = () => {
-    if (showResults) {
-      setShowResults(false);
-      setCurrentStep(PLANNING_STEPS.length - 1);
-    } else if (currentStep > 0) {
-      setCurrentStep(prev => prev - 1);
-    }
+  const calculateProgress = () => {
+    if (showResults) return 100;
+    const totalFields = PLANNING_STEPS.reduce((sum, step) => sum + step.fields.length, 0);
+    const filledFields = PLANNING_STEPS.reduce((sum, step) => {
+      const filled = step.fields.filter(field => isFieldFilled(field, planningData)).length;
+      return sum + filled;
+    }, 0);
+    return Math.round((filledFields / totalFields) * 100);
   };
   
   if (loading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="animate-pulse text-muted-foreground">Loading...</div>
+      <div className="min-h-screen flex items-center justify-center" style={{background: 'var(--bg)'}}>
+        <div className="animate-pulse mono" style={{color: 'var(--t3)'}}>Loading...</div>
       </div>
     );
   }
   
-  const progress = showResults ? 100 : Math.round(((currentStep + 1) / PLANNING_STEPS.length) * 100);
+  const progress = calculateProgress();
   const currentStepData = PLANNING_STEPS[currentStep];
   const risk = caseData?.riskAssessment ? riskConfig[caseData.riskAssessment.overallRisk] : null;
+  const isCurrentStepComplete = completedSteps[currentStep];
   
   return (
-    <div className="min-h-screen bg-background pb-32">
+    <div className="min-h-screen pb-32" style={{background: 'var(--bg)'}}>
       {/* Header */}
       <header className="glass-header sticky top-0 z-40 px-4 py-4">
         <div className="page-container">
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 mb-4">
             <button
               onClick={() => navigate(`/case/${id}`)}
-              className="p-2 -ml-2 hover:bg-slate-100 rounded-lg touch-target"
-              data-testid="back-btn"
+              className="p-2 -ml-2 rounded-lg touch-target"
+              style={{background: 'transparent', border: 'none'}}
+              onMouseOver={(e) => e.currentTarget.style.background = 'var(--border)'}
+              onMouseOut={(e) => e.currentTarget.style.background = 'transparent'}
             >
-              <ArrowLeft className="h-5 w-5" />
+              <ArrowLeft className="h-5 w-5" style={{color: 'var(--t2)'}} />
             </button>
             <div className="flex-1 min-w-0">
-              <h1 className="text-xl font-semibold text-foreground truncate">Planning Engine</h1>
-              <p className="text-sm text-muted-foreground">{caseData?.caseName}</p>
+              <h1 className="text-xl font-semibold truncate" style={{fontFamily: "'Lora', serif", color: 'var(--t1)'}}>
+                Planning Engine
+              </h1>
+              <p className="text-sm" style={{color: 'var(--t2)'}}>{caseData?.caseName}</p>
             </div>
           </div>
           
-          {/* Progress */}
-          <div className="mt-4">
-            <div className="flex justify-between text-sm mb-2">
-              <span className="text-muted-foreground">
-                {showResults ? 'Assessment Complete' : `Step ${currentStep + 1} of ${PLANNING_STEPS.length}`}
-              </span>
-              <span className="font-medium">{progress}%</span>
+          {/* Step Progress Indicator */}
+          {!showResults && (
+            <div className="mb-4">
+              <div className="flex items-center justify-between mb-3">
+                {PLANNING_STEPS.map((step, index) => {
+                  const isCompleted = completedSteps[index];
+                  const isActive = index === currentStep;
+                  const isPending = index > currentStep && !isCompleted;
+                  
+                  return (
+                    <div key={step.id} className="flex items-center flex-1">
+                      <div className="flex flex-col items-center">
+                        {/* Step Indicator */}
+                        <div 
+                          className="w-10 h-10 rounded-full flex items-center justify-center text-sm font-semibold transition-all"
+                          style={{
+                            background: isCompleted ? 'var(--green)' : isActive ? 'var(--blue)' : 'var(--border)',
+                            color: isCompleted || isActive ? 'white' : 'var(--t3)',
+                            border: isActive ? '2px solid var(--blue)' : 'none',
+                            boxShadow: isActive ? '0 0 0 4px var(--blue-1)' : 'none'
+                          }}
+                        >
+                          {isCompleted ? '✓' : index + 1}
+                        </div>
+                        
+                        {/* Step Label */}
+                        <span 
+                          className="text-xs mt-2 text-center mono hidden sm:block"
+                          style={{
+                            color: isCompleted ? 'var(--green)' : isActive ? 'var(--blue)' : 'var(--t3)',
+                            fontWeight: isActive ? 600 : 400,
+                            maxWidth: '80px'
+                          }}
+                        >
+                          {step.id.replace(/_/g, ' ').substring(0, 10)}
+                        </span>
+                      </div>
+                      
+                      {/* Connector Line */}
+                      {index < PLANNING_STEPS.length - 1 && (
+                        <div 
+                          className="flex-1 h-[2px] mx-2"
+                          style={{
+                            background: isCompleted ? 'var(--green)' : 'var(--border)',
+                            marginTop: '-24px'
+                          }}
+                        />
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+              
+              {/* Overall Progress Bar */}
+              <div className="mt-4">
+                <div className="flex justify-between text-xs mb-2">
+                  <span className="mono" style={{color: 'var(--t2)', textTransform: 'uppercase'}}>
+                    Step {currentStep + 1} of {PLANNING_STEPS.length}
+                  </span>
+                  <span className="font-medium mono" style={{color: 'var(--t1)'}}>{progress}%</span>
+                </div>
+                <Progress value={progress} className="h-2" />
+              </div>
             </div>
-            <Progress value={progress} className="h-2" />
-          </div>
+          )}
         </div>
       </header>
       
@@ -533,93 +685,157 @@ export default function PlanningWizard() {
           </div>
         )}
         
-        {/* Step Form */}
+        {/* Current Step Content */}
         {!showResults && currentStepData && (
-          <div className="space-y-6 animate-fade-in">
-            <div>
-              <h2 className="text-2xl font-semibold mb-2">{currentStepData.title}</h2>
-              <p className="text-muted-foreground">{currentStepData.description}</p>
+          <div className="animate-fade-in">
+            {/* Step Header */}
+            <div className="mb-8">
+              <h2 className="text-3xl font-semibold mb-3" style={{fontFamily: "'Lora', serif", color: 'var(--t1)'}}>
+                {currentStepData.title}
+              </h2>
+              <p className="text-base" style={{color: 'var(--t2)'}}>
+                {currentStepData.description}
+              </p>
             </div>
             
-            {currentStepData.fields.map((field) => (
-              <div key={field.key} className="space-y-3">
-                <Label className="text-base font-medium">{field.label}</Label>
-                
-                {field.type === 'radio' && (
-                  <RadioGroup
-                    value={planningData[field.key] || ''}
-                    onValueChange={(value) => handleFieldChange(field.key, value)}
-                    className="space-y-2"
-                  >
-                    {field.options.map((option) => (
-                      <label
-                        key={option.value}
-                        className={`flex items-start gap-3 p-4 rounded-lg border cursor-pointer transition-colors ${
-                          planningData[field.key] === option.value
-                            ? 'border-primary bg-primary/5'
-                            : 'border-border hover:border-primary/30'
-                        }`}
-                        data-testid={`${field.key}-${option.value}`}
-                      >
-                        <RadioGroupItem value={option.value} className="mt-0.5" />
-                        <div>
-                          <p className="font-medium">{option.label}</p>
-                          {option.description && (
-                            <p className="text-sm text-muted-foreground">{option.description}</p>
-                          )}
-                        </div>
-                      </label>
-                    ))}
-                  </RadioGroup>
-                )}
-                
-                {field.type === 'checkbox' && (
-                  <div className="space-y-2">
-                    {field.options.map((option) => (
-                      <label
-                        key={option.value}
-                        className={`flex items-center gap-3 p-4 rounded-lg border cursor-pointer transition-colors ${
-                          (planningData[field.key] || []).includes(option.value)
-                            ? 'border-primary bg-primary/5'
-                            : 'border-border hover:border-primary/30'
-                        }`}
-                        data-testid={`${field.key}-${option.value}`}
-                      >
-                        <Checkbox
-                          checked={(planningData[field.key] || []).includes(option.value)}
-                          onCheckedChange={(checked) => handleCheckboxChange(field.key, option.value, checked)}
-                        />
-                        <span className="font-medium">{option.label}</span>
-                      </label>
-                    ))}
+            {/* Divider */}
+            <div className="flex items-center gap-4 mb-8">
+              <div className="flex-1 h-[2px]" style={{background: 'var(--border2)'}}></div>
+            </div>
+            
+            {/* Completion Animation Overlay */}
+            {showCompletionAnimation && (
+              <div className="fixed inset-0 z-50 flex items-center justify-center" style={{background: 'rgba(26, 25, 23, 0.5)'}}>
+                <div className="card-clinical p-8 text-center animate-slide-up" style={{background: 'var(--green-1)', border: '2px solid var(--green)'}}>
+                  <div className="w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center" style={{background: 'var(--green)'}}>
+                    <CheckCircle2 className="h-10 w-10" style={{color: 'white'}} />
                   </div>
-                )}
-                
-                {field.type === 'textarea' && (
-                  <Textarea
-                    value={planningData[field.key] || ''}
-                    onChange={(e) => handleFieldChange(field.key, e.target.value)}
-                    placeholder={field.placeholder}
-                    className="min-h-[100px]"
-                    data-testid={`${field.key}-textarea`}
-                  />
-                )}
+                  <h3 className="text-xl font-semibold mb-2" style={{color: 'var(--green)', fontFamily: "'Lora', serif"}}>
+                    Step Complete!
+                  </h3>
+                  <p className="text-sm" style={{color: 'var(--green)'}}>Moving to next section...</p>
+                </div>
               </div>
-            ))}
+            )}
+            
+            {/* Fields */}
+            <div className="space-y-8">
+              {currentStepData.fields.map((field) => {
+                const isFilled = isFieldFilled(field, planningData);
+                
+                return (
+                  <div 
+                    key={field.key} 
+                    ref={el => fieldRefs.current[field.key] = el}
+                    className="space-y-4"
+                  >
+                    {/* Field Label */}
+                    <div className="flex items-center justify-between">
+                      <Label className="text-lg font-medium flex items-center gap-3" style={{color: 'var(--t1)'}}>
+                        {field.label}
+                        {field.type === 'textarea' && (
+                          <span className="text-xs mono" style={{color: 'var(--t3)', textTransform: 'none', fontWeight: 'normal'}}>
+                            (Optional)
+                          </span>
+                        )}
+                        {isFilled && field.type !== 'textarea' && (
+                          <span className="text-sm" style={{color: 'var(--green)'}}>✓ Complete</span>
+                        )}
+                      </Label>
+                    </div>
+                    
+                    {/* Radio Group */}
+                    {field.type === 'radio' && (
+                      <RadioGroup
+                        value={planningData[field.key] || ''}
+                        onValueChange={(value) => handleFieldChange(field.key, value)}
+                        className="space-y-3"
+                      >
+                        {field.options.map((option) => (
+                          <label
+                            key={option.value}
+                            className="flex items-start gap-4 p-5 rounded-lg cursor-pointer transition-all"
+                            style={{
+                              border: planningData[field.key] === option.value 
+                                ? '2px solid var(--green)' 
+                                : '1.5px solid var(--border)',
+                              background: planningData[field.key] === option.value 
+                                ? 'var(--green-1)' 
+                                : 'var(--card)'
+                            }}
+                          >
+                            <RadioGroupItem value={option.value} className="mt-0.5" />
+                            <div className="flex-1">
+                              <p className="font-semibold mb-1" style={{color: 'var(--t1)'}}>{option.label}</p>
+                              {option.description && (
+                                <p className="text-sm" style={{color: 'var(--t2)'}}>{option.description}</p>
+                              )}
+                            </div>
+                          </label>
+                        ))}
+                      </RadioGroup>
+                    )}
+                    
+                    {/* Checkbox Group */}
+                    {field.type === 'checkbox' && (
+                      <div className="space-y-3">
+                        {field.options.map((option) => (
+                          <label
+                            key={option.value}
+                            className="flex items-center gap-4 p-5 rounded-lg cursor-pointer transition-all"
+                            style={{
+                              border: (planningData[field.key] || []).includes(option.value)
+                                ? '2px solid var(--green)'
+                                : '1.5px solid var(--border)',
+                              background: (planningData[field.key] || []).includes(option.value)
+                                ? 'var(--green-1)'
+                                : 'var(--card)'
+                            }}
+                          >
+                            <Checkbox
+                              checked={(planningData[field.key] || []).includes(option.value)}
+                              onCheckedChange={(checked) => handleCheckboxChange(field.key, option.value, checked)}
+                            />
+                            <span className="font-semibold" style={{color: 'var(--t1)'}}>{option.label}</span>
+                          </label>
+                        ))}
+                      </div>
+                    )}
+                    
+                    {/* Textarea */}
+                    {field.type === 'textarea' && (
+                      <Textarea
+                        value={planningData[field.key] || ''}
+                        onChange={(e) => handleTextareaChange(field.key, e.target.value)}
+                        placeholder={field.placeholder}
+                        className="min-h-[120px] input-clinical text-base"
+                      />
+                    )}
+                    
+                    {/* Divider after each field */}
+                    {currentStepData.fields.indexOf(field) < currentStepData.fields.length - 1 && (
+                      <div className="pt-8">
+                        <div className="h-[1px]" style={{background: 'var(--border)'}}></div>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
           </div>
         )}
       </main>
       
       {/* Bottom Navigation */}
       {!showResults && (
-        <div className="fixed bottom-0 left-0 right-0 p-4 bg-white border-t border-border safe-area-pb">
+        <div className="fixed bottom-0 left-0 right-0 p-4 border-t safe-area-pb" style={{background: 'var(--card)', borderColor: 'var(--border)'}}>
           <div className="page-container">
             <div className="flex gap-3">
               <Button
                 variant="outline"
-                onClick={goToPrev}
+                onClick={goToPrevStep}
                 disabled={currentStep === 0}
-                className="flex-1 btn-clinical"
+                className="flex-1 btn-clinical btn-secondary-endo"
                 data-testid="prev-btn"
               >
                 <ChevronLeft className="h-5 w-5 mr-1" />
@@ -627,9 +843,9 @@ export default function PlanningWizard() {
               </Button>
               
               <Button
-                onClick={goToNext}
+                onClick={goToNextStep}
                 disabled={analyzing}
-                className="flex-1 btn-clinical bg-primary text-primary-foreground"
+                className="flex-1 btn-clinical btn-primary-endo"
                 data-testid="next-btn"
               >
                 {analyzing ? 'Analyzing...' : currentStep === PLANNING_STEPS.length - 1 ? 'Analyze' : 'Next'}
@@ -637,15 +853,10 @@ export default function PlanningWizard() {
               </Button>
             </div>
             
-            {/* Save progress link */}
-            <button
-              onClick={saveProgress}
-              disabled={saving}
-              className="w-full mt-3 text-sm text-muted-foreground hover:text-primary"
-              data-testid="save-progress-btn"
-            >
-              {saving ? 'Saving...' : 'Save progress'}
-            </button>
+            {/* Progress hint */}
+            <p className="text-center mt-2 text-xs mono" style={{color: 'var(--t3)'}}>
+              Auto-saves on every change • {progress}% complete
+            </p>
           </div>
         </div>
       )}

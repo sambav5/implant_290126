@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=Manrope:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Lora:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Inter:wght@300;400;500;600;700&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -6,34 +6,61 @@
 
 @layer base {
     :root {
-        --background: 220 14% 96%;
-        --foreground: 220 14% 14%;
-        --card: 0 0% 100%;
-        --card-foreground: 220 14% 14%;
-        --popover: 0 0% 100%;
-        --popover-foreground: 220 14% 14%;
-        --primary: 213 84% 55%;
-        --primary-foreground: 0 0% 100%;
-        --secondary: 214 32% 91%;
-        --secondary-foreground: 215 25% 27%;
-        --muted: 210 40% 96%;
-        --muted-foreground: 215 16% 47%;
-        --accent: 245 58% 69%;
+        /* EndoPilot Design System Colors */
+        --bg: #F4F2EE;
+        --card: #FAFAF8;
+        --border: #E3E0D8;
+        --border2: #CCCAB8;
+        
+        --t1: #1A1917;
+        --t2: #6A6860;
+        --t3: #A9A79F;
+        
+        --green: #1A6B4A;
+        --green-1: #EBF5F0;
+        --green-b: #BCD9CA;
+        
+        --amber: #D97706;
+        --amber-1: #FEF5E7;
+        --amber-b: #E0C48A;
+        
+        --red: #8B2112;
+        --red-1: #FDECEA;
+        --red-b: #F5CECA;
+        
+        --blue: #1A3F6F;
+        --blue-1: #EBF1FA;
+        --blue-b: #A8C4E6;
+        
+        /* Tailwind compatibility (HSL format) */
+        --background: 42 18% 95%;
+        --foreground: 24 7% 10%;
+        --card: 60 14% 98%;
+        --card-foreground: 24 7% 10%;
+        --popover: 60 14% 98%;
+        --popover-foreground: 24 7% 10%;
+        --primary: 158 58% 27%;
+        --primary-foreground: 150 30% 95%;
+        --secondary: 150 25% 90%;
+        --secondary-foreground: 158 58% 20%;
+        --muted: 30 12% 90%;
+        --muted-foreground: 30 5% 60%;
+        --accent: 158 58% 27%;
         --accent-foreground: 0 0% 100%;
-        --destructive: 0 84% 60%;
+        --destructive: 7 72% 31%;
         --destructive-foreground: 0 0% 100%;
-        --border: 214 32% 91%;
-        --input: 0 0% 100%;
-        --ring: 213 84% 55%;
+        --border: 30 20% 89%;
+        --input: 60 14% 98%;
+        --ring: 158 58% 27%;
         --radius: 0.75rem;
         
         /* Semantic colors */
-        --success: 160 84% 39%;
-        --warning: 38 92% 50%;
-        --info: 217 91% 60%;
-        --risk-high: 0 84% 60%;
-        --risk-moderate: 38 92% 50%;
-        --risk-low: 160 84% 39%;
+        --success: 158 58% 27%;
+        --warning: 30 96% 42%;
+        --info: 209 59% 27%;
+        --risk-high: 7 72% 31%;
+        --risk-moderate: 30 96% 42%;
+        --risk-low: 158 58% 27%;
     }
 }
 
@@ -47,85 +74,257 @@
     }
     
     body {
-        @apply bg-background text-foreground antialiased;
-        font-family: 'Manrope', sans-serif;
+        background: var(--bg);
+        color: var(--t1);
+        @apply antialiased;
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
         font-weight: 400;
     }
     
     h1, h2, h3, h4, h5, h6 {
-        font-family: 'Sora', sans-serif;
+        font-family: 'Lora', serif;
         font-weight: 600;
-        letter-spacing: -0.02em;
+        letter-spacing: -0.01em;
+        color: var(--t1);
+    }
+    
+    .mono {
+        font-family: 'JetBrains Mono', 'Courier New', monospace;
     }
 }
 
 @layer components {
+    /* Header */
     .glass-header {
-        @apply bg-white/80 backdrop-blur-md border-b border-slate-200/50;
+        background: rgba(250, 250, 248, 0.85);
+        backdrop-filter: blur(12px);
+        border-bottom: 1.5px solid var(--border);
     }
     
     .glass-overlay {
         @apply bg-slate-900/20 backdrop-blur-sm;
     }
     
+    /* Cards - EndoPilot Style */
     .card-clinical {
-        @apply bg-white rounded-xl border border-slate-100 shadow-sm p-5;
-        box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+        background: var(--card);
+        border-radius: 12px;
+        border: 1.5px solid var(--border);
+        padding: 16px;
+        transition: border-color 0.2s ease, transform 0.1s ease;
     }
     
     .card-clinical-interactive {
         @apply card-clinical cursor-pointer;
-        transition: transform 0.2s ease-out, box-shadow 0.2s ease-out, border-color 0.2s ease-out;
     }
     
     .card-clinical-interactive:hover {
-        @apply border-primary/50;
-        box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+        border-color: var(--border2);
     }
     
     .card-clinical-interactive:active {
         transform: scale(0.99);
     }
     
+    /* Buttons - EndoPilot Style */
     .btn-clinical {
-        @apply h-12 rounded-full font-medium shadow-sm;
-        transition: background-color 0.2s ease-out, transform 0.1s ease-out;
+        height: 48px;
+        border-radius: 12px;
+        font-weight: 500;
+        font-size: 14px;
+        transition: all 0.2s ease;
+        border: 1.5px solid transparent;
     }
     
     .btn-clinical:active {
-        transform: scale(0.95);
+        transform: scale(0.98);
     }
     
+    .btn-primary-endo {
+        background: var(--t1);
+        color: var(--card);
+        border: 1.5px solid var(--t1);
+    }
+    
+    .btn-primary-endo:hover {
+        opacity: 0.85;
+    }
+    
+    .btn-secondary-endo {
+        background: transparent;
+        color: var(--t1);
+        border: 1.5px solid var(--border);
+    }
+    
+    .btn-secondary-endo:hover {
+        border-color: var(--border2);
+        background: var(--card);
+    }
+    
+    .btn-green-endo {
+        background: var(--green);
+        color: white;
+        border: 1.5px solid var(--green);
+    }
+    
+    .btn-green-endo:hover {
+        opacity: 0.9;
+    }
+    
+    /* Input Fields */
     .input-clinical {
-        @apply bg-white border-slate-200 rounded-lg h-12 px-4 text-base;
-        transition: border-color 0.2s ease-out, box-shadow 0.2s ease-out;
+        background: var(--card);
+        border: 1.5px solid var(--border);
+        border-radius: 12px;
+        height: 48px;
+        padding: 0 14px;
+        font-size: 14px;
+        color: var(--t1);
+        transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+    
+    .input-clinical::placeholder {
+        color: var(--t3);
     }
     
     .input-clinical:focus {
-        @apply border-primary ring-2 ring-primary/20;
+        border-color: var(--green);
+        box-shadow: 0 0 0 3px var(--green-1);
+        outline: none;
     }
     
+    /* Checklist Items */
     .checklist-item {
-        @apply flex items-start gap-3 p-4 rounded-lg border border-slate-100 bg-white cursor-pointer;
-        transition: border-color 0.2s ease-out;
+        @apply flex items-start gap-3 p-4 rounded-lg;
+        background: var(--card);
+        border: 1.5px solid var(--border);
+        cursor: pointer;
+        transition: border-color 0.2s ease;
     }
     
     .checklist-item:hover {
-        @apply border-primary/30;
+        border-color: var(--border2);
     }
     
+    /* Role Badges - Subtle Colors */
+    .role-badge-clinician {
+        background: var(--blue-1);
+        color: var(--blue);
+        border: 1px solid var(--blue-b);
+    }
+    
+    .role-badge-implantologist {
+        background: #F3F0FF;
+        color: #6D28D9;
+        border: 1px solid #DDD6FE;
+    }
+    
+    .role-badge-prosthodontist {
+        background: var(--green-1);
+        color: var(--green);
+        border: 1px solid var(--green-b);
+    }
+    
+    .role-badge-assistant {
+        background: var(--amber-1);
+        color: var(--amber);
+        border: 1px solid var(--amber-b);
+    }
+    
+    /* Risk Badges - EndoPilot Style */
     .risk-badge-low {
-        @apply bg-emerald-100 text-emerald-800 border-emerald-200;
+        background: var(--green-1);
+        color: var(--green);
+        border: 1px solid var(--green-b);
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 9px;
+        text-transform: uppercase;
+        padding: 2px 7px;
+        border-radius: 4px;
+        font-weight: 500;
+        letter-spacing: 0.02em;
     }
     
     .risk-badge-moderate {
-        @apply bg-amber-100 text-amber-800 border-amber-200;
+        background: var(--amber-1);
+        color: var(--amber);
+        border: 1px solid var(--amber-b);
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 9px;
+        text-transform: uppercase;
+        padding: 2px 7px;
+        border-radius: 4px;
+        font-weight: 500;
+        letter-spacing: 0.02em;
     }
     
     .risk-badge-high {
-        @apply bg-red-100 text-red-800 border-red-200;
+        background: var(--red-1);
+        color: var(--red);
+        border: 1px solid var(--red-b);
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 9px;
+        text-transform: uppercase;
+        padding: 2px 7px;
+        border-radius: 4px;
+        font-weight: 500;
+        letter-spacing: 0.02em;
     }
     
+    /* Status Badges - EndoPilot Style */
+    .status-planning {
+        background: var(--blue-1);
+        color: var(--blue);
+        border-color: var(--blue-b);
+    }
+    
+    .status-in-progress {
+        background: var(--amber-1);
+        color: var(--amber);
+        border-color: var(--amber-b);
+    }
+    
+    .status-completed {
+        background: var(--green-1);
+        color: var(--green);
+        border-color: var(--green-b);
+    }
+    
+    /* Labels - Monospace Uppercase */
+    .label-endo {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 10px;
+        text-transform: uppercase;
+        color: var(--t2);
+        letter-spacing: 0.05em;
+        font-weight: 500;
+    }
+    
+    /* Section Divider */
+    .section-divider {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin: 24px 0 20px;
+    }
+    
+    .section-divider-label {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 10px;
+        text-transform: uppercase;
+        color: var(--t2);
+        white-space: nowrap;
+        font-weight: 500;
+        letter-spacing: 0.05em;
+    }
+    
+    .section-divider-line {
+        flex: 1;
+        height: 1px;
+        background: var(--border);
+    }
+    
+    /* Safe Areas */
     .safe-area-pb {
         padding-bottom: max(1rem, env(safe-area-inset-bottom));
     }
@@ -139,7 +338,39 @@
     }
     
     .disclaimer-text {
-        @apply text-xs text-muted-foreground italic;
+        font-size: 11px;
+        color: var(--t3);
+        font-style: italic;
+    }
+    
+    /* Toggle Switch - EndoPilot Style */
+    .toggle-endo {
+        width: 42px;
+        height: 24px;
+        border-radius: 12px;
+        background: var(--border);
+        position: relative;
+        cursor: pointer;
+        transition: background 0.2s ease;
+    }
+    
+    .toggle-endo.on {
+        background: var(--green);
+    }
+    
+    .toggle-thumb {
+        width: 18px;
+        height: 18px;
+        border-radius: 50%;
+        background: white;
+        position: absolute;
+        top: 3px;
+        left: 3px;
+        transition: left 0.2s ease;
+    }
+    
+    .toggle-endo.on .toggle-thumb {
+        left: 21px;
     }
 }
 
@@ -188,7 +419,7 @@
     }
 }
 
-/* Custom scrollbar */
+/* Custom scrollbar - EndoPilot Style */
 ::-webkit-scrollbar {
     width: 6px;
     height: 6px;
@@ -199,16 +430,26 @@
 }
 
 ::-webkit-scrollbar-thumb {
-    @apply bg-slate-300 rounded-full;
+    background: var(--border2);
+    border-radius: 3px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-    @apply bg-slate-400;
+    background: var(--t3);
 }
 
-/* Form element enhancements */
+/* Form element enhancements - EndoPilot Style */
 input[type="checkbox"] {
-    @apply h-5 w-5 rounded border-slate-300 text-primary focus:ring-primary;
+    height: 20px;
+    width: 20px;
+    border-radius: 4px;
+    border: 1.5px solid var(--border);
+    accent-color: var(--green);
+}
+
+input[type="checkbox"]:focus {
+    outline: 2px solid var(--green-1);
+    outline-offset: 2px;
 }
 
 select {

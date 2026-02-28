@@ -39,15 +39,15 @@ import { downloadCasePDF } from '@/services/pdfService';
 import { toast } from 'sonner';
 
 const statusConfig = {
-  planning: { label: 'Planning', className: 'status-planning', icon: FileText },
-  in_progress: { label: 'In Progress', className: 'status-in-progress', icon: Play },
-  completed: { label: 'Completed', className: 'status-completed', icon: CheckCircle2 },
+  planning: { label: 'Planning', className: 'status-planning px-2 py-1 text-xs rounded-md border mono', icon: FileText },
+  in_progress: { label: 'In Progress', className: 'status-in-progress px-2 py-1 text-xs rounded-md border mono', icon: Play },
+  completed: { label: 'Completed', className: 'status-completed px-2 py-1 text-xs rounded-md border mono', icon: CheckCircle2 },
 };
 
 const riskConfig = {
-  low: { label: 'Low Risk', className: 'risk-badge-low', color: 'text-emerald-600' },
-  moderate: { label: 'Moderate', className: 'risk-badge-moderate', color: 'text-amber-600' },
-  high: { label: 'High Risk', className: 'risk-badge-high', color: 'text-red-600' },
+  low: { label: 'Low Risk', className: 'risk-badge-low', color: 'var(--green)' },
+  moderate: { label: 'Moderate', className: 'risk-badge-moderate', color: 'var(--amber)' },
+  high: { label: 'High Risk', className: 'risk-badge-high', color: 'var(--red)' },
 };
 
 export default function CaseDetail() {
@@ -102,8 +102,8 @@ export default function CaseDetail() {
   
   if (loading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="animate-pulse text-muted-foreground">Loading...</div>
+      <div className="min-h-screen flex items-center justify-center" style={{background: 'var(--bg)'}}>
+        <div className="animate-pulse mono" style={{color: 'var(--t3)'}}>Loading...</div>
       </div>
     );
   }
@@ -122,7 +122,7 @@ export default function CaseDetail() {
   const checklistProgress = totalChecks.length > 0 ? Math.round((completedChecks / totalChecks.length) * 100) : 0;
   
   return (
-    <div className="min-h-screen bg-background pb-24">
+    <div className="min-h-screen pb-24" style={{background: 'var(--bg)'}}>
       {/* Header */}
       <header className="glass-header sticky top-0 z-40 px-4 py-4">
         <div className="page-container">
@@ -130,14 +130,17 @@ export default function CaseDetail() {
             <div className="flex items-center gap-3">
               <button
                 onClick={() => navigate('/')}
-                className="p-2 -ml-2 hover:bg-slate-100 rounded-lg touch-target"
+                className="p-2 -ml-2 rounded-lg touch-target"
+                style={{background: 'transparent', border: 'none'}}
+                onMouseOver={(e) => e.currentTarget.style.background = 'var(--border)'}
+                onMouseOut={(e) => e.currentTarget.style.background = 'transparent'}
                 data-testid="back-btn"
               >
-                <ArrowLeft className="h-5 w-5" />
+                <ArrowLeft className="h-5 w-5" style={{color: 'var(--t2)'}} />
               </button>
               <div className="min-w-0">
-                <h1 className="text-xl font-semibold text-foreground truncate">{caseData.caseName}</h1>
-                <p className="text-sm text-muted-foreground">Tooth #{caseData.toothNumber}</p>
+                <h1 className="text-xl font-semibold truncate" style={{fontFamily: "'Lora', serif", color: 'var(--t1)'}}>{caseData.caseName}</h1>
+                <p className="text-sm mono" style={{color: 'var(--t2)'}}>Tooth #{caseData.toothNumber}</p>
               </div>
             </div>
             
@@ -175,7 +178,15 @@ export default function CaseDetail() {
         <div className="card-clinical animate-slide-up">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
-              <div className="tooth-badge">{caseData.toothNumber}</div>
+              <div className="flex items-center justify-center w-10 h-10 rounded-lg font-semibold text-sm" 
+                   style={{
+                     background: 'var(--green-1)', 
+                     color: 'var(--green)', 
+                     border: '1.5px solid var(--green-b)',
+                     fontFamily: "'Lora', serif"
+                   }}>
+                {caseData.toothNumber}
+              </div>
               <div>
                 <Badge className={status.className}>{status.label}</Badge>
                 {risk && (
@@ -191,32 +202,32 @@ export default function CaseDetail() {
           <div className="grid grid-cols-2 gap-4 text-sm">
             {caseData.optionalAge && (
               <div>
-                <span className="text-muted-foreground">Age:</span>
-                <span className="ml-2 font-medium">{caseData.optionalAge} years</span>
+                <span className="label-endo">Age:</span>
+                <span className="ml-2 font-medium" style={{color: 'var(--t1)'}}>{caseData.optionalAge} years</span>
               </div>
             )}
             {caseData.optionalSex && (
               <div>
-                <span className="text-muted-foreground">Sex:</span>
-                <span className="ml-2 font-medium capitalize">{caseData.optionalSex}</span>
+                <span className="label-endo">Sex:</span>
+                <span className="ml-2 font-medium capitalize" style={{color: 'var(--t1)'}}>{caseData.optionalSex}</span>
               </div>
             )}
             <div>
-              <span className="text-muted-foreground">Created:</span>
-              <span className="ml-2 font-medium">
+              <span className="label-endo">Created:</span>
+              <span className="ml-2 font-medium" style={{color: 'var(--t1)'}}>
                 {new Date(caseData.createdAt).toLocaleDateString()}
               </span>
             </div>
           </div>
           
           {/* Status Change Buttons */}
-          <div className="flex gap-2 mt-4 pt-4 border-t border-border">
+          <div className="flex gap-2 mt-4 pt-4" style={{borderTop: '1px solid var(--border)'}}>
             {caseData.status === 'planning' && (
               <Button
                 variant="outline"
                 size="sm"
                 onClick={() => handleStatusChange('in_progress')}
-                className="flex-1"
+                className="flex-1 btn-clinical btn-secondary-endo"
                 data-testid="start-treatment-btn"
               >
                 <Play className="h-4 w-4 mr-2" />
@@ -228,7 +239,7 @@ export default function CaseDetail() {
                 variant="outline"
                 size="sm"
                 onClick={() => handleStatusChange('completed')}
-                className="flex-1"
+                className="flex-1 btn-clinical btn-green-endo"
                 data-testid="complete-case-btn"
               >
                 <CheckCircle2 className="h-4 w-4 mr-2" />
@@ -236,9 +247,9 @@ export default function CaseDetail() {
               </Button>
             )}
             {caseData.status === 'completed' && caseData.feedback?.reflectionCompletedAt && (
-              <div className="flex items-center gap-2 text-sm text-emerald-600">
+              <div className="flex items-center gap-2 text-sm" style={{color: 'var(--green)'}}>
                 <CheckCircle2 className="h-4 w-4" />
-                <span>Learning reflection completed</span>
+                <span className="mono" style={{fontSize: '10px', textTransform: 'uppercase'}}>Learning reflection completed</span>
               </div>
             )}
           </div>
@@ -248,18 +259,18 @@ export default function CaseDetail() {
         {caseData.riskAssessment && (
           <div className="card-clinical animate-slide-up stagger-1">
             <div className="flex items-center gap-2 mb-3">
-              <Activity className={`h-5 w-5 ${risk.color}`} />
-              <h3 className="font-semibold">Risk Assessment</h3>
+              <Activity className="h-5 w-5" style={{color: risk.color}} />
+              <h3 className="font-semibold" style={{color: 'var(--t1)', fontFamily: "'Lora', serif"}}>Risk Assessment</h3>
             </div>
-            <p className="text-sm text-muted-foreground mb-3">
+            <p className="text-sm mb-3" style={{color: 'var(--t2)'}}>
               {caseData.riskAssessment.plainLanguageSummary}
             </p>
             {caseData.riskAssessment.considerations?.length > 0 && (
               <div className="space-y-2">
                 {caseData.riskAssessment.considerations.slice(0, 3).map((consideration, index) => (
                   <div key={index} className="flex items-start gap-2 text-sm">
-                    <AlertTriangle className="h-4 w-4 text-amber-500 shrink-0 mt-0.5" />
-                    <span>{consideration}</span>
+                    <AlertTriangle className="h-4 w-4 shrink-0 mt-0.5" style={{color: 'var(--amber)'}} />
+                    <span style={{color: 'var(--t1)'}}>{consideration}</span>
                   </div>
                 ))}
               </div>
@@ -277,17 +288,17 @@ export default function CaseDetail() {
           >
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                  <FileText className="h-5 w-5 text-primary" />
+                <div className="w-10 h-10 rounded-lg flex items-center justify-center" style={{background: 'var(--blue-1)'}}>
+                  <FileText className="h-5 w-5" style={{color: 'var(--blue)'}} />
                 </div>
                 <div className="text-left">
-                  <h3 className="font-semibold">Planning Engine</h3>
-                  <p className="text-sm text-muted-foreground">
+                  <h3 className="font-semibold" style={{color: 'var(--t1)'}}>Planning Engine</h3>
+                  <p className="text-sm" style={{color: 'var(--t2)'}}>
                     {caseData.riskAssessment ? 'Review and update' : 'Complete assessment'}
                   </p>
                 </div>
               </div>
-              <ChevronRight className="h-5 w-5 text-muted-foreground" />
+              <ChevronRight className="h-5 w-5" style={{color: 'var(--t3)'}} />
             </div>
           </button>
           
@@ -299,17 +310,17 @@ export default function CaseDetail() {
           >
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-lg bg-purple-500/10 flex items-center justify-center">
-                  <CheckSquare className="h-5 w-5 text-purple-600" />
+                <div className="w-10 h-10 rounded-lg flex items-center justify-center" style={{background: '#F3F0FF'}}>
+                  <CheckSquare className="h-5 w-5" style={{color: '#6D28D9'}} />
                 </div>
                 <div className="text-left">
-                  <h3 className="font-semibold">Treatment Blueprint</h3>
-                  <p className="text-sm text-muted-foreground">
+                  <h3 className="font-semibold" style={{color: 'var(--t1)'}}>Treatment Blueprint</h3>
+                  <p className="text-sm" style={{color: 'var(--t2)'}}>
                     Your comprehensive implant workflow — in one place
                   </p>
                 </div>
               </div>
-              <ChevronRight className="h-5 w-5 text-muted-foreground" />
+              <ChevronRight className="h-5 w-5" style={{color: 'var(--t3)'}} />
             </div>
           </button>
           
@@ -321,19 +332,19 @@ export default function CaseDetail() {
           >
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-lg bg-accent/10 flex items-center justify-center">
-                  <Lightbulb className="h-5 w-5 text-accent" />
+                <div className="w-10 h-10 rounded-lg flex items-center justify-center" style={{background: 'var(--amber-1)'}}>
+                  <Lightbulb className="h-5 w-5" style={{color: 'var(--amber)'}} />
                 </div>
                 <div className="text-left">
-                  <h3 className="font-semibold">Learning Reflections</h3>
-                  <p className="text-sm text-muted-foreground">
+                  <h3 className="font-semibold" style={{color: 'var(--t1)'}}>Learning Reflections</h3>
+                  <p className="text-sm" style={{color: 'var(--t2)'}}>
                     {caseData.feedback?.reflectionCompletedAt 
                       ? 'View your reflections' 
                       : 'Capture insights to make every case seamless'}
                   </p>
                 </div>
               </div>
-              <ChevronRight className="h-5 w-5 text-muted-foreground" />
+              <ChevronRight className="h-5 w-5" style={{color: 'var(--t3)'}} />
             </div>
           </button>
         </div>
@@ -342,17 +353,17 @@ export default function CaseDetail() {
         {caseData.timeline?.length > 0 && (
           <div className="card-clinical animate-slide-up stagger-5">
             <div className="flex items-center gap-2 mb-4">
-              <Clock className="h-5 w-5 text-muted-foreground" />
-              <h3 className="font-semibold">Recent Activity</h3>
+              <Clock className="h-5 w-5" style={{color: 'var(--t3)'}} />
+              <h3 className="font-semibold" style={{color: 'var(--t1)', fontFamily: "'Lora', serif"}}>Recent Activity</h3>
             </div>
             <div className="space-y-4">
               {caseData.timeline.slice(-5).reverse().map((entry) => (
                 <div key={entry.id} className="timeline-entry">
-                  <p className="text-sm font-medium">{entry.action}</p>
+                  <p className="text-sm font-medium" style={{color: 'var(--t1)'}}>{entry.action}</p>
                   {entry.details && (
-                    <p className="text-xs text-muted-foreground">{entry.details}</p>
+                    <p className="text-xs" style={{color: 'var(--t2)'}}>{entry.details}</p>
                   )}
-                  <p className="text-xs text-muted-foreground mt-1">
+                  <p className="text-xs mono mt-1" style={{color: 'var(--t3)'}}>
                     {new Date(entry.timestamp).toLocaleString()}
                   </p>
                 </div>
@@ -362,9 +373,9 @@ export default function CaseDetail() {
         )}
         
         {/* Disclaimer */}
-        <div className="p-4 bg-muted/50 rounded-lg border border-border">
+        <div className="p-4 rounded-lg" style={{background: 'var(--card)', border: '1.5px solid var(--border)'}}>
           <div className="flex items-start gap-2">
-            <AlertTriangle className="h-4 w-4 text-muted-foreground shrink-0 mt-0.5" />
+            <AlertTriangle className="h-4 w-4 shrink-0 mt-0.5" style={{color: 'var(--t3)'}} />
             <p className="disclaimer-text">
               Decision support only. Final responsibility lies with the clinician.
             </p>
