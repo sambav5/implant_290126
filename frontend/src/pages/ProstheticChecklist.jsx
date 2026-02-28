@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, ChevronDown, ChevronRight, CheckCircle2, Circle, FlaskConical, TrendingUp, Home, Lightbulb, Filter } from 'lucide-react';
+import { ArrowLeft, CheckCircle2, Circle, FlaskConical, TrendingUp, Home, Lightbulb, Filter, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Switch } from '@/components/ui/switch';
@@ -15,30 +15,24 @@ import { canEditItem, getRoleName } from '@/utils/rolePermissions';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8001';
 
-const PHASE_COLORS = {
-  // Authoritative master checklist phase IDs - EndoPilot Style
-  pre_surgical_planning: { bg: 'var(--blue-1)', border: 'var(--blue-b)', text: 'var(--blue)', badge: 'var(--blue-1)' },
-  surgical_treatment: { bg: '#F3F0FF', border: '#DDD6FE', text: '#6D28D9', badge: '#F3F0FF' },
-  prosthetic_rehab: { bg: 'var(--amber-1)', border: 'var(--amber-b)', text: 'var(--amber)', badge: 'var(--amber-1)' },
-  clinical_tryin: { bg: '#E0F2F1', border: '#B2DFDB', text: '#00695C', badge: '#E0F2F1' },
-  delivery: { bg: 'var(--green-1)', border: 'var(--green-b)', text: 'var(--green)', badge: 'var(--green-1)' },
-  immediate_post_delivery: { bg: '#E8F5E9', border: '#C8E6C9', text: '#2E7D32', badge: '#E8F5E9' },
-  follow_up: { bg: '#E1F5FE', border: '#B3E5FC', text: '#0277BD', badge: '#E1F5FE' },
-  maintenance: { bg: '#E8EAF6', border: '#C5CAE9', text: '#3F51B5', badge: '#E8EAF6' },
-  // Legacy fallbacks (if needed)
-  phase1: { bg: 'var(--blue-1)', border: 'var(--blue-b)', text: 'var(--blue)', badge: 'var(--blue-1)' },
-  phase2: { bg: 'var(--amber-1)', border: 'var(--amber-b)', text: 'var(--amber)', badge: 'var(--amber-1)' },
-  phase3: { bg: '#F3F0FF', border: '#DDD6FE', text: '#6D28D9', badge: '#F3F0FF' },
-  phase4: { bg: 'var(--green-1)', border: 'var(--green-b)', text: 'var(--green)', badge: 'var(--green-1)' },
+// Phase mapping configuration - maps backend phases to UI tabs
+const PHASE_MAPPING = {
+  preparation: ['pre_surgical_planning'],
+  placement: ['surgical_treatment'],
+  healing: ['immediate_post_delivery'],
+  restoration: ['prosthetic_rehab', 'clinical_tryin'],
+  finalization: ['delivery'],
+  review: ['follow_up', 'maintenance']
 };
 
-// Fallback colors for any undefined phases - EndoPilot Style
-const DEFAULT_PHASE_COLOR = { 
-  bg: 'var(--card)', 
-  border: 'var(--border)', 
-  text: 'var(--t1)', 
-  badge: 'var(--card)' 
-};
+const PHASE_CONFIG = [
+  { id: 'preparation', label: 'Preparation', icon: '📋' },
+  { id: 'placement', label: 'Placement', icon: '🦷' },
+  { id: 'healing', label: 'Healing', icon: '🔄' },
+  { id: 'restoration', label: 'Restoration', icon: '🎨' },
+  { id: 'finalization', label: 'Finalization', icon: '✓' },
+  { id: 'review', label: 'Review', icon: '👁️' }
+];
 
 export default function ProstheticChecklist() {
   const { id } = useParams();
@@ -50,13 +44,16 @@ export default function ProstheticChecklist() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [showFullProtocol, setShowFullProtocol] = useState(() => {
-    // Load toggle state from localStorage (per case)
     const saved = localStorage.getItem(`checklistScope_${id}`);
-    return saved === 'full' ? true : false; // Default to Essential (false)
+    return saved === 'full' ? true : false;
   });
   const [showMasterChecklist, setShowMasterChecklist] = useState(false);
-  const [expandedPhases, setExpandedPhases] = useState({});
-  const [expandedSections, setExpandedSections] = useState({});
+  
+  // Tab-based navigation
+  const [activePhase, setActivePhase] = useState('preparation');
+  const [completedPhases, setCompletedPhases] = useState({});
+  const [showPhaseCompleteAnimation, setShowPhaseCompleteAnimation] = useState(null);
+  const checklistRef = useRef(null);
   
   // Role-based collaboration state
   const [activeRole] = useActiveRole();
