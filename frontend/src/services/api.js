@@ -3,6 +3,49 @@ import axios from 'axios';
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
 
+// Axios interceptor for JWT authentication
+axios.interceptors.request.use(
+  (config) => {
+    const sessionData = localStorage.getItem('clinician_auth_session');
+    if (sessionData) {
+      try {
+        const { token } = JSON.parse(sessionData);
+        if (token) {
+          config.headers.Authorization = `Bearer ${token}`;
+        }
+      } catch (error) {
+        console.error('Failed to parse auth session:', error);
+        localStorage.removeItem('clinician_auth_session');
+      }
+    }
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
+
+axios.interceptors.response.use(
+  (response) => {
+    return response;
+  },
+  (error) => {
+    if (error.response && error.response.status === 401) {
+      localStorage.removeItem('clinician_auth_session');
+      window.location.href = '/login';
+    }
+    return Promise.reject(error);
+  }
+);
+
+// Auth API
+export const authApi = {
+  requestWhatsappOtp: (phoneNumber) => 
+    axios.post(`${API}/auth/whatsapp/request-otp`, { phoneNumber }),
+  verifyWhatsappOtp: (phoneNumber, otp) => 
+    axios.post(`${API}/auth/whatsapp/verify-otp`, { phoneNumber, otp }),
+};
+
 // Case API
 export const caseApi = {
   getAll: () => axios.get(`${API}/cases`),
@@ -37,6 +80,7 @@ export const attachmentApi = {
 };
 
 export default {
+  auth: authApi,
   case: caseApi,
   checklist: checklistApi,
   feedback: feedbackApi,
