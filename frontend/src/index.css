@@ -1,0 +1,471 @@
+@import url('https://fonts.googleapis.com/css2?family=Lora:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Inter:wght@300;400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+    :root {
+        /* EndoPilot Design System Colors */
+        --bg: #F4F2EE;
+        --card: #FAFAF8;
+        --border: #E3E0D8;
+        --border2: #CCCAB8;
+        
+        --t1: #1A1917;
+        --t2: #6A6860;
+        --t3: #A9A79F;
+        
+        --green: #1A6B4A;
+        --green-1: #EBF5F0;
+        --green-b: #BCD9CA;
+        
+        --amber: #D97706;
+        --amber-1: #FEF5E7;
+        --amber-b: #E0C48A;
+        
+        --red: #8B2112;
+        --red-1: #FDECEA;
+        --red-b: #F5CECA;
+        
+        --blue: #1A3F6F;
+        --blue-1: #EBF1FA;
+        --blue-b: #A8C4E6;
+        
+        /* Tailwind compatibility (HSL format) */
+        --background: 42 18% 95%;
+        --foreground: 24 7% 10%;
+        --card: 60 14% 98%;
+        --card-foreground: 24 7% 10%;
+        --popover: 60 14% 98%;
+        --popover-foreground: 24 7% 10%;
+        --primary: 158 58% 27%;
+        --primary-foreground: 150 30% 95%;
+        --secondary: 150 25% 90%;
+        --secondary-foreground: 158 58% 20%;
+        --muted: 30 12% 90%;
+        --muted-foreground: 30 5% 60%;
+        --accent: 158 58% 27%;
+        --accent-foreground: 0 0% 100%;
+        --destructive: 7 72% 31%;
+        --destructive-foreground: 0 0% 100%;
+        --border: 30 20% 89%;
+        --input: 60 14% 98%;
+        --ring: 158 58% 27%;
+        --radius: 0.75rem;
+        
+        /* Semantic colors */
+        --success: 158 58% 27%;
+        --warning: 30 96% 42%;
+        --info: 209 59% 27%;
+        --risk-high: 7 72% 31%;
+        --risk-moderate: 30 96% 42%;
+        --risk-low: 158 58% 27%;
+    }
+}
+
+@layer base {
+    * {
+        @apply border-border;
+    }
+    
+    html {
+        scroll-behavior: smooth;
+    }
+    
+    body {
+        background: var(--bg);
+        color: var(--t1);
+        @apply antialiased;
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        font-weight: 400;
+    }
+    
+    h1, h2, h3, h4, h5, h6 {
+        font-family: 'Lora', serif;
+        font-weight: 600;
+        letter-spacing: -0.01em;
+        color: var(--t1);
+    }
+    
+    .mono {
+        font-family: 'JetBrains Mono', 'Courier New', monospace;
+    }
+}
+
+@layer components {
+    /* Header */
+    .glass-header {
+        background: rgba(250, 250, 248, 0.85);
+        backdrop-filter: blur(12px);
+        border-bottom: 1.5px solid var(--border);
+    }
+    
+    .glass-overlay {
+        @apply bg-slate-900/20 backdrop-blur-sm;
+    }
+    
+    /* Cards - EndoPilot Style */
+    .card-clinical {
+        background: var(--card);
+        border-radius: 12px;
+        border: 1.5px solid var(--border);
+        padding: 16px;
+        transition: border-color 0.2s ease, transform 0.1s ease;
+    }
+    
+    .card-clinical-interactive {
+        @apply card-clinical cursor-pointer;
+    }
+    
+    .card-clinical-interactive:hover {
+        border-color: var(--border2);
+    }
+    
+    .card-clinical-interactive:active {
+        transform: scale(0.99);
+    }
+    
+    /* Buttons - EndoPilot Style */
+    .btn-clinical {
+        height: 48px;
+        border-radius: 12px;
+        font-weight: 500;
+        font-size: 14px;
+        transition: all 0.2s ease;
+        border: 1.5px solid transparent;
+    }
+    
+    .btn-clinical:active {
+        transform: scale(0.98);
+    }
+    
+    .btn-primary-endo {
+        background: var(--t1);
+        color: var(--card);
+        border: 1.5px solid var(--t1);
+    }
+    
+    .btn-primary-endo:hover {
+        opacity: 0.85;
+    }
+    
+    .btn-secondary-endo {
+        background: transparent;
+        color: var(--t1);
+        border: 1.5px solid var(--border);
+    }
+    
+    .btn-secondary-endo:hover {
+        border-color: var(--border2);
+        background: var(--card);
+    }
+    
+    .btn-green-endo {
+        background: var(--green);
+        color: white;
+        border: 1.5px solid var(--green);
+    }
+    
+    .btn-green-endo:hover {
+        opacity: 0.9;
+    }
+    
+    /* Input Fields */
+    .input-clinical {
+        background: var(--card);
+        border: 1.5px solid var(--border);
+        border-radius: 12px;
+        height: 48px;
+        padding: 0 14px;
+        font-size: 14px;
+        color: var(--t1);
+        transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+    
+    .input-clinical::placeholder {
+        color: var(--t3);
+    }
+    
+    .input-clinical:focus {
+        border-color: var(--green);
+        box-shadow: 0 0 0 3px var(--green-1);
+        outline: none;
+    }
+    
+    /* Checklist Items */
+    .checklist-item {
+        @apply flex items-start gap-3 p-4 rounded-lg;
+        background: var(--card);
+        border: 1.5px solid var(--border);
+        cursor: pointer;
+        transition: border-color 0.2s ease;
+    }
+    
+    .checklist-item:hover {
+        border-color: var(--border2);
+    }
+    
+    /* Role Badges - Subtle Colors */
+    .role-badge-clinician {
+        background: var(--blue-1);
+        color: var(--blue);
+        border: 1px solid var(--blue-b);
+    }
+    
+    .role-badge-implantologist {
+        background: #F3F0FF;
+        color: #6D28D9;
+        border: 1px solid #DDD6FE;
+    }
+    
+    .role-badge-prosthodontist {
+        background: var(--green-1);
+        color: var(--green);
+        border: 1px solid var(--green-b);
+    }
+    
+    .role-badge-assistant {
+        background: var(--amber-1);
+        color: var(--amber);
+        border: 1px solid var(--amber-b);
+    }
+    
+    /* Risk Badges - EndoPilot Style */
+    .risk-badge-low {
+        background: var(--green-1);
+        color: var(--green);
+        border: 1px solid var(--green-b);
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 9px;
+        text-transform: uppercase;
+        padding: 2px 7px;
+        border-radius: 4px;
+        font-weight: 500;
+        letter-spacing: 0.02em;
+    }
+    
+    .risk-badge-moderate {
+        background: var(--amber-1);
+        color: var(--amber);
+        border: 1px solid var(--amber-b);
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 9px;
+        text-transform: uppercase;
+        padding: 2px 7px;
+        border-radius: 4px;
+        font-weight: 500;
+        letter-spacing: 0.02em;
+    }
+    
+    .risk-badge-high {
+        background: var(--red-1);
+        color: var(--red);
+        border: 1px solid var(--red-b);
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 9px;
+        text-transform: uppercase;
+        padding: 2px 7px;
+        border-radius: 4px;
+        font-weight: 500;
+        letter-spacing: 0.02em;
+    }
+    
+    /* Status Badges - EndoPilot Style */
+    .status-planning {
+        background: var(--blue-1);
+        color: var(--blue);
+        border-color: var(--blue-b);
+    }
+    
+    .status-in-progress {
+        background: var(--amber-1);
+        color: var(--amber);
+        border-color: var(--amber-b);
+    }
+    
+    .status-completed {
+        background: var(--green-1);
+        color: var(--green);
+        border-color: var(--green-b);
+    }
+    
+    /* Labels - Monospace Uppercase */
+    .label-endo {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 10px;
+        text-transform: uppercase;
+        color: var(--t2);
+        letter-spacing: 0.05em;
+        font-weight: 500;
+    }
+    
+    /* Section Divider */
+    .section-divider {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin: 24px 0 20px;
+    }
+    
+    .section-divider-label {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 10px;
+        text-transform: uppercase;
+        color: var(--t2);
+        white-space: nowrap;
+        font-weight: 500;
+        letter-spacing: 0.05em;
+    }
+    
+    .section-divider-line {
+        flex: 1;
+        height: 1px;
+        background: var(--border);
+    }
+    
+    /* Safe Areas */
+    .safe-area-pb {
+        padding-bottom: max(1rem, env(safe-area-inset-bottom));
+    }
+    
+    .touch-target {
+        @apply min-h-[44px] min-w-[44px];
+    }
+    
+    .page-container {
+        @apply max-w-md mx-auto md:max-w-2xl lg:max-w-4xl px-4 md:px-6;
+    }
+    
+    .disclaimer-text {
+        font-size: 11px;
+        color: var(--t3);
+        font-style: italic;
+    }
+    
+    /* Toggle Switch - EndoPilot Style */
+    .toggle-endo {
+        width: 42px;
+        height: 24px;
+        border-radius: 12px;
+        background: var(--border);
+        position: relative;
+        cursor: pointer;
+        transition: background 0.2s ease;
+    }
+    
+    .toggle-endo.on {
+        background: var(--green);
+    }
+    
+    .toggle-thumb {
+        width: 18px;
+        height: 18px;
+        border-radius: 50%;
+        background: white;
+        position: absolute;
+        top: 3px;
+        left: 3px;
+        transition: left 0.2s ease;
+    }
+    
+    .toggle-endo.on .toggle-thumb {
+        left: 21px;
+    }
+}
+
+@layer utilities {
+    .animate-fade-in {
+        animation: fadeIn 0.3s ease-out forwards;
+    }
+    
+    .animate-slide-up {
+        animation: slideUp 0.3s ease-out forwards;
+    }
+    
+    .animate-scale-in {
+        animation: scaleIn 0.2s ease-out forwards;
+    }
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes scaleIn {
+    from {
+        opacity: 0;
+        transform: scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+/* Custom scrollbar - EndoPilot Style */
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--border2);
+    border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--t3);
+}
+
+/* Form element enhancements - EndoPilot Style */
+input[type="checkbox"] {
+    height: 20px;
+    width: 20px;
+    border-radius: 4px;
+    border: 1.5px solid var(--border);
+    accent-color: var(--green);
+}
+
+input[type="checkbox"]:focus {
+    outline: 2px solid var(--green-1);
+    outline-offset: 2px;
+}
+
+select {
+    @apply input-clinical;
+}
+
+/* Stagger animation delays */
+.stagger-1 { animation-delay: 0.05s; }
+.stagger-2 { animation-delay: 0.1s; }
+.stagger-3 { animation-delay: 0.15s; }
+.stagger-4 { animation-delay: 0.2s; }
+.stagger-5 { animation-delay: 0.25s; }
+
+/* Debug wrapper */
+@layer base {
+    [data-debug-wrapper="true"] {
+        display: contents !important;
+    }
+}
