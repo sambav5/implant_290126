@@ -1378,7 +1378,9 @@ app.add_middleware(
     CORSMiddleware,
     allow_credentials=True,
     allow_origins=[
-        "https://main.d16x3iik3pv4ry.amplifyapp.com"
+        "https://main.d16x3iik3pv4ry.amplifyapp.com",
+        "https://system-unification.preview.emergentagent.com",
+        "http://localhost:3000"
     ],
     allow_methods=["*"],
     allow_headers=["*"],
