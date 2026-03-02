@@ -63,6 +63,13 @@ def send_whatsapp_otp(phone_number: str, otp: str) -> bool:
         
     except TwilioRestException as e:
         logger.error(f"Twilio API error: {e.code} - {e.msg}")
+        
+        if e.code == 21211:
+            raise Exception(
+                f"WhatsApp Sandbox Error: Please join our sandbox first. "
+                f"Send 'join <sandbox-keyword>' to {TWILIO_WHATSAPP_FROM} on WhatsApp, then try again."
+            )
+        
         raise Exception(f"Failed to send WhatsApp OTP: {e.msg}")
     
     except Exception as e:

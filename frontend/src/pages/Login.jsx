@@ -139,6 +139,14 @@ const Login = ({ onAuthenticated }) => {
               <p className="text-xs text-gray-500">
                 Enter your registered phone number with country code
               </p>
+              <div className="mt-2 p-3 bg-blue-50 border border-blue-200 rounded-md">
+                <p className="text-xs text-blue-800 font-medium">
+                  📱 WhatsApp Sandbox Setup Required:
+                </p>
+                <p className="text-xs text-blue-700 mt-1">
+                  Before first login, send "join" to <span className="font-mono font-semibold">+1 415 523 8886</span> on WhatsApp
+                </p>
+              </div>
             </div>
 
             <Button
