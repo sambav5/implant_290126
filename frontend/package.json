@@ -2,6 +2,7 @@
   "name": "frontend",
   "version": "0.1.0",
   "private": true,
+  "proxy": "http://localhost:8001",
   "dependencies": {
     "@hookform/resolvers": "^5.0.1",
     "@posthog/react": "^1.7.0",
