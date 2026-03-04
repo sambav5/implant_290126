@@ -4,7 +4,7 @@ from datetime import datetime
 
 class AddTeamMemberRequest(BaseModel):
     name: str = Field(..., min_length=2, max_length=100, description="Team member name")
-    role: Literal["Dentist", "Assistant", "Receptionist", "Hygienist", "Manager", "Other"]
+    role: Literal["Clinician", "Assistant", "Implantologist", "Prosthodontist"]
     mobileNumber: str = Field(..., description="Mobile number with country code")
     
     class Config:

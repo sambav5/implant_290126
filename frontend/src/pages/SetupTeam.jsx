@@ -9,12 +9,10 @@ import { teamApi } from '../api/teamApi';
 import { userApi } from '../api/userApi';
 
 const ROLES = [
-  'Dentist',
+  'Clinician',
   'Assistant',
-  'Receptionist',
-  'Hygienist',
-  'Manager',
-  'Other'
+  'Implantologist',
+  'Prosthodontist'
 ];
 
 const SetupTeam = () => {
