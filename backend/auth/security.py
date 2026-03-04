@@ -123,6 +123,7 @@ async def get_current_user(
     
     return {
         "phoneNumber": phone_number,
+        "userId": payload.get("userId"),
         "clinicianName": payload.get("clinicianName", "Unknown"),
         "exp": payload.get("exp"),
         "iat": payload.get("iat")
@@ -156,6 +157,7 @@ async def get_current_user_optional(
         
         return {
             "phoneNumber": phone_number,
+            "userId": payload.get("userId"),
             "clinicianName": payload.get("clinicianName", "Unknown"),
             "exp": payload.get("exp"),
             "iat": payload.get("iat")
