@@ -12,11 +12,11 @@ class UserService:
     
     async def get_user_by_mobile(self, mobile_number: str) -> Optional[Dict[str, Any]]:
         """Get user by mobile number"""
-        return await self.users.find_one({"mobile_number": mobile_number})
+        return await self.users.find_one({"mobile_number": mobile_number}, {"_id": 0})
     
     async def get_user_by_id(self, user_id: str) -> Optional[Dict[str, Any]]:
         """Get user by ID"""
-        return await self.users.find_one({"id": user_id})
+        return await self.users.find_one({"id": user_id}, {"_id": 0})
     
     async def create_user(self, mobile_number: str) -> Dict[str, Any]:
         """Create new user with PROFILE onboarding stage"""

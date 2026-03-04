@@ -28,7 +28,7 @@ class TeamService:
     
     async def get_team_members(self, clinic_id: str) -> List[Dict[str, Any]]:
         """Get all team members for a clinic"""
-        cursor = self.team_members.find({"clinic_id": clinic_id})
+        cursor = self.team_members.find({"clinic_id": clinic_id}, {"_id": 0})
         members = await cursor.to_list(length=100)
         return members
     

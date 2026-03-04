@@ -16,15 +16,15 @@ class CaseService:
     async def get_user_role_and_clinic(self, user_id: str) -> tuple[Optional[str], Optional[str]]:
         """Get user's role and clinic ID from team_members collection"""
         # First check if user is the clinic owner (Clinician)
-        user = await self.users.find_one({"id": user_id})
+        user = await self.users.find_one({"id": user_id}, {"_id": 0})
         if user:
             # Check if this user has a team member record
-            team_member = await self.team_members.find_one({"clinic_id": user_id})
+            team_member = await self.team_members.find_one({"clinic_id": user_id}, {"_id": 0})
             if team_member and team_member.get("role") == "Clinician":
                 return "Clinician", user_id
         
         # Check if user is a team member
-        team_member = await self.team_members.find_one({"mobile_number": user.get("mobile_number")}) if user else None
+        team_member = await self.team_members.find_one({"mobile_number": user.get("mobile_number")}, {"_id": 0}) if user else None
         if team_member:
             return team_member.get("role"), team_member.get("clinic_id")
         
@@ -35,7 +35,7 @@ class CaseService:
         if not member_id:
             return True  # Optional field
         
-        member = await self.team_members.find_one({"id": member_id})
+        member = await self.team_members.find_one({"id": member_id}, {"_id": 0})
         if not member:
             return False
         
@@ -107,7 +107,7 @@ class CaseService:
             ]
         }
         
-        cursor = self.cases.find(query).sort("created_at", -1)
+        cursor = self.cases.find(query, {"_id": 0}).sort("created_at", -1)
         cases = await cursor.to_list(length=100)
         return cases
     
@@ -117,7 +117,7 @@ class CaseService:
             return None
         
         # Check if it's the clinic owner (clinician)
-        user = await self.users.find_one({"id": member_id})
+        user = await self.users.find_one({"id": member_id}, {"_id": 0})
         if user:
             return {
                 "id": user["id"],
@@ -126,7 +126,7 @@ class CaseService:
             }
         
         # Check team members
-        member = await self.team_members.find_one({"id": member_id})
+        member = await self.team_members.find_one({"id": member_id}, {"_id": 0})
         if member:
             return {
                 "id": member["id"],
