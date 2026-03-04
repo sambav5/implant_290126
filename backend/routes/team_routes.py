@@ -23,6 +23,55 @@ def get_db(request: Request):
     """Get database instance from app state"""
     return request.app.state.db
 
+@router.get("", status_code=status.HTTP_200_OK)
+async def get_team(
+    request: Request,
+    current_user: Dict[str, Any] = Depends(get_current_user)
+):
+    """
+    Get all team members for current user's clinic
+    
+    Returns list of team members (excluding clinician for role assignment)
+    """
+    try:
+        db = get_db(request)
+        team_service = TeamService(db)
+        user_service = UserService(db)
+        
+        phone_number = current_user.get("phoneNumber")
+        
+        # Get user (clinic owner)
+        user = await user_service.get_user_by_mobile(phone_number)
+        
+        if not user:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="User not found"
+            )
+        
+        # Get team members
+        members = await team_service.get_team_members(user["id"])
+        
+        # Return team members (clinicians will be filtered on frontend)
+        return [
+            {
+                "id": m["id"],
+                "name": m["name"],
+                "role": m["role"],
+                "mobileNumber": m["mobile_number"]
+            }
+            for m in members
+        ]
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error fetching team: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to fetch team"
+        )
+
 @router.post("/member", response_model=TeamMemberResponse, status_code=status.HTTP_201_CREATED)
 async def add_team_member(
     member_data: AddTeamMemberRequest,

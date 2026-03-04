@@ -1373,10 +1373,12 @@ async def update_status(case_id: str, status: CaseStatus):
 # Include the router in the main app
 from routes.user_routes import router as user_router
 from routes.team_routes import router as team_router
+from routes.case_routes import router as case_router
 
 api_router.include_router(auth_router)  # Include WhatsApp auth routes
 api_router.include_router(user_router)  # Include user management routes
 api_router.include_router(team_router)  # Include team management routes
+api_router.include_router(case_router)  # Include case management routes
 app.include_router(api_router)
 
 app.add_middleware(
@@ -1397,12 +1399,15 @@ async def startup_db_indexes():
     """Create database indexes on startup"""
     from services.user_service import UserService
     from services.team_service import TeamService
+    from services.case_service import CaseService
     
     user_service = UserService(db)
     team_service = TeamService(db)
+    case_service = CaseService(db)
     
     await user_service.ensure_indexes()
     await team_service.ensure_indexes()
+    await case_service.ensure_indexes()
     logger.info("Database indexes initialized")
 
 @app.on_event("shutdown")
