@@ -54,7 +54,13 @@ const SetupProfile = () => {
 
     setLoading(true);
     try {
-      await userApi.setupProfile(formData);
+      const response = await userApi.setupProfile(formData);
+      
+      // Update session with new onboarding stage
+      const sessionData = JSON.parse(localStorage.getItem('clinician_auth_session'));
+      sessionData.onboardingStage = response.data.onboardingStage || 'TEAM';
+      localStorage.setItem('clinician_auth_session', JSON.stringify(sessionData));
+      
       toast.success('Profile setup complete!');
       navigate('/setup-team');
     } catch (error) {

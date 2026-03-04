@@ -64,9 +64,15 @@ const SetupTeam = () => {
       const response = await teamApi.addMember(formData);
       setMembers([...members, response.data]);
       setFormData({ name: '', role: 'Assistant', mobileNumber: '' });
+      
+      // Update session to COMPLETED stage
+      const sessionData = JSON.parse(localStorage.getItem('clinician_auth_session'));
+      sessionData.onboardingStage = 'COMPLETED';
+      localStorage.setItem('clinician_auth_session', JSON.stringify(sessionData));
+      
       toast.success('Team member added successfully');
       
-      // After adding first member, navigate to dashboard
+      // Navigate to dashboard after adding first member
       navigate('/');
     } catch (error) {
       const message = error?.response?.data?.detail || 'Failed to add team member';
@@ -80,6 +86,12 @@ const SetupTeam = () => {
     setLoading(true);
     try {
       await userApi.skipTeamSetup();
+      
+      // Update session to COMPLETED stage
+      const sessionData = JSON.parse(localStorage.getItem('clinician_auth_session'));
+      sessionData.onboardingStage = 'COMPLETED';
+      localStorage.setItem('clinician_auth_session', JSON.stringify(sessionData));
+      
       toast.success('Setup complete!');
       navigate('/');
     } catch (error) {
