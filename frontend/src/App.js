@@ -12,7 +12,10 @@ import Checklists from "@/pages/Checklists";
 import ProstheticChecklist from "@/pages/ProstheticChecklist";
 import LearningLoop from "@/pages/LearningLoop";
 import Login from "@/pages/Login";
+import SetupProfile from "@/pages/SetupProfile";
+import SetupTeam from "@/pages/SetupTeam";
 import ProtectedRoute from "@/components/ProtectedRoute";
+import OnboardingRoute from "@/components/OnboardingRoute";
 
 import { trackPageView } from "@/lib/analytics";
 
@@ -41,14 +44,20 @@ function AnalyticsRouterWrapper() {
 
   return (
     <Routes>
-      <Route path="/login" element={<Login />} />
-      <Route path="/" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
-      <Route path="/case/new" element={<ProtectedRoute><NewCase /></ProtectedRoute>} />
-      <Route path="/case/:id" element={<ProtectedRoute><CaseDetail /></ProtectedRoute>} />
-      <Route path="/case/:id/planning" element={<ProtectedRoute><PlanningWizard /></ProtectedRoute>} />
-      <Route path="/case/:id/checklists" element={<ProtectedRoute><Checklists /></ProtectedRoute>} />
-      <Route path="/case/:id/prosthetic-checklist" element={<ProtectedRoute><ProstheticChecklist /></ProtectedRoute>} />
-      <Route path="/case/:id/learning" element={<ProtectedRoute><LearningLoop /></ProtectedRoute>} />
+      <Route path="/login" element={<Login onAuthenticated={handleAuthenticated} />} />
+      
+      {/* Onboarding Routes */}
+      <Route path="/setup-profile" element={<OnboardingRoute><SetupProfile /></OnboardingRoute>} />
+      <Route path="/setup-team" element={<OnboardingRoute><SetupTeam /></OnboardingRoute>} />
+      
+      {/* Protected Routes */}
+      <Route path="/" element={<OnboardingRoute><ProtectedRoute><Dashboard /></ProtectedRoute></OnboardingRoute>} />
+      <Route path="/case/new" element={<OnboardingRoute><ProtectedRoute><NewCase /></ProtectedRoute></OnboardingRoute>} />
+      <Route path="/case/:id" element={<OnboardingRoute><ProtectedRoute><CaseDetail /></ProtectedRoute></OnboardingRoute>} />
+      <Route path="/case/:id/planning" element={<OnboardingRoute><ProtectedRoute><PlanningWizard /></ProtectedRoute></OnboardingRoute>} />
+      <Route path="/case/:id/checklists" element={<OnboardingRoute><ProtectedRoute><Checklists /></ProtectedRoute></OnboardingRoute>} />
+      <Route path="/case/:id/prosthetic-checklist" element={<OnboardingRoute><ProtectedRoute><ProstheticChecklist /></ProtectedRoute></OnboardingRoute>} />
+      <Route path="/case/:id/learning" element={<OnboardingRoute><ProtectedRoute><LearningLoop /></ProtectedRoute></OnboardingRoute>} />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );
@@ -64,10 +73,10 @@ function App() {
     const sessionData = localStorage.getItem('clinician_auth_session');
     if (sessionData) {
       try {
-        const { token, exp } = JSON.parse(sessionData);
-        const currentTime = Math.floor(Date.now() / 1000);
+        const parsed = JSON.parse(sessionData);
+        const { token } = parsed;
         
-        if (token && (!exp || exp > currentTime)) {
+        if (token) {
           setIsAuthenticated(true);
         } else {
           localStorage.removeItem('clinician_auth_session');

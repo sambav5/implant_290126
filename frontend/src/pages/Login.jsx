@@ -70,7 +70,16 @@ const Login = ({ onAuthenticated }) => {
         onAuthenticated(sessionData);
       }
       
-      window.location.href = '/';
+      // Route based on onboarding stage
+      const { onboardingStage } = sessionData;
+      
+      if (onboardingStage === 'PROFILE') {
+        window.location.href = '/setup-profile';
+      } else if (onboardingStage === 'TEAM') {
+        window.location.href = '/setup-team';
+      } else {
+        window.location.href = '/';
+      }
     } catch (error) {
       const message = error?.response?.data?.detail || 'Invalid OTP. Please try again.';
       toast.error(message);

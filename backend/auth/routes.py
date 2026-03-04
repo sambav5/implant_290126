@@ -223,43 +223,32 @@ async def verify_otp_endpoint(verify_request: OTPVerifyRequest, request: Request
         await db.otp_requests.delete_one({"phoneNumber": phone_number})
         logger.info(f"OTP verified successfully for {phone_number}")
         
-        # 7. Auto-create or fetch user
-        user = await db.users.find_one({"phoneNumber": phone_number})
+        # 7. Auto-create or fetch user with onboarding stage
+        from services.user_service import UserService
+        user_service = UserService(db)
+        
+        user = await user_service.get_user_by_mobile(phone_number)
         
         if not user:
-            # Auto-provision new user
-            user = {
-                "phoneNumber": phone_number,
-                "clinicianName": f"Dr. {phone_number[-4:]}",  # Default name
-                "createdAt": datetime.now(timezone.utc).isoformat(),
-                "lastLogin": datetime.now(timezone.utc).isoformat(),
-            }
-            await db.users.insert_one(user)
+            # Auto-provision new user with PROFILE stage
+            user = await user_service.create_user(phone_number)
             logger.info(f"New user created: {phone_number}")
-        else:
-            # Update last login
-            await db.users.update_one(
-                {"phoneNumber": phone_number},
-                {"$set": {"lastLogin": datetime.now(timezone.utc).isoformat()}}
-            )
-            logger.info(f"Existing user logged in: {phone_number}")
         
-        # 8. Generate JWT token
+        # 8. Generate JWT token with user ID
         token_data = {
             "sub": phone_number,  # Subject (standard JWT claim)
-            "clinicianName": user.get("clinicianName", "Unknown"),
+            "userId": user["id"],
             "type": "access"
         }
         access_token = create_access_token(token_data)
         
-        # 9. Return session response
-        return AuthSessionResponse(
-            token=access_token,
-            tokenType="bearer",
-            clinicianName=user.get("clinicianName", "Unknown"),
-            phoneNumber=phone_number,
-            expiresIn=get_token_expiry_seconds()
-        )
+        # 9. Return session response with onboarding stage
+        return {
+            "token": access_token,
+            "tokenType": "bearer",
+            "onboardingStage": user["onboarding_stage"],
+            "expiresIn": get_token_expiry_seconds()
+        }
         
     except ValueError as e:
         logger.warning(f"Invalid phone number in verify: {str(e)}")
