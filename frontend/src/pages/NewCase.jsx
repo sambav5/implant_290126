@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Zap } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -9,10 +9,13 @@ import ToothSelector from '@/components/ToothSelector';
 import { caseApi } from '@/services/api';
 import { toast } from 'sonner';
 import { trackCaseCreated } from '@/lib/analytics';
+import axios from 'axios';
 
 export default function NewCase() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
+  const [teamLoading, setTeamLoading] = useState(true);
+  const [teamMembers, setTeamMembers] = useState([]);
   const [formData, setFormData] = useState({
     caseName: '',
     toothNumber: '',
@@ -25,6 +28,26 @@ export default function NewCase() {
       assistant: ''
     }
   });
+
+  useEffect(() => {
+    loadTeamMembers();
+  }, []);
+
+  const loadTeamMembers = async () => {
+    try {
+      const response = await axios.get('/api/team');
+      setTeamMembers(response.data);
+    } catch (error) {
+      console.error('Failed to load team members:', error);
+      // Don't show error toast, just continue with empty team
+    } finally {
+      setTeamLoading(false);
+    }
+  };
+
+  const implantologists = teamMembers.filter(m => m.role === 'Implantologist');
+  const prosthodontists = teamMembers.filter(m => m.role === 'Prosthodontist');
+  const assistants = teamMembers.filter(m => m.role === 'Assistant');
   
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -209,16 +232,40 @@ export default function NewCase() {
                     <span className="w-24">Implantologist</span>
                     <span className="text-xs" style={{color: 'var(--t3)'}}>(Optional)</span>
                   </Label>
-                  <Input
-                    id="implantologist"
-                    placeholder="Surgeon handling implant placement"
-                    value={formData.caseTeam.implantologist}
-                    onChange={(e) => setFormData({
-                      ...formData,
-                      caseTeam: { ...formData.caseTeam, implantologist: e.target.value }
-                    })}
-                    className="input-clinical"
-                  />
+                  {teamLoading ? (
+                    <Input disabled placeholder="Loading team..." className="input-clinical" />
+                  ) : implantologists.length > 0 ? (
+                    <Select
+                      value={formData.caseTeam.implantologist}
+                      onValueChange={(value) => setFormData({
+                        ...formData,
+                        caseTeam: { ...formData.caseTeam, implantologist: value }
+                      })}
+                    >
+                      <SelectTrigger className="input-clinical">
+                        <SelectValue placeholder="Select implantologist" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="">-- None --</SelectItem>
+                        {implantologists.map((member) => (
+                          <SelectItem key={member.id} value={member.name}>
+                            {member.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  ) : (
+                    <Input
+                      id="implantologist"
+                      placeholder="Surgeon handling implant placement"
+                      value={formData.caseTeam.implantologist}
+                      onChange={(e) => setFormData({
+                        ...formData,
+                        caseTeam: { ...formData.caseTeam, implantologist: e.target.value }
+                      })}
+                      className="input-clinical"
+                    />
+                  )}
                 </div>
                 
                 {/* Prosthodontist */}
@@ -227,16 +274,40 @@ export default function NewCase() {
                     <span className="w-24">Prosthodontist</span>
                     <span className="text-xs" style={{color: 'var(--t3)'}}>(Optional)</span>
                   </Label>
-                  <Input
-                    id="prosthodontist"
-                    placeholder="Specialist for final restoration"
-                    value={formData.caseTeam.prosthodontist}
-                    onChange={(e) => setFormData({
-                      ...formData,
-                      caseTeam: { ...formData.caseTeam, prosthodontist: e.target.value }
-                    })}
-                    className="input-clinical"
-                  />
+                  {teamLoading ? (
+                    <Input disabled placeholder="Loading team..." className="input-clinical" />
+                  ) : prosthodontists.length > 0 ? (
+                    <Select
+                      value={formData.caseTeam.prosthodontist}
+                      onValueChange={(value) => setFormData({
+                        ...formData,
+                        caseTeam: { ...formData.caseTeam, prosthodontist: value }
+                      })}
+                    >
+                      <SelectTrigger className="input-clinical">
+                        <SelectValue placeholder="Select prosthodontist" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="">-- None --</SelectItem>
+                        {prosthodontists.map((member) => (
+                          <SelectItem key={member.id} value={member.name}>
+                            {member.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  ) : (
+                    <Input
+                      id="prosthodontist"
+                      placeholder="Specialist for final restoration"
+                      value={formData.caseTeam.prosthodontist}
+                      onChange={(e) => setFormData({
+                        ...formData,
+                        caseTeam: { ...formData.caseTeam, prosthodontist: e.target.value }
+                      })}
+                      className="input-clinical"
+                    />
+                  )}
                 </div>
                 
                 {/* Assistant */}
@@ -245,16 +316,40 @@ export default function NewCase() {
                     <span className="w-24">Assistant</span>
                     <span className="text-xs" style={{color: 'var(--t3)'}}>(Optional)</span>
                   </Label>
-                  <Input
-                    id="assistant"
-                    placeholder="Clinical assistant or coordinator"
-                    value={formData.caseTeam.assistant}
-                    onChange={(e) => setFormData({
-                      ...formData,
-                      caseTeam: { ...formData.caseTeam, assistant: e.target.value }
-                    })}
-                    className="input-clinical"
-                  />
+                  {teamLoading ? (
+                    <Input disabled placeholder="Loading team..." className="input-clinical" />
+                  ) : assistants.length > 0 ? (
+                    <Select
+                      value={formData.caseTeam.assistant}
+                      onValueChange={(value) => setFormData({
+                        ...formData,
+                        caseTeam: { ...formData.caseTeam, assistant: value }
+                      })}
+                    >
+                      <SelectTrigger className="input-clinical">
+                        <SelectValue placeholder="Select assistant" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="">-- None --</SelectItem>
+                        {assistants.map((member) => (
+                          <SelectItem key={member.id} value={member.name}>
+                            {member.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  ) : (
+                    <Input
+                      id="assistant"
+                      placeholder="Clinical assistant or coordinator"
+                      value={formData.caseTeam.assistant}
+                      onChange={(e) => setFormData({
+                        ...formData,
+                        caseTeam: { ...formData.caseTeam, assistant: e.target.value }
+                      })}
+                      className="input-clinical"
+                    />
+                  )}
                 </div>
               </div>
             </div>
