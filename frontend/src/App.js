@@ -21,7 +21,7 @@ import { trackPageView } from "@/lib/analytics";
 
 /* ---------------- Route Tracking Wrapper ---------------- */
 
-function AnalyticsRouterWrapper() {
+function AnalyticsRouterWrapper({ handleAuthenticated }) {
   const location = useLocation();
   const posthog = usePostHog();
 
@@ -126,7 +126,7 @@ function App() {
   return (
     <div className="min-h-screen bg-background">
       <BrowserRouter>
-        <AnalyticsRouterWrapper />
+        <AnalyticsRouterWrapper handleAuthenticated={handleAuthenticated} />
       </BrowserRouter>
 
       <Toaster position="top-center" richColors />
