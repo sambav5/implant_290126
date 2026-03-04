@@ -22,8 +22,7 @@ class AuthSessionResponse(BaseModel):
     """Response model after successful authentication"""
     token: str = Field(..., description="JWT access token")
     tokenType: str = Field(default="bearer", description="Token type")
-    clinicianName: str = Field(..., description="Clinician name")
-    phoneNumber: str = Field(..., description="Authenticated phone number")
+    onboardingStage: str = Field(..., description="User onboarding stage: PROFILE | TEAM | COMPLETED")
     expiresIn: int = Field(..., description="Token expiry in seconds")
 
 

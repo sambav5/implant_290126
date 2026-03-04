@@ -243,12 +243,12 @@ async def verify_otp_endpoint(verify_request: OTPVerifyRequest, request: Request
         access_token = create_access_token(token_data)
         
         # 9. Return session response with onboarding stage
-        return {
-            "token": access_token,
-            "tokenType": "bearer",
-            "onboardingStage": user["onboarding_stage"],
-            "expiresIn": get_token_expiry_seconds()
-        }
+        return AuthSessionResponse(
+            token=access_token,
+            tokenType="bearer",
+            onboardingStage=user["onboarding_stage"],
+            expiresIn=get_token_expiry_seconds()
+        )
         
     except ValueError as e:
         logger.warning(f"Invalid phone number in verify: {str(e)}")
