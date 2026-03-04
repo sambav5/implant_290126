@@ -1394,7 +1394,7 @@ app.add_middleware(
 
 @app.on_event("startup")
 async def startup_db_indexes():
-    \"\"\"Create database indexes on startup\"\"\"
+    """Create database indexes on startup"""
     from services.user_service import UserService
     from services.team_service import TeamService
     
@@ -1403,7 +1403,7 @@ async def startup_db_indexes():
     
     await user_service.ensure_indexes()
     await team_service.ensure_indexes()
-    logger.info(\"Database indexes initialized\")
+    logger.info("Database indexes initialized")
 
 @app.on_event("shutdown")
 async def shutdown_db_client():
