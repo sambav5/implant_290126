@@ -2,7 +2,7 @@ import { X } from 'lucide-react';
 import MessageList from './MessageList';
 import MessageInput from './MessageInput';
 
-export default function ThreadPanel({ parent, messages, onClose, onSend, onReact, onDelete, canDelete, mentionables, onTyping }) {
+export default function ThreadPanel({ parent, messages, onClose, onSend, onReact, onDelete, canDelete, mentionables }) {
   if (!parent) return null;
   return (
     <div className="fixed top-0 right-0 w-full sm:w-[420px] h-full z-50" style={{ background: 'var(--card)', borderLeft: '1px solid var(--border)' }}>
@@ -12,7 +12,7 @@ export default function ThreadPanel({ parent, messages, onClose, onSend, onReact
       </div>
       <div className="p-3 text-sm" style={{ color: 'var(--t1)', borderBottom: '1px solid var(--border)' }}>{parent.message}</div>
       <MessageList messages={messages} onReply={() => {}} onReact={onReact} onDelete={onDelete} canDelete={canDelete} />
-      <div className="p-2"><MessageInput onSend={onSend} mentionables={mentionables} onTyping={onTyping} /></div>
+      <div className="p-2"><MessageInput onSend={onSend} mentionables={mentionables} /></div>
     </div>
   );
 }
