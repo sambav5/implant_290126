@@ -8,9 +8,10 @@ from motor.motor_asyncio import AsyncIOMotorClient
 
 async def clear_database():
     # Connect to MongoDB
-    mongo_url = os.environ.get('MONGO_URL', 'mongodb://localhost:27017/dental_app')
+    mongo_url = os.environ.get('MONGO_URL', 'mongodb://localhost:27017')
+    db_name = os.environ.get('DB_NAME', 'implantflow')
     client = AsyncIOMotorClient(mongo_url)
-    db = client.get_default_database()
+    db = client[db_name]
     
     # Get all collection names
     collections = await db.list_collection_names()
