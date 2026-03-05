@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Users, Plus, Edit2, Trash2, Loader2, X, Save } from 'lucide-react';
+import { ArrowLeft, Users, Plus, Edit2, Trash2, Loader2, Save } from 'lucide-react';
 import { toast } from 'sonner';
 import { Card } from '../components/ui/card';
 import { Button } from '../components/ui/button';
@@ -166,24 +166,23 @@ const TeamManagement = () => {
   }
 
   return (
-    <div className=\"min-h-screen\" style={{background: 'var(--bg)'}}>
-      {/* Header */}
-      <header className=\"glass-header sticky top-0 z-40 px-4 py-4\">
-        <div className=\"page-container\">
-          <div className=\"flex items-center justify-between\">
-            <div className=\"flex items-center gap-3\">
+    <div className="min-h-screen" style={{background: 'var(--bg)'}}>
+      <header className="glass-header sticky top-0 z-40 px-4 py-4">
+        <div className="page-container">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
               <button
                 onClick={() => navigate(-1)}
-                className=\"p-2 -ml-2 rounded-lg touch-target\"
+                className="p-2 -ml-2 rounded-lg touch-target"
                 style={{background: 'transparent', border: 'none'}}
                 onMouseOver={(e) => e.currentTarget.style.background = 'var(--border)'}
                 onMouseOut={(e) => e.currentTarget.style.background = 'transparent'}
               >
-                <ArrowLeft className=\"h-5 w-5\" style={{color: 'var(--t2)'}} />
+                <ArrowLeft className="h-5 w-5" style={{color: 'var(--t2)'}} />
               </button>
               <div>
-                <h1 className=\"text-xl font-semibold\" style={{fontFamily: \"'Lora', serif\", color: 'var(--t1)'}}>Team Management</h1>
-                <p className=\"text-sm\" style={{color: 'var(--t2)'}}>Manage your clinic team members</p>
+                <h1 className="text-xl font-semibold" style={{fontFamily: "'Lora', serif", color: 'var(--t1)'}}>Team Management</h1>
+                <p className="text-sm" style={{color: 'var(--t2)'}}>Manage your clinic team members</p>
               </div>
             </div>
             <ProfileMenu />
@@ -191,49 +190,49 @@ const TeamManagement = () => {
         </div>
       </header>
 
-      <main className=\"page-container py-8\">
-        <div className=\"flex justify-between items-center mb-6\">
+      <main className="page-container py-8">
+        <div className="flex justify-between items-center mb-6">
           <div>
-            <h2 className=\"text-lg font-semibold\" style={{color: 'var(--t1)'}}>Team Members ({teamMembers.length})</h2>
-            <p className=\"text-sm\" style={{color: 'var(--t2)'}}>Add and manage your team members</p>
+            <h2 className="text-lg font-semibold" style={{color: 'var(--t1)'}}>Team Members ({teamMembers.length})</h2>
+            <p className="text-sm" style={{color: 'var(--t2)'}}>Add and manage your team members</p>
           </div>
           <Button onClick={() => setIsAddDialogOpen(true)}>
-            <Plus className=\"mr-2 h-4 w-4\" />
+            <Plus className="mr-2 h-4 w-4" />
             Add Team Member
           </Button>
         </div>
 
         {teamMembers.length === 0 ? (
-          <Card className=\"p-12 text-center\">
-            <Users className=\"h-12 w-12 mx-auto mb-4\" style={{color: 'var(--t3)'}} />
-            <h3 className=\"text-lg font-semibold mb-2\" style={{color: 'var(--t1)'}}>No team members yet</h3>
-            <p className=\"text-sm mb-4\" style={{color: 'var(--t2)'}}>
+          <Card className="p-12 text-center">
+            <Users className="h-12 w-12 mx-auto mb-4" style={{color: 'var(--t3)'}} />
+            <h3 className="text-lg font-semibold mb-2" style={{color: 'var(--t1)'}}>No team members yet</h3>
+            <p className="text-sm mb-4" style={{color: 'var(--t2)'}}>
               Start building your team by adding members
             </p>
             <Button onClick={() => setIsAddDialogOpen(true)}>
-              <Plus className=\"mr-2 h-4 w-4\" />
+              <Plus className="mr-2 h-4 w-4" />
               Add First Team Member
             </Button>
           </Card>
         ) : (
           <Card>
-            <div className=\"overflow-x-auto\">
-              <table className=\"w-full\">
+            <div className="overflow-x-auto">
+              <table className="w-full">
                 <thead>
-                  <tr className=\"border-b\" style={{borderColor: 'var(--border)'}}>
-                    <th className=\"text-left p-4 font-medium\" style={{color: 'var(--t1)'}}>Name</th>
-                    <th className=\"text-left p-4 font-medium\" style={{color: 'var(--t1)'}}>Role</th>
-                    <th className=\"text-left p-4 font-medium\" style={{color: 'var(--t1)'}}>Mobile Number</th>
-                    <th className=\"text-right p-4 font-medium\" style={{color: 'var(--t1)'}}>Actions</th>
+                  <tr className="border-b" style={{borderColor: 'var(--border)'}}>
+                    <th className="text-left p-4 font-medium" style={{color: 'var(--t1)'}}>Name</th>
+                    <th className="text-left p-4 font-medium" style={{color: 'var(--t1)'}}>Role</th>
+                    <th className="text-left p-4 font-medium" style={{color: 'var(--t1)'}}>Mobile Number</th>
+                    <th className="text-right p-4 font-medium" style={{color: 'var(--t1)'}}>Actions</th>
                   </tr>
                 </thead>
                 <tbody>
                   {teamMembers.map((member) => (
-                    <tr key={member.id} className=\"border-b\" style={{borderColor: 'var(--border)'}}>
-                      <td className=\"p-4\" style={{color: 'var(--t1)'}}>{member.name}</td>
-                      <td className=\"p-4\">
+                    <tr key={member.id} className="border-b" style={{borderColor: 'var(--border)'}}>
+                      <td className="p-4" style={{color: 'var(--t1)'}}>{member.name}</td>
+                      <td className="p-4">
                         <span
-                          className=\"px-2 py-1 text-xs font-medium rounded\"
+                          className="px-2 py-1 text-xs font-medium rounded"
                           style={{
                             background: member.role === 'Implantologist' ? 'var(--blue-1)' : member.role === 'Prosthodontist' ? 'var(--green-1)' : 'var(--orange-1)',
                             color: member.role === 'Implantologist' ? 'var(--blue)' : member.role === 'Prosthodontist' ? 'var(--green)' : 'var(--orange)',
@@ -243,23 +242,23 @@ const TeamManagement = () => {
                           {member.role}
                         </span>
                       </td>
-                      <td className=\"p-4\" style={{color: 'var(--t2)'}}>{member.mobileNumber}</td>
-                      <td className=\"p-4 text-right\">
-                        <div className=\"flex justify-end gap-2\">
+                      <td className="p-4" style={{color: 'var(--t2)'}}>{member.mobileNumber}</td>
+                      <td className="p-4 text-right">
+                        <div className="flex justify-end gap-2">
                           <Button
-                            variant=\"ghost\"
-                            size=\"sm\"
+                            variant="ghost"
+                            size="sm"
                             onClick={() => openEditDialog(member)}
                           >
-                            <Edit2 className=\"h-4 w-4\" />
+                            <Edit2 className="h-4 w-4" />
                           </Button>
                           <Button
-                            variant=\"ghost\"
-                            size=\"sm\"
+                            variant="ghost"
+                            size="sm"
                             onClick={() => openDeleteDialog(member)}
-                            className=\"text-red-600 hover:text-red-700 hover:bg-red-50\"
+                            className="text-red-600 hover:text-red-700 hover:bg-red-50"
                           >
-                            <Trash2 className=\"h-4 w-4\" />
+                            <Trash2 className="h-4 w-4" />
                           </Button>
                         </div>
                       </td>
@@ -272,7 +271,6 @@ const TeamManagement = () => {
         )}
       </main>
 
-      {/* Add Team Member Dialog */}
       <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
         <DialogContent>
           <DialogHeader>
@@ -281,27 +279,27 @@ const TeamManagement = () => {
               Add a new member to your clinic team
             </DialogDescription>
           </DialogHeader>
-          <form onSubmit={handleAdd} className=\"space-y-4\">
-            <div className=\"space-y-2\">
-              <Label htmlFor=\"add-name\">Name *</Label>
+          <form onSubmit={handleAdd} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="add-name">Name *</Label>
               <Input
-                id=\"add-name\"
+                id="add-name"
                 value={formData.name}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                placeholder=\"Enter name\"
+                placeholder="Enter name"
                 disabled={saving}
               />
             </div>
 
-            <div className=\"space-y-2\">
-              <Label htmlFor=\"add-role\">Role *</Label>
+            <div className="space-y-2">
+              <Label htmlFor="add-role">Role *</Label>
               <Select
                 value={formData.role}
                 onValueChange={(value) => setFormData({ ...formData, role: value })}
                 disabled={saving}
               >
                 <SelectTrigger>
-                  <SelectValue placeholder=\"Select role\" />
+                  <SelectValue placeholder="Select role" />
                 </SelectTrigger>
                 <SelectContent>
                   {ROLES.map((role) => (
@@ -313,21 +311,21 @@ const TeamManagement = () => {
               </Select>
             </div>
 
-            <div className=\"space-y-2\">
-              <Label htmlFor=\"add-mobile\">Mobile Number *</Label>
+            <div className="space-y-2">
+              <Label htmlFor="add-mobile">Mobile Number *</Label>
               <Input
-                id=\"add-mobile\"
+                id="add-mobile"
                 value={formData.mobileNumber}
                 onChange={(e) => setFormData({ ...formData, mobileNumber: e.target.value })}
-                placeholder=\"+91 9876543210\"
+                placeholder="+91 9876543210"
                 disabled={saving}
               />
             </div>
 
             <DialogFooter>
               <Button
-                type=\"button\"
-                variant=\"outline\"
+                type="button"
+                variant="outline"
                 onClick={() => {
                   setIsAddDialogOpen(false);
                   resetForm();
@@ -336,15 +334,15 @@ const TeamManagement = () => {
               >
                 Cancel
               </Button>
-              <Button type=\"submit\" disabled={saving}>
+              <Button type="submit" disabled={saving}>
                 {saving ? (
                   <>
-                    <Loader2 className=\"mr-2 h-4 w-4 animate-spin\" />
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                     Adding...
                   </>
                 ) : (
                   <>
-                    <Plus className=\"mr-2 h-4 w-4\" />
+                    <Plus className="mr-2 h-4 w-4" />
                     Add Member
                   </>
                 )}
@@ -354,7 +352,6 @@ const TeamManagement = () => {
         </DialogContent>
       </Dialog>
 
-      {/* Edit Team Member Dialog */}
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
         <DialogContent>
           <DialogHeader>
@@ -363,27 +360,27 @@ const TeamManagement = () => {
               Update team member information
             </DialogDescription>
           </DialogHeader>
-          <form onSubmit={handleEdit} className=\"space-y-4\">
-            <div className=\"space-y-2\">
-              <Label htmlFor=\"edit-name\">Name *</Label>
+          <form onSubmit={handleEdit} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="edit-name">Name *</Label>
               <Input
-                id=\"edit-name\"
+                id="edit-name"
                 value={formData.name}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                placeholder=\"Enter name\"
+                placeholder="Enter name"
                 disabled={saving}
               />
             </div>
 
-            <div className=\"space-y-2\">
-              <Label htmlFor=\"edit-role\">Role *</Label>
+            <div className="space-y-2">
+              <Label htmlFor="edit-role">Role *</Label>
               <Select
                 value={formData.role}
                 onValueChange={(value) => setFormData({ ...formData, role: value })}
                 disabled={saving}
               >
                 <SelectTrigger>
-                  <SelectValue placeholder=\"Select role\" />
+                  <SelectValue placeholder="Select role" />
                 </SelectTrigger>
                 <SelectContent>
                   {ROLES.map((role) => (
@@ -395,21 +392,21 @@ const TeamManagement = () => {
               </Select>
             </div>
 
-            <div className=\"space-y-2\">
-              <Label htmlFor=\"edit-mobile\">Mobile Number *</Label>
+            <div className="space-y-2">
+              <Label htmlFor="edit-mobile">Mobile Number *</Label>
               <Input
-                id=\"edit-mobile\"
+                id="edit-mobile"
                 value={formData.mobileNumber}
                 onChange={(e) => setFormData({ ...formData, mobileNumber: e.target.value })}
-                placeholder=\"+91 9876543210\"
+                placeholder="+91 9876543210"
                 disabled={saving}
               />
             </div>
 
             <DialogFooter>
               <Button
-                type=\"button\"
-                variant=\"outline\"
+                type="button"
+                variant="outline"
                 onClick={() => {
                   setIsEditDialogOpen(false);
                   setSelectedMember(null);
@@ -419,15 +416,15 @@ const TeamManagement = () => {
               >
                 Cancel
               </Button>
-              <Button type=\"submit\" disabled={saving}>
+              <Button type="submit" disabled={saving}>
                 {saving ? (
                   <>
-                    <Loader2 className=\"mr-2 h-4 w-4 animate-spin\" />
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                     Saving...
                   </>
                 ) : (
                   <>
-                    <Save className=\"mr-2 h-4 w-4\" />
+                    <Save className="mr-2 h-4 w-4" />
                     Save Changes
                   </>
                 )}
@@ -437,7 +434,6 @@ const TeamManagement = () => {
         </DialogContent>
       </Dialog>
 
-      {/* Delete Confirmation Dialog */}
       <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
@@ -452,11 +448,11 @@ const TeamManagement = () => {
             <AlertDialogAction
               onClick={handleDelete}
               disabled={saving}
-              className=\"bg-red-600 hover:bg-red-700\"
+              className="bg-red-600 hover:bg-red-700"
             >
               {saving ? (
                 <>
-                  <Loader2 className=\"mr-2 h-4 w-4 animate-spin\" />
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   Removing...
                 </>
               ) : (

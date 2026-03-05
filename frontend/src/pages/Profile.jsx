@@ -62,24 +62,23 @@ const Profile = () => {
   }
 
   return (
-    <div className=\"min-h-screen\" style={{background: 'var(--bg)'}}>
-      {/* Header */}
-      <header className=\"glass-header sticky top-0 z-40 px-4 py-4\">
-        <div className=\"page-container\">
-          <div className=\"flex items-center justify-between\">
-            <div className=\"flex items-center gap-3\">
+    <div className="min-h-screen" style={{background: 'var(--bg)'}}>
+      <header className="glass-header sticky top-0 z-40 px-4 py-4">
+        <div className="page-container">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
               <button
                 onClick={() => navigate(-1)}
-                className=\"p-2 -ml-2 rounded-lg touch-target\"
+                className="p-2 -ml-2 rounded-lg touch-target"
                 style={{background: 'transparent', border: 'none'}}
                 onMouseOver={(e) => e.currentTarget.style.background = 'var(--border)'}
                 onMouseOut={(e) => e.currentTarget.style.background = 'transparent'}
               >
-                <ArrowLeft className=\"h-5 w-5\" style={{color: 'var(--t2)'}} />
+                <ArrowLeft className="h-5 w-5" style={{color: 'var(--t2)'}} />
               </button>
               <div>
-                <h1 className=\"text-xl font-semibold\" style={{fontFamily: \"'Lora', serif\", color: 'var(--t1)'}}>My Profile</h1>
-                <p className=\"text-sm\" style={{color: 'var(--t2)'}}>Manage your personal information</p>
+                <h1 className="text-xl font-semibold" style={{fontFamily: "'Lora', serif", color: 'var(--t1)'}}>My Profile</h1>
+                <p className="text-sm" style={{color: 'var(--t2)'}}>Manage your personal information</p>
               </div>
             </div>
             <ProfileMenu />
@@ -87,66 +86,66 @@ const Profile = () => {
         </div>
       </header>
 
-      <main className=\"page-container py-8\">
-        <Card className=\"p-6 space-y-6\">
-          <div className=\"flex items-center gap-3\">
+      <main className="page-container py-8">
+        <Card className="p-6 space-y-6">
+          <div className="flex items-center gap-3">
             <div
-              className=\"w-16 h-16 rounded-full flex items-center justify-center\"
+              className="w-16 h-16 rounded-full flex items-center justify-center"
               style={{background: 'var(--blue-1)', border: '2px solid var(--blue-b)'}}
             >
-              <User className=\"h-8 w-8\" style={{color: 'var(--blue)'}} />
+              <User className="h-8 w-8" style={{color: 'var(--blue)'}} />
             </div>
             <div>
-              <h2 className=\"text-lg font-semibold\" style={{color: 'var(--t1)'}}>{profile?.name || 'Clinician'}</h2>
-              <p className=\"text-sm\" style={{color: 'var(--t2)'}}>{profile?.role}</p>
+              <h2 className="text-lg font-semibold" style={{color: 'var(--t1)'}}>{profile?.name || 'Clinician'}</h2>
+              <p className="text-sm" style={{color: 'var(--t2)'}}>{profile?.role}</p>
             </div>
           </div>
 
-          <form onSubmit={handleSave} className=\"space-y-4\">
-            <div className=\"space-y-2\">
-              <Label htmlFor=\"name\">Name</Label>
+          <form onSubmit={handleSave} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="name">Name</Label>
               <Input
-                id=\"name\"
+                id="name"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                placeholder=\"Enter your name\"
+                placeholder="Enter your name"
                 disabled={saving}
               />
             </div>
 
-            <div className=\"space-y-2\">
-              <Label htmlFor=\"mobile\">Mobile Number</Label>
+            <div className="space-y-2">
+              <Label htmlFor="mobile">Mobile Number</Label>
               <Input
-                id=\"mobile\"
+                id="mobile"
                 value={profile?.mobileNumber || ''}
                 disabled
-                className=\"bg-gray-50\"
+                className="bg-gray-50"
               />
-              <p className=\"text-xs\" style={{color: 'var(--t3)'}}>
+              <p className="text-xs" style={{color: 'var(--t3)'}}>
                 Mobile number cannot be changed
               </p>
             </div>
 
-            <div className=\"space-y-2\">
-              <Label htmlFor=\"role\">Role</Label>
+            <div className="space-y-2">
+              <Label htmlFor="role">Role</Label>
               <Input
-                id=\"role\"
+                id="role"
                 value={profile?.role || 'Clinician'}
                 disabled
-                className=\"bg-gray-50\"
+                className="bg-gray-50"
               />
             </div>
 
-            <div className=\"flex justify-end pt-4\">
-              <Button type=\"submit\" disabled={saving}>
+            <div className="flex justify-end pt-4">
+              <Button type="submit" disabled={saving}>
                 {saving ? (
                   <>
-                    <Loader2 className=\"mr-2 h-4 w-4 animate-spin\" />
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                     Saving...
                   </>
                 ) : (
                   <>
-                    <Save className=\"mr-2 h-4 w-4\" />
+                    <Save className="mr-2 h-4 w-4" />
                     Save Changes
                   </>
                 )}
