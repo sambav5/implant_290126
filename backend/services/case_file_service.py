@@ -26,6 +26,17 @@ ALLOWED_MIME_TYPES = {
     "application/octet-stream",  # For .dcm and .stl files
 }
 
+# MIME type whitelist for additional security
+ALLOWED_MIME_TYPES = {
+    "image/jpeg", "image/jpg", "image/png",
+    "application/pdf",
+    "application/msword",
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    "application/zip", "application/x-zip-compressed",
+    "model/stl", "application/sla",
+    "application/octet-stream",  # For .dcm and .stl files
+}
+
 
 class CaseFileService:
     def __init__(self, db: AsyncIOMotorDatabase):
