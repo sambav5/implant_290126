@@ -37,6 +37,9 @@ import {
 } from "@/components/ui/alert-dialog";
 import { caseApi } from '@/services/api';
 import { downloadCasePDF } from '@/services/pdfService';
+import { useActiveRole } from '@/hooks/useActiveRole';
+import { ROLES } from '@/utils/rolePermissions';
+import CaseFilesTab from '@/components/CaseFilesTab';
 import { toast } from 'sonner';
 
 const statusConfig = {
@@ -58,6 +61,8 @@ export default function CaseDetail() {
   const [loading, setLoading] = useState(true);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [activityModalOpen, setActivityModalOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState('overview');
+  const [activeRole] = useActiveRole();
   
   useEffect(() => {
     loadCase();
@@ -176,6 +181,30 @@ export default function CaseDetail() {
       </header>
       
       <main className="page-container py-6 space-y-6">
+        <div className="flex gap-2 overflow-x-auto pb-1">
+          {['Overview', 'Notes', 'Treatment Plan', 'Files', 'Discussion'].map((tab) => {
+            const key = tab.toLowerCase().replace(/\s+/g, '-');
+            const isActive = (activeTab === 'overview' && key === 'overview') || (activeTab === 'files' && key === 'files');
+            return (
+              <Button
+                key={key}
+                variant={isActive ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => {
+                  if (key === 'overview' || key === 'files') setActiveTab(key);
+                  else toast.info(`${tab} tab is unchanged in this release.`);
+                }}
+              >
+                {tab}
+              </Button>
+            );
+          })}
+        </div>
+
+        {activeTab === 'files' ? (
+          <CaseFilesTab caseId={id} canDeleteFiles={activeRole === ROLES.CLINICIAN} />
+        ) : (
+          <>
         {/* Status & Risk Banner */}
         <div className="card-clinical animate-slide-up">
           <div className="flex items-center justify-between mb-4">
@@ -384,6 +413,8 @@ export default function CaseDetail() {
             </p>
           </div>
         </div>
+        </>
+        )}
       </main>
       
       {/* Recent Activity Modal */}

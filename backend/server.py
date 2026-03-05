@@ -1,4 +1,5 @@
 from fastapi import FastAPI, APIRouter, HTTPException, Depends
+from fastapi.staticfiles import StaticFiles
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
@@ -29,6 +30,51 @@ app = FastAPI()
 
 # Store database in app state for auth routes to access
 app.state.db = db
+
+# Secure file serving route - replaces insecure StaticFiles mount
+from fastapi import Request, Response
+from fastapi.responses import FileResponse
+from auth.security import get_current_user
+from services.case_file_service import CaseFileService
+
+@app.get("/uploads/{file_path:path}")
+async def serve_file(file_path: str, request: Request, current_user: dict = Depends(get_current_user)):
+    """
+    Secure file serving with authentication and authorization.
+    Only allows access to files for cases the user is assigned to.
+    """
+    try:
+        # Extract case_id from path: cases/{case_id}/{category}/{filename}
+        path_parts = file_path.split("/")
+        if len(path_parts) < 3 or path_parts[0] != "cases":
+            raise HTTPException(status_code=404, detail="File not found")
+        
+        case_id = path_parts[1]
+        
+        # Verify user has access to this case
+        service = CaseFileService(db)
+        await service.ensure_case_access(case_id, current_user["userId"])
+        
+        # Serve file if authorized
+        uploads_dir = Path(__file__).parent / "uploads"
+        file_full_path = uploads_dir / file_path
+        
+        # Security check: ensure path is within uploads directory
+        try:
+            file_full_path.resolve().relative_to(uploads_dir.resolve())
+        except ValueError:
+            raise HTTPException(status_code=403, detail="Access denied")
+        
+        if not file_full_path.exists():
+            raise HTTPException(status_code=404, detail="File not found")
+        
+        return FileResponse(file_full_path)
+    
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error serving file: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to serve file")
 
 # Create a router with the /api prefix
 api_router = APIRouter(prefix="/api")
@@ -1407,16 +1453,19 @@ async def startup_db_indexes():
     from services.team_service import TeamService
     from services.case_service import CaseService
     from services.clinic_service import ClinicService
+    from services.case_file_service import CaseFileService
     
     user_service = UserService(db)
     team_service = TeamService(db)
     case_service = CaseService(db)
     clinic_service = ClinicService(db)
+    case_file_service = CaseFileService(db)
     
     await user_service.ensure_indexes()
     await team_service.ensure_indexes()
     await case_service.ensure_indexes()
     await clinic_service.ensure_indexes()
+    await case_file_service.ensure_indexes()
     logger.info("Database indexes initialized")
 
 @app.on_event("shutdown")

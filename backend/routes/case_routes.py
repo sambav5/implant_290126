@@ -4,12 +4,14 @@
 # ============================================
 
 import logging
-from fastapi import APIRouter, HTTPException, status, Request, Depends
+from fastapi import APIRouter, HTTPException, status, Request, Depends, UploadFile, File, Form
 from typing import Dict, Any
 
 from schemas.case_schema import CreateCaseRequest, CaseResponse, CaseListResponse, TeamMemberInfo
 from services.case_service import CaseService
 from services.user_service import UserService
+from services.case_file_service import CaseFileService
+from schemas.case_file_schema import CaseFileUploadResponse, CaseFilesGroupedResponse, CaseFileCategory
 from auth.security import get_current_user
 
 logger = logging.getLogger(__name__)
@@ -177,3 +179,74 @@ async def get_my_cases(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to fetch cases"
         )
+
+
+@router.post("/{case_id}/files", response_model=CaseFileUploadResponse, status_code=status.HTTP_201_CREATED)
+async def upload_case_file(
+    case_id: str,
+    request: Request,
+    file: UploadFile = File(...),
+    category: CaseFileCategory = Form(...),
+    current_user: Dict[str, Any] = Depends(get_current_user),
+):
+    db = get_db(request)
+    service = CaseFileService(db)
+
+    case = await service.ensure_case_access(case_id, current_user["userId"])
+    role = await service.resolve_user_role_for_case(case, current_user["userId"])
+    if role not in {"Clinician", "Implantologist", "Prosthodontist", "Assistant"}:
+        raise HTTPException(status_code=403, detail="You cannot upload files for this case")
+
+    content = await file.read()
+    created = await service.create_case_file(
+        case_id=case_id,
+        category=category.value,
+        file_name=file.filename,
+        file_content=content,
+        content_type=file.content_type,
+        uploaded_by=current_user["userId"],
+    )
+
+    return CaseFileUploadResponse(
+        fileId=created["id"],
+        fileName=created["file_name"],
+        url=created["storage_url"],
+        category=created["category"],
+        uploadedBy=created["uploaded_by"],
+        uploadedAt=created["uploaded_at"],
+    )
+
+
+@router.get("/{case_id}/files", response_model=CaseFilesGroupedResponse)
+async def get_case_files(
+    case_id: str,
+    request: Request,
+    current_user: Dict[str, Any] = Depends(get_current_user),
+):
+    db = get_db(request)
+    service = CaseFileService(db)
+    await service.ensure_case_access(case_id, current_user["userId"])
+    files = await service.list_case_files_grouped(case_id)
+    return CaseFilesGroupedResponse(files=files)
+
+
+@router.delete("/files/{file_id}")
+async def delete_case_file(
+    file_id: str,
+    request: Request,
+    current_user: Dict[str, Any] = Depends(get_current_user),
+):
+    db = get_db(request)
+    service = CaseFileService(db)
+
+    file_doc = await db.case_files.find_one({"id": file_id}, {"_id": 0})
+    if not file_doc:
+        raise HTTPException(status_code=404, detail="File not found")
+
+    case = await service.ensure_case_access(file_doc["case_id"], current_user["userId"])
+    role = await service.resolve_user_role_for_case(case, current_user["userId"])
+    if role != "Clinician":
+        raise HTTPException(status_code=403, detail="Only Clinician can delete files")
+
+    await service.delete_case_file(file_id)
+    return {"message": "File deleted successfully"}
