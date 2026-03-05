@@ -80,7 +80,7 @@ const options = {
 
 ```env
 # Backend URL
-REACT_APP_BACKEND_URL=https://system-unification.preview.emergentagent.com
+REACT_APP_BACKEND_URL=https://case-team-dropdown.preview.emergentagent.com
 
 # WebSocket
 WDS_SOCKET_PORT=443

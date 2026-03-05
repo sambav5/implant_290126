@@ -22,6 +22,7 @@ export default function NewCase() {
     optionalAge: '',
     optionalSex: '',
     caseTeam: {
+      teamName: '',
       clinician: 'Case Owner',
       implantologist: '',
       prosthodontist: '',
@@ -206,6 +207,26 @@ export default function NewCase() {
               </p>
               
               <div className="space-y-3">
+                {/* Team Name */}
+                <div className="space-y-2 pb-3" style={{borderBottom: '1px solid var(--border)'}}>
+                  <Label htmlFor="teamName" className="text-sm font-medium" style={{color: 'var(--t1)'}}>
+                    Team Name (Optional)
+                  </Label>
+                  <Input
+                    id="teamName"
+                    placeholder="e.g., Implant Team Alpha, Dr. Smith's Team"
+                    value={formData.caseTeam.teamName}
+                    onChange={(e) => setFormData({
+                      ...formData,
+                      caseTeam: { ...formData.caseTeam, teamName: e.target.value }
+                    })}
+                    className="input-clinical"
+                  />
+                  <p className="text-xs" style={{color: 'var(--t3)'}}>
+                    Give this case team a memorable name
+                  </p>
+                </div>
+                
                 {/* Clinician */}
                 <div className="space-y-2">
                   <Label htmlFor="clinician" className="text-sm font-medium flex items-center gap-2" style={{color: 'var(--t1)'}}>

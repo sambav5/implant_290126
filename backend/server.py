@@ -336,6 +336,7 @@ class ChecklistItemCreate(BaseModel):
     assignedRole: str = "clinician"
 
 class CaseTeam(BaseModel):
+    teamName: Optional[str] = None  # Name for the case team
     clinician: Optional[str] = "Case Owner"
     implantologist: Optional[str] = None
     prosthodontist: Optional[str] = None
@@ -1386,7 +1387,7 @@ app.add_middleware(
     allow_credentials=True,
     allow_origins=[
         "https://main.d16x3iik3pv4ry.amplifyapp.com",
-        "https://system-unification.preview.emergentagent.com",
+        "https://case-team-dropdown.preview.emergentagent.com",
         "http://localhost:3000"
     ],
     allow_methods=["*"],
