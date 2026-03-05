@@ -49,6 +49,25 @@ async def get_team(
                 detail="User not found"
             )
         
+        # Check if user has clinic_id (new schema)
+        if not user.get("clinic_id"):
+            # Check onboarding stage
+            if user.get("onboarding_stage") == "PROFILE":
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="Please complete your profile setup first"
+                )
+            elif user.get("onboarding_stage") == "TEAM":
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="Please complete team setup or skip to continue"
+                )
+            else:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="Please complete onboarding first"
+                )
+        
         # Get team members
         members = await team_service.get_team_members(user["clinic_id"])
         
@@ -103,6 +122,25 @@ async def add_team_member(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="User not found"
             )
+        
+        # Check if user has clinic_id (new schema)
+        if not user.get("clinic_id"):
+            # Check onboarding stage
+            if user.get("onboarding_stage") == "PROFILE":
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="Please complete your profile setup first"
+                )
+            elif user.get("onboarding_stage") == "TEAM":
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="Please complete team setup or skip to continue"
+                )
+            else:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="Please complete onboarding first"
+                )
         
         # Add team member
         team_member = await team_service.add_team_member(
@@ -173,6 +211,13 @@ async def update_team_member(
                 detail="User not found"
             )
         
+        # Check if user has clinic_id
+        if not user.get("clinic_id"):
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Please complete onboarding first"
+            )
+        
         # Verify user is Clinician
         if user.get("role") != "Clinician":
             raise HTTPException(
@@ -241,8 +286,15 @@ async def get_team_members(
                 detail="User not found"
             )
         
+        # Check if user has clinic_id
+        if not user.get("clinic_id"):
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Please complete onboarding first"
+            )
+        
         # Get team members
-        members = await team_service.get_team_members(user["id"])
+        members = await team_service.get_team_members(user["clinic_id"])
         
         return TeamListResponse(
             members=[
@@ -296,6 +348,13 @@ async def remove_team_member(
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="User not found"
+            )
+        
+        # Check if user has clinic_id
+        if not user.get("clinic_id"):
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Please complete onboarding first"
             )
         
         # Remove team member
