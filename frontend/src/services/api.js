@@ -66,6 +66,15 @@ export const caseFilesApi = {
   delete: (fileId) => axios.delete(`${API}/cases/files/${fileId}`),
 };
 
+
+export const discussionApi = {
+  getMessages: (caseId, params = {}) => axios.get(`${API}/cases/${caseId}/messages`, { params }),
+  sendMessage: (caseId, payload) => axios.post(`${API}/cases/${caseId}/messages`, payload),
+  addReaction: (messageId, reactionType) => axios.post(`${API}/messages/${messageId}/reaction`, { reaction_type: reactionType }),
+  deleteMessage: (messageId) => axios.delete(`${API}/messages/${messageId}`),
+  getEvents: (caseId, since = '') => axios.get(`${API}/cases/${caseId}/discussion-events`, { params: { since } }),
+};
+
 // Checklist API
 export const checklistApi = {
   update: (caseId, phase, items) => 
@@ -95,4 +104,5 @@ export default {
   feedback: feedbackApi,
   attachment: attachmentApi,
   caseFiles: caseFilesApi,
+  discussion: discussionApi,
 };
