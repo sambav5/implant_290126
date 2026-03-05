@@ -1,203 +1,56 @@
-/* App-specific styles */
-
-/* Mobile-first layout helpers */
 .bottom-nav {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    z-index: 50;
-    padding-bottom: max(1rem, env(safe-area-inset-bottom));
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 50;
+  padding-bottom: max(1rem, env(safe-area-inset-bottom));
 }
 
-/* Floating action button - EndoPilot Style */
 .fab {
-    position: fixed;
-    bottom: 24px;
-    right: 24px;
-    z-index: 50;
-    width: 56px;
-    height: 56px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    box-shadow: 0 2px 8px rgba(26, 107, 74, 0.2);
-    transition: all 0.2s ease;
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 50;
+  width: 56px;
+  height: 56px;
+  border-radius: 2px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--color-divider);
+  transition: background-color 0.2s ease;
 }
 
 .fab:hover {
-    box-shadow: 0 4px 12px rgba(26, 107, 74, 0.3);
-    transform: translateY(-2px);
-    opacity: 0.9;
+  background: var(--color-forest-hover);
 }
 
-.fab:active {
-    transform: scale(0.95);
-}
-
-/* Step indicator - EndoPilot Style */
-.step-indicator {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-
-.step-dot {
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    background-color: var(--border);
-    transition: all 0.2s ease;
-}
-
-.step-dot.active {
-    background-color: var(--green);
-    width: 24px;
-    border-radius: 4px;
-}
-
-.step-dot.completed {
-    background-color: var(--green);
-}
-
-/* Timeline styles - EndoPilot */
-.timeline-entry {
-    position: relative;
-    padding-left: 24px;
-}
-
-.timeline-entry::before {
-    content: '';
-    position: absolute;
-    left: 6px;
-    top: 24px;
-    bottom: 0;
-    width: 2px;
-    background-color: var(--border);
-}
-
-.timeline-entry:last-child::before {
-    display: none;
-}
-
-.timeline-entry::after {
-    content: '';
-    position: absolute;
-    left: 0;
-    top: 8px;
-    width: 14px;
-    height: 14px;
-    border-radius: 50%;
-    background-color: var(--card);
-    border: 2px solid var(--green);
-}
-
-/* Risk indicator pulse - EndoPilot */
-.risk-pulse-high {
-    animation: pulse-red 2s infinite;
-}
-
-.risk-pulse-moderate {
-    animation: pulse-amber 2s infinite;
-}
-
-@keyframes pulse-red {
-    0%, 100% {
-        box-shadow: 0 0 0 0 rgba(139, 33, 18, 0.4);
-    }
-    50% {
-        box-shadow: 0 0 0 8px rgba(139, 33, 18, 0);
-    }
-}
-
-@keyframes pulse-amber {
-    0%, 100% {
-        box-shadow: 0 0 0 0 rgba(217, 119, 6, 0.4);
-    }
-    50% {
-        box-shadow: 0 0 0 8px rgba(217, 119, 6, 0);
-    }
-}
-
-/* Tooth number badge - EndoPilot Style */
-.tooth-badge {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 40px;
-    height: 40px;
-    border-radius: 10px;
-    background: var(--green-1);
-    color: var(--green);
-    border: 1.5px solid var(--green-b);
-    font-family: 'Lora', serif;
-    font-weight: 600;
-    font-size: 16px;
-}
-
-/* Status badge styles - EndoPilot */
-.status-planning {
-    background: var(--blue-1);
-    color: var(--blue);
-    border-color: var(--blue-b);
-}
-
-.status-in-progress {
-    background: var(--amber-1);
-    color: var(--amber);
-    border-color: var(--amber-b);
-}
-
-.status-completed {
-    background: var(--green-1);
-    color: var(--green);
-    border-color: var(--green-b);
-}
-
-/* Mobile menu transition */
-.mobile-menu {
-    transform: translateX(-100%);
-    opacity: 0;
-}
-
-.mobile-menu.open {
-    transform: translateX(0);
-    opacity: 1;
-}
-
-/* Loading skeleton - EndoPilot Style */
 .skeleton {
-    background: linear-gradient(90deg, var(--border) 25%, var(--border2) 50%, var(--border) 75%);
-    background-size: 200% 100%;
-    animation: shimmer 1.5s infinite;
+  background: var(--color-divider);
+  animation: shimmer 1.5s infinite;
 }
 
 @keyframes shimmer {
-    0% {
-        background-position: -200% 0;
-    }
-    100% {
-        background-position: 200% 0;
-    }
+  0%,
+  100% {
+    opacity: 0.55;
+  }
+  50% {
+    opacity: 1;
+  }
 }
 
-/* Print styles for PDF */
 @media print {
-    .no-print {
-        display: none !important;
-    }
-    
-    .print-only {
-        display: block !important;
-    }
-    
-    body {
-        background: white !important;
-    }
-    
-    .card-clinical {
-        box-shadow: none !important;
-        border: 1px solid #ddd !important;
-    }
+  .no-print {
+    display: none !important;
+  }
+
+  .print-only {
+    display: block !important;
+  }
+
+  body {
+    background: var(--color-champagne) !important;
+  }
 }

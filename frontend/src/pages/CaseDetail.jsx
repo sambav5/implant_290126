@@ -436,7 +436,7 @@ export default function CaseDetail() {
           
           {/* Modal Content */}
           <div 
-            className="relative w-full sm:max-w-lg max-h-[80vh] overflow-hidden rounded-t-2xl sm:rounded-2xl animate-slide-up shadow-xl"
+            className="relative w-full sm:max-w-lg max-h-[80vh] overflow-hidden rounded-t-2xl sm:rounded-2xl animate-slide-up "
             style={{background: '#FAFAF8', border: '1.5px solid var(--border)'}}
           >
             {/* Header */}

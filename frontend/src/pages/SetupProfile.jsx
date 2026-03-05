@@ -72,16 +72,16 @@ const SetupProfile = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-50 p-4">
-      <Card className="w-full max-w-2xl p-8 space-y-6 shadow-xl">
+    <div className="min-h-screen flex items-center justify-center bg-champagne p-4">
+      <Card className="w-full max-w-2xl p-8 space-y-6 ">
         <div className="text-center space-y-2">
           <div className="flex justify-center mb-4">
             <div className="p-4 bg-blue-100 rounded-full">
-              <User className="h-8 w-8 text-blue-600" />
+              <User className="h-8 w-8 text-forest" />
             </div>
           </div>
-          <h1 className="text-3xl font-bold text-gray-900">Setup Your Profile</h1>
-          <p className="text-sm text-gray-600">
+          <h1 className="text-3xl font-bold text-charcoal">Setup Your Profile</h1>
+          <p className="text-sm text-warmgray">
             Tell us about yourself and your clinic
           </p>
         </div>
@@ -90,7 +90,7 @@ const SetupProfile = () => {
           <div className="space-y-4">
             {/* Full Name */}
             <div className="space-y-2">
-              <label htmlFor="name" className="text-sm font-medium text-gray-700 flex items-center gap-2">
+              <label htmlFor="name" className="text-sm font-medium text-charcoal flex items-center gap-2">
                 <User className="h-4 w-4" />
                 Full Name *
               </label>
@@ -111,7 +111,7 @@ const SetupProfile = () => {
 
             {/* Clinic Name */}
             <div className="space-y-2">
-              <label htmlFor="clinicName" className="text-sm font-medium text-gray-700 flex items-center gap-2">
+              <label htmlFor="clinicName" className="text-sm font-medium text-charcoal flex items-center gap-2">
                 <Building2 className="h-4 w-4" />
                 Clinic Name *
               </label>
@@ -131,7 +131,7 @@ const SetupProfile = () => {
 
             {/* Clinic Address */}
             <div className="space-y-2">
-              <label htmlFor="clinicAddress" className="text-sm font-medium text-gray-700 flex items-center gap-2">
+              <label htmlFor="clinicAddress" className="text-sm font-medium text-charcoal flex items-center gap-2">
                 <MapPin className="h-4 w-4" />
                 Clinic Address *
               </label>
@@ -168,8 +168,8 @@ const SetupProfile = () => {
           </Button>
         </form>
 
-        <div className="pt-4 border-t border-gray-200">
-          <p className="text-xs text-center text-gray-500">
+        <div className="pt-4 border-t border-divider">
+          <p className="text-xs text-center text-warmgray">
             Step 1 of 2 - Profile Information
           </p>
         </div>
