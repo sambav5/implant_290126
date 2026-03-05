@@ -98,7 +98,7 @@ class CaseFileService:
     async def list_case_files_grouped(self, case_id: str) -> Dict[str, list[Dict[str, Any]]]:
         cursor = self.case_files.find({"case_id": case_id}, {"_id": 0}).sort("uploaded_at", -1)
         files = await cursor.to_list(length=500)
-        grouped = {"XRAY": [], "CBCT": [], "MEDICAL_RECORD": [], "LAB_FILE": [], "OTHER": []}
+        grouped = {"PRE_OP": [], "POST_OP": [], "XRAY": [], "CBCT": [], "MEDICAL_RECORD": [], "LAB_FILE": [], "OTHER": []}
 
         for item in files:
             uploader = await self.case_service.get_team_member_info(item.get("uploaded_by"))

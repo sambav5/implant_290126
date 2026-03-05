@@ -6,6 +6,8 @@ from pydantic import BaseModel, Field
 
 
 class CaseFileCategory(str, Enum):
+    PRE_OP = "PRE_OP"
+    POST_OP = "POST_OP"
     XRAY = "XRAY"
     CBCT = "CBCT"
     MEDICAL_RECORD = "MEDICAL_RECORD"

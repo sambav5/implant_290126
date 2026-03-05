@@ -40,6 +40,7 @@ import { downloadCasePDF } from '@/services/pdfService';
 import { useActiveRole } from '@/hooks/useActiveRole';
 import { ROLES } from '@/utils/rolePermissions';
 import CaseFilesTab from '@/components/CaseFilesTab';
+import SocialPostGenerator from '@/components/social-post/SocialPostGenerator';
 import { toast } from 'sonner';
 
 const statusConfig = {
@@ -182,16 +183,17 @@ export default function CaseDetail() {
       
       <main className="page-container py-6 space-y-6">
         <div className="flex gap-2 overflow-x-auto pb-1">
-          {['Overview', 'Notes', 'Treatment Plan', 'Files', 'Discussion'].map((tab) => {
+          {['Overview', 'Notes', 'Treatment Plan', 'Files', 'Social Media Post', 'Discussion'].map((tab) => {
             const key = tab.toLowerCase().replace(/\s+/g, '-');
-            const isActive = (activeTab === 'overview' && key === 'overview') || (activeTab === 'files' && key === 'files');
+            const isActive = (activeTab === 'overview' && key === 'overview') || (activeTab === 'files' && key === 'files') || (activeTab === 'social-media-post' && key === 'social-media-post');
+            if (key === 'social-media-post' && activeRole === ROLES.ASSISTANT) return null;
             return (
               <Button
                 key={key}
                 variant={isActive ? 'default' : 'outline'}
                 size="sm"
                 onClick={() => {
-                  if (key === 'overview' || key === 'files') setActiveTab(key);
+                  if (key === 'overview' || key === 'files' || key === 'social-media-post') setActiveTab(key);
                   else toast.info(`${tab} tab is unchanged in this release.`);
                 }}
               >
@@ -203,6 +205,8 @@ export default function CaseDetail() {
 
         {activeTab === 'files' ? (
           <CaseFilesTab caseId={id} canDeleteFiles={activeRole === ROLES.CLINICIAN} />
+        ) : activeTab === 'social-media-post' ? (
+          <SocialPostGenerator caseId={id} caseData={caseData} activeRole={activeRole} />
         ) : (
           <>
         {/* Status & Risk Banner */}
