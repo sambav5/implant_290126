@@ -50,7 +50,7 @@ export function RoleSwitcher({ caseTeam }) {
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-64 rounded-lg shadow-lg z-50" style={{background: 'var(--card)', border: '1.5px solid var(--border)'}}>
+        <div className="absolute right-0 mt-2 w-64 rounded-lg  z-50" style={{background: 'var(--card)', border: '1.5px solid var(--border)'}}>
           <div className="px-3 py-2 rounded-t-lg" style={{borderBottom: '1px solid var(--border)', background: 'var(--bg)'}}>
             <p className="label-endo">Viewing As</p>
           </div>
