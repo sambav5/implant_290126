@@ -28,7 +28,11 @@ export default function CaseFilesTab({ caseId, canDeleteFiles }) {
   const [uploading, setUploading] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState('XRAY');
   const [previewUrl, setPreviewUrl] = useState(null);
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  const [fileToDelete, setFileToDelete] = useState(null);
   const fileInputRef = useRef(null);
+  
+  const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50MB in bytes
 
   const loadFiles = async () => {
     try {
@@ -45,15 +49,47 @@ export default function CaseFilesTab({ caseId, canDeleteFiles }) {
 
   const handleUpload = async (fileList) => {
     if (!fileList?.length) return;
-    setUploading(true);
-    try {
-      for (const file of fileList) {
-        const formData = new FormData();
-        formData.append('file', file);
-        formData.append('category', selectedCategory);
-        await caseFilesApi.upload(caseId, formData);
+    
+    // Client-side validation
+    const oversizedFiles = [];
+    const validFiles = [];
+    
+    for (const file of fileList) {
+      if (file.size > MAX_FILE_SIZE) {
+        oversizedFiles.push(file.name);
+      } else {
+        validFiles.push(file);
       }
-      toast.success('File uploaded successfully');
+    }
+    
+    if (oversizedFiles.length > 0) {
+      toast.error(`Files exceed 50MB limit: ${oversizedFiles.join(', ')}`);
+      if (validFiles.length === 0) return;
+    }
+    
+    setUploading(true);
+    const results = { success: [], failed: [] };
+    
+    try {
+      for (const file of validFiles) {
+        try {
+          const formData = new FormData();
+          formData.append('file', file);
+          formData.append('category', selectedCategory);
+          await caseFilesApi.upload(caseId, formData);
+          results.success.push(file.name);
+        } catch (e) {
+          results.failed.push({ name: file.name, error: e?.response?.data?.detail || 'Unknown error' });
+        }
+      }
+      
+      if (results.success.length > 0) {
+        toast.success(`${results.success.length} file(s) uploaded successfully`);
+      }
+      if (results.failed.length > 0) {
+        toast.error(`Failed to upload: ${results.failed.map(f => f.name).join(', ')}`);
+      }
+      
       loadFiles();
     } catch (e) {
       toast.error(e?.response?.data?.detail || 'Upload failed');
@@ -70,13 +106,23 @@ export default function CaseFilesTab({ caseId, canDeleteFiles }) {
     return groups;
   }, [filesByCategory]);
 
-  const deleteFile = async (fileId) => {
+  const confirmDelete = (file) => {
+    setFileToDelete(file);
+    setDeleteConfirmOpen(true);
+  };
+
+  const deleteFile = async () => {
+    if (!fileToDelete) return;
+    
     try {
-      await caseFilesApi.delete(fileId);
-      toast.success('File deleted');
+      await caseFilesApi.delete(fileToDelete.id);
+      toast.success('File deleted successfully');
       loadFiles();
     } catch (e) {
       toast.error(e?.response?.data?.detail || 'Failed to delete file');
+    } finally {
+      setDeleteConfirmOpen(false);
+      setFileToDelete(null);
     }
   };
 
@@ -156,7 +202,7 @@ export default function CaseFilesTab({ caseId, canDeleteFiles }) {
                         <Download className="h-3.5 w-3.5 mr-1" /> Download
                       </Button>
                       {canDeleteFiles && (
-                        <Button size="sm" variant="destructive" onClick={() => deleteFile(item.id)}>
+                        <Button size="sm" variant="destructive" onClick={() => confirmDelete(item)}>
                           <Trash2 className="h-3.5 w-3.5 mr-1" /> Delete
                         </Button>
                       )}
@@ -175,6 +221,35 @@ export default function CaseFilesTab({ caseId, canDeleteFiles }) {
             <X className="h-6 w-6" />
           </button>
           <img src={previewUrl} alt="preview" className="max-h-[90vh] max-w-[90vw] object-contain" />
+        </div>
+      )}
+
+      {/* Delete Confirmation Dialog */}
+      {deleteConfirmOpen && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4 shadow-xl">
+            <h3 className="text-lg font-semibold mb-2">Delete File?</h3>
+            <p className="text-sm text-gray-600 mb-4">
+              Are you sure you want to delete <strong>{fileToDelete?.fileName}</strong>? This action cannot be undone.
+            </p>
+            <div className="flex gap-2 justify-end">
+              <Button 
+                variant="outline" 
+                onClick={() => {
+                  setDeleteConfirmOpen(false);
+                  setFileToDelete(null);
+                }}
+              >
+                Cancel
+              </Button>
+              <Button 
+                variant="destructive" 
+                onClick={deleteFile}
+              >
+                Delete File
+              </Button>
+            </div>
+          </div>
         </div>
       )}
     </div>

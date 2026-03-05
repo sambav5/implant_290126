@@ -15,6 +15,17 @@ ALLOWED_EXTENSIONS = {
 }
 MAX_FILE_SIZE_BYTES = 50 * 1024 * 1024
 
+# MIME type whitelist for additional security
+ALLOWED_MIME_TYPES = {
+    "image/jpeg", "image/jpg", "image/png",
+    "application/pdf",
+    "application/msword",
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    "application/zip", "application/x-zip-compressed",
+    "model/stl", "application/sla",
+    "application/octet-stream",  # For .dcm and .stl files
+}
+
 
 class CaseFileService:
     def __init__(self, db: AsyncIOMotorDatabase):
@@ -56,12 +67,25 @@ class CaseFileService:
         # Legacy case fallback: owner of the legacy case can act as clinician.
         return "Clinician"
 
-    def _validate_upload(self, file_name: str, file_size: int) -> str:
+    def _validate_upload(self, file_name: str, file_size: int, content_type: Optional[str] = None) -> str:
+        # Validate file extension
         suffix = Path(file_name).suffix.lower().replace(".", "")
         if suffix not in ALLOWED_EXTENSIONS:
-            raise HTTPException(status_code=400, detail="Unsupported file type")
+            raise HTTPException(status_code=400, detail=f"Unsupported file type: .{suffix}")
+        
+        # Validate MIME type for additional security
+        if content_type and content_type not in ALLOWED_MIME_TYPES:
+            # Allow if MIME type matches file extension pattern
+            if not (suffix in ["dcm", "stl"] and content_type == "application/octet-stream"):
+                raise HTTPException(
+                    status_code=400, 
+                    detail=f"Invalid MIME type '{content_type}' for file extension '.{suffix}'"
+                )
+        
+        # Validate file size
         if file_size > MAX_FILE_SIZE_BYTES:
             raise HTTPException(status_code=400, detail="File exceeds 50MB limit")
+        
         return suffix
 
     async def create_case_file(
@@ -74,7 +98,7 @@ class CaseFileService:
         uploaded_by: str,
     ) -> Dict[str, Any]:
         file_size = len(file_content)
-        file_ext = self._validate_upload(file_name, file_size)
+        file_ext = self._validate_upload(file_name, file_size, content_type)
         safe_name = f"{uuid.uuid4()}_{Path(file_name).name}"
         storage_key = f"cases/{case_id}/{category.lower()}/{safe_name}"
 
@@ -100,8 +124,32 @@ class CaseFileService:
         files = await cursor.to_list(length=500)
         grouped = {"PRE_OP": [], "POST_OP": [], "XRAY": [], "CBCT": [], "MEDICAL_RECORD": [], "LAB_FILE": [], "OTHER": []}
 
+        # Fix N+1 query: Batch fetch all unique uploader IDs
+        unique_uploader_ids = list(set(item.get("uploaded_by") for item in files if item.get("uploaded_by")))
+        uploader_map = {}
+        
+        if unique_uploader_ids:
+            # Fetch from users collection
+            users_cursor = self.db.users.find(
+                {"id": {"$in": unique_uploader_ids}},
+                {"_id": 0, "id": 1, "name": 1}
+            )
+            users = await users_cursor.to_list(length=len(unique_uploader_ids))
+            uploader_map = {user["id"]: user.get("name", "Unknown") for user in users}
+            
+            # Also check team_members collection
+            team_cursor = self.db.team_members.find(
+                {"id": {"$in": unique_uploader_ids}},
+                {"_id": 0, "id": 1, "name": 1}
+            )
+            team_members = await team_cursor.to_list(length=len(unique_uploader_ids))
+            for member in team_members:
+                uploader_map[member["id"]] = member.get("name", "Unknown")
+
         for item in files:
-            uploader = await self.case_service.get_team_member_info(item.get("uploaded_by"))
+            uploader_id = item.get("uploaded_by")
+            uploader_name = uploader_map.get(uploader_id, "Unknown")
+            
             grouped[item["category"]].append({
                 "id": item["id"],
                 "caseId": item["case_id"],
@@ -111,7 +159,7 @@ class CaseFileService:
                 "storageUrl": item["storage_url"],
                 "category": item["category"],
                 "uploadedBy": item["uploaded_by"],
-                "uploadedByName": uploader["name"] if uploader else "Unknown",
+                "uploadedByName": uploader_name,
                 "uploadedAt": item["uploaded_at"],
             })
 
