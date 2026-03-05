@@ -17,18 +17,34 @@ class FileStorage(ABC):
 
 class LocalFileStorage(FileStorage):
     def __init__(self, root_dir: str = "backend/uploads"):
-        self.root_dir = Path(root_dir)
+        self.root_dir = Path(root_dir).resolve()  # Resolve to absolute path
         self.root_dir.mkdir(parents=True, exist_ok=True)
 
+    def _validate_key(self, key: str) -> Path:
+        """Validate key to prevent path traversal attacks"""
+        # Remove any path traversal attempts
+        if ".." in key or key.startswith("/"):
+            raise ValueError("Invalid file key: path traversal detected")
+        
+        target = (self.root_dir / key).resolve()
+        
+        # Ensure target is within root_dir
+        try:
+            target.relative_to(self.root_dir)
+        except ValueError:
+            raise ValueError("Invalid file key: outside storage directory")
+        
+        return target
+
     async def save_file(self, key: str, content: bytes, content_type: str | None = None) -> str:
-        target = self.root_dir / key
+        target = self._validate_key(key)
         target.parent.mkdir(parents=True, exist_ok=True)
         async with aiofiles.open(target, "wb") as f:
             await f.write(content)
         return f"/uploads/{key}"
 
     async def delete_file(self, key: str) -> None:
-        target = self.root_dir / key
+        target = self._validate_key(key)
         if target.exists():
             target.unlink()
 

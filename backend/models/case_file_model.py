@@ -11,6 +11,7 @@ class CaseFileModel(BaseModel):
     file_type: str
     file_size: int
     storage_url: str
+    storage_key: str  # Path to file in storage system
     category: Literal["XRAY", "CBCT", "MEDICAL_RECORD", "LAB_FILE", "OTHER"]
     uploaded_by: str
     uploaded_at: datetime = Field(default_factory=datetime.utcnow)
