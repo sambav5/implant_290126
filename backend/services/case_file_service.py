@@ -122,7 +122,7 @@ class CaseFileService:
     async def list_case_files_grouped(self, case_id: str) -> Dict[str, list[Dict[str, Any]]]:
         cursor = self.case_files.find({"case_id": case_id}, {"_id": 0}).sort("uploaded_at", -1)
         files = await cursor.to_list(length=500)
-        grouped = {"XRAY": [], "CBCT": [], "MEDICAL_RECORD": [], "LAB_FILE": [], "OTHER": []}
+        grouped = {"PRE_OP": [], "POST_OP": [], "XRAY": [], "CBCT": [], "MEDICAL_RECORD": [], "LAB_FILE": [], "OTHER": []}
 
         # Fix N+1 query: Batch fetch all unique uploader IDs
         unique_uploader_ids = list(set(item.get("uploaded_by") for item in files if item.get("uploaded_by")))
