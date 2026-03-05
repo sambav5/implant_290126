@@ -183,7 +183,7 @@ export default function CaseDetail() {
       
       <main className="page-container py-6 space-y-6">
         <div className="flex gap-2 overflow-x-auto pb-1">
-          {['Overview', 'Notes', 'Treatment Plan', 'Files', 'Social Media Post', 'Discussion'].map((tab) => {
+          {['Overview', 'Notes', 'Files', 'Social Media Post', 'Discussion'].map((tab) => {
             const key = tab.toLowerCase().replace(/\s+/g, '-');
             const isActive = (activeTab === 'overview' && key === 'overview') || (activeTab === 'files' && key === 'files') || (activeTab === 'social-media-post' && key === 'social-media-post');
             if (key === 'social-media-post' && activeRole === ROLES.ASSISTANT) return null;
