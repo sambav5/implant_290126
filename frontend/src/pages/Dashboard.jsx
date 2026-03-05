@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { caseApi } from '@/services/api';
 import { toast } from 'sonner';
+import ProfileMenu from '@/components/ProfileMenu';
 
 const statusConfig = {
   planning: { label: 'Planning', className: 'status-planning px-2 py-1 text-xs rounded-md border mono' },
@@ -124,6 +125,7 @@ export default function Dashboard() {
             </div>
             <div className="flex items-center gap-2">
               <Activity className="h-5 w-5" style={{color: 'var(--green)'}} />
+              <ProfileMenu />
             </div>
           </div>
         </div>

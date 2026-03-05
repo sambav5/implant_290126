@@ -19,30 +19,29 @@ class UserService:
         return await self.users.find_one({"id": user_id}, {"_id": 0})
     
     async def create_user(self, mobile_number: str) -> Dict[str, Any]:
-        """Create new user with PROFILE onboarding stage"""
+        """Create new user with PROFILE onboarding stage (will become Clinician)"""
         import uuid
         
         user = {
             "id": str(uuid.uuid4()),
             "mobile_number": mobile_number,
             "name": None,
-            "clinic_name": None,
-            "clinic_address": None,
+            "role": "Clinician",  # New users are clinic owners
+            "clinic_id": None,  # Will be set after clinic creation
             "onboarding_stage": "PROFILE",
             "created_at": datetime.utcnow(),
             "updated_at": datetime.utcnow()
         }
         
         await self.users.insert_one(user)
-        logger.info(f"Created new user: {mobile_number}")
+        logger.info(f"Created new user (Clinician): {mobile_number}")
         return user
     
-    async def update_profile(self, user_id: str, name: str, clinic_name: str, clinic_address: str) -> Dict[str, Any]:
+    async def update_profile(self, user_id: str, name: str, clinic_id: str) -> Dict[str, Any]:
         """Update user profile and move to TEAM stage"""
         update_data = {
             "name": name,
-            "clinic_name": clinic_name,
-            "clinic_address": clinic_address,
+            "clinic_id": clinic_id,
             "onboarding_stage": "TEAM",
             "updated_at": datetime.utcnow()
         }
@@ -53,6 +52,19 @@ class UserService:
         )
         
         logger.info(f"Updated profile for user: {user_id}")
+        return await self.get_user_by_id(user_id)
+    
+    async def update_user_name(self, user_id: str, name: str) -> Dict[str, Any]:
+        """Update user name only"""
+        await self.users.update_one(
+            {"id": user_id},
+            {"$set": {
+                "name": name,
+                "updated_at": datetime.utcnow()
+            }}
+        )
+        
+        logger.info(f"Updated name for user: {user_id}")
         return await self.get_user_by_id(user_id)
     
     async def complete_onboarding(self, user_id: str) -> Dict[str, Any]:
@@ -68,8 +80,14 @@ class UserService:
         logger.info(f"Completed onboarding for user: {user_id}")
         return await self.get_user_by_id(user_id)
     
+    async def get_users_by_clinic(self, clinic_id: str) -> list:
+        """Get all users in a clinic"""
+        cursor = self.users.find({"clinic_id": clinic_id}, {"_id": 0})
+        return await cursor.to_list(length=None)
+    
     async def ensure_indexes(self):
         """Ensure database indexes exist"""
         await self.users.create_index("mobile_number", unique=True)
         await self.users.create_index("id", unique=True)
+        await self.users.create_index("clinic_id")
         logger.info("User indexes created")

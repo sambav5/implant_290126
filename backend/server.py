@@ -1375,11 +1375,13 @@ async def update_status(case_id: str, status: CaseStatus):
 from routes.user_routes import router as user_router
 from routes.team_routes import router as team_router
 from routes.case_routes import router as case_router
+from routes.clinic_routes import router as clinic_router
 
 api_router.include_router(auth_router)  # Include WhatsApp auth routes
 api_router.include_router(user_router)  # Include user management routes
 api_router.include_router(team_router)  # Include team management routes
 api_router.include_router(case_router)  # Include case management routes
+api_router.include_router(clinic_router)  # Include clinic settings routes
 app.include_router(api_router)
 
 # CORS Configuration - Read from environment
@@ -1404,14 +1406,17 @@ async def startup_db_indexes():
     from services.user_service import UserService
     from services.team_service import TeamService
     from services.case_service import CaseService
+    from services.clinic_service import ClinicService
     
     user_service = UserService(db)
     team_service = TeamService(db)
     case_service = CaseService(db)
+    clinic_service = ClinicService(db)
     
     await user_service.ensure_indexes()
     await team_service.ensure_indexes()
     await case_service.ensure_indexes()
+    await clinic_service.ensure_indexes()
     logger.info("Database indexes initialized")
 
 @app.on_event("shutdown")

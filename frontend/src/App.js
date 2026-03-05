@@ -14,6 +14,9 @@ import LearningLoop from "@/pages/LearningLoop";
 import Login from "@/pages/Login";
 import SetupProfile from "@/pages/SetupProfile";
 import SetupTeam from "@/pages/SetupTeam";
+import Profile from "@/pages/Profile";
+import ClinicSettings from "@/pages/ClinicSettings";
+import TeamManagement from "@/pages/TeamManagement";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import OnboardingRoute from "@/components/OnboardingRoute";
 
@@ -52,6 +55,9 @@ function AnalyticsRouterWrapper({ handleAuthenticated }) {
       
       {/* Protected Routes */}
       <Route path="/" element={<OnboardingRoute><ProtectedRoute><Dashboard /></ProtectedRoute></OnboardingRoute>} />
+      <Route path="/profile" element={<OnboardingRoute><ProtectedRoute><Profile /></ProtectedRoute></OnboardingRoute>} />
+      <Route path="/clinic-settings" element={<OnboardingRoute><ProtectedRoute><ClinicSettings /></ProtectedRoute></OnboardingRoute>} />
+      <Route path="/team" element={<OnboardingRoute><ProtectedRoute><TeamManagement /></ProtectedRoute></OnboardingRoute>} />
       <Route path="/case/new" element={<OnboardingRoute><ProtectedRoute><NewCase /></ProtectedRoute></OnboardingRoute>} />
       <Route path="/case/:id" element={<OnboardingRoute><ProtectedRoute><CaseDetail /></ProtectedRoute></OnboardingRoute>} />
       <Route path="/case/:id/planning" element={<OnboardingRoute><ProtectedRoute><PlanningWizard /></ProtectedRoute></OnboardingRoute>} />

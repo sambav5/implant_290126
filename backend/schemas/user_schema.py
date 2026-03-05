@@ -15,10 +15,21 @@ class ProfileSetupRequest(BaseModel):
             }
         }
 
+class UpdateProfileRequest(BaseModel):
+    name: str = Field(..., min_length=2, max_length=100, description="Full name")
+    
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "name": "Dr. John Doe"
+            }
+        }
+
 class UserProfileResponse(BaseModel):
     id: str
     mobileNumber: str
     name: Optional[str] = None
+    role: Optional[str] = "Clinician"
     clinicName: Optional[str] = None
     clinicAddress: Optional[str] = None
     onboardingStage: Literal["PROFILE", "TEAM", "COMPLETED"]

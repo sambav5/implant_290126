@@ -4,7 +4,21 @@ from datetime import datetime
 
 class AddTeamMemberRequest(BaseModel):
     name: str = Field(..., min_length=2, max_length=100, description="Team member name")
-    role: Literal["Clinician", "Assistant", "Implantologist", "Prosthodontist"]
+    role: Literal["Assistant", "Implantologist", "Prosthodontist"]  # Removed Clinician
+    mobileNumber: str = Field(..., description="Mobile number with country code")
+    
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "name": "Jane Smith",
+                "role": "Assistant",
+                "mobileNumber": "+919876543211"
+            }
+        }
+
+class UpdateTeamMemberRequest(BaseModel):
+    name: str = Field(..., min_length=2, max_length=100, description="Team member name")
+    role: Literal["Assistant", "Implantologist", "Prosthodontist"]  # Cannot update to Clinician
     mobileNumber: str = Field(..., description="Mobile number with country code")
     
     class Config:

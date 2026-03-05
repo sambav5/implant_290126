@@ -9,7 +9,6 @@ import { teamApi } from '../api/teamApi';
 import { userApi } from '../api/userApi';
 
 const ROLES = [
-  'Clinician',
   'Assistant',
   'Implantologist',
   'Prosthodontist'
@@ -62,18 +61,29 @@ const SetupTeam = () => {
       const response = await teamApi.addMember(formData);
       setMembers([...members, response.data]);
       setFormData({ name: '', role: 'Assistant', mobileNumber: '' });
+      toast.success('Team member added successfully');
+    } catch (error) {
+      const message = error?.response?.data?.detail || 'Failed to add team member';
+      toast.error(message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleComplete = async () => {
+    setLoading(true);
+    try {
+      await userApi.skipTeamSetup();
       
       // Update session to COMPLETED stage
       const sessionData = JSON.parse(localStorage.getItem('clinician_auth_session'));
       sessionData.onboardingStage = 'COMPLETED';
       localStorage.setItem('clinician_auth_session', JSON.stringify(sessionData));
       
-      toast.success('Team member added successfully');
-      
-      // Navigate to dashboard after adding first member
+      toast.success('Team setup complete!');
       navigate('/');
     } catch (error) {
-      const message = error?.response?.data?.detail || 'Failed to add team member';
+      const message = error?.response?.data?.detail || 'Failed to complete setup';
       toast.error(message);
     } finally {
       setLoading(false);
@@ -227,14 +237,34 @@ const SetupTeam = () => {
             <Button
               type="button"
               variant="outline"
-              onClick={handleSkip}
+              onClick={handleComplete}
               disabled={loading}
               className="flex-1"
             >
-              Skip for Now
+              {members.length > 0 ? 'Complete Setup' : 'Skip for Now'}
             </Button>
           </div>
         </form>
+
+        {/* Added Members List */}
+        {members.length > 0 && (
+          <div className="pt-4 border-t border-gray-200 mt-4">
+            <h3 className="text-sm font-semibold text-gray-900 mb-3">
+              Team Members Added ({members.length})
+            </h3>
+            <div className="space-y-2">
+              {members.map((member, index) => (
+                <div key={index} className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+                  <Users className="h-5 w-5 text-gray-600" />
+                  <div className="flex-1">
+                    <p className="font-medium text-gray-900">{member.name}</p>
+                    <p className="text-sm text-gray-600">{member.role}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         <div className="pt-4 border-t border-gray-200">
           <p className="text-xs text-center text-gray-500">

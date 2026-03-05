@@ -7,7 +7,7 @@ import logging
 from fastapi import APIRouter, HTTPException, status, Request, Depends
 from typing import Dict, Any
 
-from schemas.team_schema import AddTeamMemberRequest, TeamMemberResponse, TeamListResponse
+from schemas.team_schema import AddTeamMemberRequest, UpdateTeamMemberRequest, TeamMemberResponse, TeamListResponse
 from services.team_service import TeamService
 from services.user_service import UserService
 from auth.security import get_current_user
@@ -50,7 +50,7 @@ async def get_team(
             )
         
         # Get team members
-        members = await team_service.get_team_members(user["id"])
+        members = await team_service.get_team_members(user["clinic_id"])
         
         # Return team members (clinicians will be filtered on frontend)
         return [
@@ -106,7 +106,7 @@ async def add_team_member(
         
         # Add team member
         team_member = await team_service.add_team_member(
-            clinic_id=user["id"],
+            clinic_id=user["clinic_id"],
             name=member_data.name,
             role=member_data.role,
             mobile_number=member_data.mobileNumber
@@ -127,11 +127,88 @@ async def add_team_member(
         
     except HTTPException:
         raise
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e)
+        )
     except Exception as e:
         logger.error(f"Error adding team member: {str(e)}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to add team member"
+        )
+
+@router.put("/member/{member_id}", response_model=TeamMemberResponse, status_code=status.HTTP_200_OK)
+async def update_team_member(
+    member_id: str,
+    member_data: UpdateTeamMemberRequest,
+    request: Request,
+    current_user: Dict[str, Any] = Depends(get_current_user)
+):
+    """
+    Update a team member (Clinician only)
+    
+    Args:
+        member_id: ID of the team member to update
+        member_data: Updated team member details (name, role, mobile)
+        current_user: Authenticated user from JWT token
+        
+    Returns:
+        Updated team member details
+    """
+    try:
+        db = get_db(request)
+        team_service = TeamService(db)
+        user_service = UserService(db)
+        
+        phone_number = current_user.get("phoneNumber")
+        
+        # Get user (clinic owner)
+        user = await user_service.get_user_by_mobile(phone_number)
+        
+        if not user:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="User not found"
+            )
+        
+        # Verify user is Clinician
+        if user.get("role") != "Clinician":
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Only clinic owner can update team members"
+            )
+        
+        # Update team member
+        updated_member = await team_service.update_team_member(
+            member_id=member_id,
+            clinic_id=user["clinic_id"],
+            name=member_data.name,
+            role=member_data.role,
+            mobile_number=member_data.mobileNumber
+        )
+        
+        return TeamMemberResponse(
+            id=updated_member["id"],
+            name=updated_member["name"],
+            role=updated_member["role"],
+            mobileNumber=updated_member["mobile_number"],
+            createdAt=updated_member["created_at"]
+        )
+        
+    except HTTPException:
+        raise
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e)
+        )
+    except Exception as e:
+        logger.error(f"Error updating team member: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to update team member"
         )
 
 @router.get("/members", response_model=TeamListResponse)
@@ -222,7 +299,7 @@ async def remove_team_member(
             )
         
         # Remove team member
-        deleted = await team_service.remove_team_member(member_id, user["id"])
+        deleted = await team_service.remove_team_member(member_id, user["clinic_id"])
         
         if not deleted:
             raise HTTPException(
