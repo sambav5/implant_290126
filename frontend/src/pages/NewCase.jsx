@@ -257,17 +257,17 @@ export default function NewCase() {
                     <Input disabled placeholder="Loading team..." className="input-clinical" />
                   ) : implantologists.length > 0 ? (
                     <Select
-                      value={formData.caseTeam.implantologist}
+                      value={formData.caseTeam.implantologist || "_none"}
                       onValueChange={(value) => setFormData({
                         ...formData,
-                        caseTeam: { ...formData.caseTeam, implantologist: value }
+                        caseTeam: { ...formData.caseTeam, implantologist: value === "_none" ? "" : value }
                       })}
                     >
                       <SelectTrigger className="input-clinical">
                         <SelectValue placeholder="Select implantologist" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="">-- None --</SelectItem>
+                        <SelectItem value="_none">-- None --</SelectItem>
                         {implantologists.map((member) => (
                           <SelectItem key={member.id} value={member.name}>
                             {member.name}
@@ -299,17 +299,17 @@ export default function NewCase() {
                     <Input disabled placeholder="Loading team..." className="input-clinical" />
                   ) : prosthodontists.length > 0 ? (
                     <Select
-                      value={formData.caseTeam.prosthodontist}
+                      value={formData.caseTeam.prosthodontist || "_none"}
                       onValueChange={(value) => setFormData({
                         ...formData,
-                        caseTeam: { ...formData.caseTeam, prosthodontist: value }
+                        caseTeam: { ...formData.caseTeam, prosthodontist: value === "_none" ? "" : value }
                       })}
                     >
                       <SelectTrigger className="input-clinical">
                         <SelectValue placeholder="Select prosthodontist" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="">-- None --</SelectItem>
+                        <SelectItem value="_none">-- None --</SelectItem>
                         {prosthodontists.map((member) => (
                           <SelectItem key={member.id} value={member.name}>
                             {member.name}
@@ -341,17 +341,17 @@ export default function NewCase() {
                     <Input disabled placeholder="Loading team..." className="input-clinical" />
                   ) : assistants.length > 0 ? (
                     <Select
-                      value={formData.caseTeam.assistant}
+                      value={formData.caseTeam.assistant || "_none"}
                       onValueChange={(value) => setFormData({
                         ...formData,
-                        caseTeam: { ...formData.caseTeam, assistant: value }
+                        caseTeam: { ...formData.caseTeam, assistant: value === "_none" ? "" : value }
                       })}
                     >
                       <SelectTrigger className="input-clinical">
                         <SelectValue placeholder="Select assistant" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="">-- None --</SelectItem>
+                        <SelectItem value="_none">-- None --</SelectItem>
                         {assistants.map((member) => (
                           <SelectItem key={member.id} value={member.name}>
                             {member.name}
