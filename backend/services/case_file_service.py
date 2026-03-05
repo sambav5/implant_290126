@@ -26,6 +26,17 @@ ALLOWED_MIME_TYPES = {
     "application/octet-stream",  # For .dcm and .stl files
 }
 
+# MIME type whitelist for additional security
+ALLOWED_MIME_TYPES = {
+    "image/jpeg", "image/jpg", "image/png",
+    "application/pdf",
+    "application/msword",
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    "application/zip", "application/x-zip-compressed",
+    "model/stl", "application/sla",
+    "application/octet-stream",  # For .dcm and .stl files
+}
+
 
 class CaseFileService:
     def __init__(self, db: AsyncIOMotorDatabase):
@@ -122,7 +133,7 @@ class CaseFileService:
     async def list_case_files_grouped(self, case_id: str) -> Dict[str, list[Dict[str, Any]]]:
         cursor = self.case_files.find({"case_id": case_id}, {"_id": 0}).sort("uploaded_at", -1)
         files = await cursor.to_list(length=500)
-        grouped = {"XRAY": [], "CBCT": [], "MEDICAL_RECORD": [], "LAB_FILE": [], "OTHER": []}
+        grouped = {"PRE_OP": [], "POST_OP": [], "XRAY": [], "CBCT": [], "MEDICAL_RECORD": [], "LAB_FILE": [], "OTHER": []}
 
         # Fix N+1 query: Batch fetch all unique uploader IDs
         unique_uploader_ids = list(set(item.get("uploaded_by") for item in files if item.get("uploaded_by")))

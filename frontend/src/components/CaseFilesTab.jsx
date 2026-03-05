@@ -5,6 +5,8 @@ import { caseFilesApi } from '@/services/api';
 import { toast } from 'sonner';
 
 const CATEGORIES = [
+  { value: 'PRE_OP', label: 'PRE-OP IMAGES' },
+  { value: 'POST_OP', label: 'POST-OP IMAGES' },
   { value: 'XRAY', label: 'XRAY' },
   { value: 'CBCT', label: 'CBCT' },
   { value: 'MEDICAL_RECORD', label: 'MEDICAL RECORDS' },
