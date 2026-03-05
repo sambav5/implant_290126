@@ -1,4 +1,5 @@
 from fastapi import FastAPI, APIRouter, HTTPException, Depends
+from fastapi.staticfiles import StaticFiles
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
@@ -26,6 +27,11 @@ db = client[os.environ['DB_NAME']]
 
 # Create the main app
 app = FastAPI()
+
+# Local file storage mount for case documents
+uploads_dir = Path(__file__).parent / "uploads"
+uploads_dir.mkdir(parents=True, exist_ok=True)
+app.mount("/uploads", StaticFiles(directory=str(uploads_dir)), name="uploads")
 
 # Store database in app state for auth routes to access
 app.state.db = db

@@ -57,6 +57,15 @@ export const caseApi = {
   updateStatus: (id, status) => axios.put(`${API}/cases/${id}/status?status=${status}`),
 };
 
+
+export const caseFilesApi = {
+  upload: (caseId, formData) => axios.post(`${API}/cases/${caseId}/files`, formData, {
+    headers: { "Content-Type": "multipart/form-data" },
+  }),
+  getByCase: (caseId) => axios.get(`${API}/cases/${caseId}/files`),
+  delete: (fileId) => axios.delete(`${API}/cases/files/${fileId}`),
+};
+
 // Checklist API
 export const checklistApi = {
   update: (caseId, phase, items) => 
@@ -85,4 +94,5 @@ export default {
   checklist: checklistApi,
   feedback: feedbackApi,
   attachment: attachmentApi,
+  caseFiles: caseFilesApi,
 };
