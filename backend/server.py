@@ -1422,12 +1422,14 @@ from routes.user_routes import router as user_router
 from routes.team_routes import router as team_router
 from routes.case_routes import router as case_router
 from routes.clinic_routes import router as clinic_router
+from routes.discussion_routes import router as discussion_router
 
 api_router.include_router(auth_router)  # Include WhatsApp auth routes
 api_router.include_router(user_router)  # Include user management routes
 api_router.include_router(team_router)  # Include team management routes
 api_router.include_router(case_router)  # Include case management routes
 api_router.include_router(clinic_router)  # Include clinic settings routes
+api_router.include_router(discussion_router)  # Include discussion routes
 app.include_router(api_router)
 
 # CORS Configuration - Read from environment
@@ -1453,18 +1455,21 @@ async def startup_db_indexes():
     from services.team_service import TeamService
     from services.case_service import CaseService
     from services.clinic_service import ClinicService
+    from services.discussion_service import DiscussionService
     from services.case_file_service import CaseFileService
     
     user_service = UserService(db)
     team_service = TeamService(db)
     case_service = CaseService(db)
     clinic_service = ClinicService(db)
+    discussion_service = DiscussionService(db)
     case_file_service = CaseFileService(db)
     
     await user_service.ensure_indexes()
     await team_service.ensure_indexes()
     await case_service.ensure_indexes()
     await clinic_service.ensure_indexes()
+    await discussion_service.ensure_indexes()
     await case_file_service.ensure_indexes()
     logger.info("Database indexes initialized")
 

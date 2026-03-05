@@ -41,6 +41,7 @@ import { useActiveRole } from '@/hooks/useActiveRole';
 import { ROLES } from '@/utils/rolePermissions';
 import CaseFilesTab from '@/components/CaseFilesTab';
 import SocialPostGenerator from '@/components/social-post/SocialPostGenerator';
+import DiscussionTab from '@/components/discussion/DiscussionTab';
 import { toast } from 'sonner';
 
 const statusConfig = {
@@ -185,7 +186,7 @@ export default function CaseDetail() {
         <div className="flex gap-2 overflow-x-auto pb-1">
           {['Overview', 'Notes', 'Files', 'Social Media Post', 'Discussion'].map((tab) => {
             const key = tab.toLowerCase().replace(/\s+/g, '-');
-            const isActive = (activeTab === 'overview' && key === 'overview') || (activeTab === 'files' && key === 'files') || (activeTab === 'social-media-post' && key === 'social-media-post');
+            const isActive = (activeTab === 'overview' && key === 'overview') || (activeTab === 'files' && key === 'files') || (activeTab === 'social-media-post' && key === 'social-media-post') || (activeTab === 'discussion' && key === 'discussion');
             if (key === 'social-media-post' && activeRole === ROLES.ASSISTANT) return null;
             return (
               <Button
@@ -193,7 +194,7 @@ export default function CaseDetail() {
                 variant={isActive ? 'default' : 'outline'}
                 size="sm"
                 onClick={() => {
-                  if (key === 'overview' || key === 'files' || key === 'social-media-post') setActiveTab(key);
+                  if (key === 'overview' || key === 'files' || key === 'social-media-post' || key === 'discussion') setActiveTab(key);
                   else toast.info(`${tab} tab is unchanged in this release.`);
                 }}
               >
@@ -207,6 +208,8 @@ export default function CaseDetail() {
           <CaseFilesTab caseId={id} canDeleteFiles={activeRole === ROLES.CLINICIAN} />
         ) : activeTab === 'social-media-post' ? (
           <SocialPostGenerator caseId={id} caseData={caseData} activeRole={activeRole} />
+        ) : activeTab === 'discussion' ? (
+          <DiscussionTab caseId={id} caseData={caseData} activeRole={activeRole} />
         ) : (
           <>
         {/* Status & Risk Banner */}
