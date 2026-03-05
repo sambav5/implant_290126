@@ -5,13 +5,39 @@ const PLATFORM_FORMATS = {
   linkedin: { label: 'LinkedIn', width: 1200, height: 627, aspectRatio: '1.91 / 1' },
 };
 
-const loadImage = (src) => new Promise((resolve, reject) => {
-  const img = new Image();
-  img.crossOrigin = 'anonymous';
-  img.onload = () => resolve(img);
-  img.onerror = () => reject(new Error('Unable to load selected image'));
-  img.src = src;
-});
+const loadImage = async (src) => {
+  // Fetch image with credentials for authenticated endpoints
+  try {
+    const response = await fetch(src, {
+      credentials: 'include',
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('clinician_auth_session') ? JSON.parse(localStorage.getItem('clinician_auth_session')).token : ''}`
+      }
+    });
+    
+    if (!response.ok) {
+      throw new Error('Unable to load selected image');
+    }
+    
+    const blob = await response.blob();
+    const blobUrl = URL.createObjectURL(blob);
+    
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      img.onload = () => {
+        URL.revokeObjectURL(blobUrl); // Clean up blob URL
+        resolve(img);
+      };
+      img.onerror = () => {
+        URL.revokeObjectURL(blobUrl);
+        reject(new Error('Unable to load selected image'));
+      };
+      img.src = blobUrl;
+    });
+  } catch (error) {
+    throw new Error('Unable to load selected image');
+  }
+};
 
 const drawCover = (ctx, img, x, y, width, height) => {
   const scale = Math.max(width / img.width, height / img.height);
