@@ -11,7 +11,7 @@ import sys
 def test_clinical_depth_detailed():
     """Detailed test of Clinical Depth Toggle feature with response inspection"""
     
-    base_url = "https://case-team-dropdown.preview.emergentagent.com"
+    base_url = "https://implant-design-qa.preview.emergentagent.com"
     api_url = f"{base_url}/api"
     
     print("🔬 DETAILED CLINICAL DEPTH TOGGLE VERIFICATION")
