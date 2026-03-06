@@ -216,8 +216,8 @@ export default function CaseFilesTab({ caseId, canDeleteFiles }) {
       ))}
 
       {previewUrl && (
-        <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50">
-          <button className="absolute top-6 right-6 text-white" onClick={() => setPreviewUrl(null)}>
+        <div className="fixed inset-0 bg-charcoal/80 flex items-center justify-center z-50">
+          <button className="absolute top-6 right-6 text-champagne" onClick={() => setPreviewUrl(null)}>
             <X className="h-6 w-6" />
           </button>
           <img src={previewUrl} alt="preview" className="max-h-[90vh] max-w-[90vw] object-contain" />
@@ -226,8 +226,8 @@ export default function CaseFilesTab({ caseId, canDeleteFiles }) {
 
       {/* Delete Confirmation Dialog */}
       {deleteConfirmOpen && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4 shadow-xl">
+        <div className="fixed inset-0 bg-charcoal/50 flex items-center justify-center z-50">
+          <div className="bg-champagne rounded-lg p-6 max-w-md w-full mx-4 ">
             <h3 className="text-lg font-semibold mb-2">Delete File?</h3>
             <p className="text-sm text-gray-600 mb-4">
               Are you sure you want to delete <strong>{fileToDelete?.fileName}</strong>? This action cannot be undone.

@@ -415,7 +415,7 @@ export default function PlanningWizard() {
                           className="w-10 h-10 rounded-full flex items-center justify-center text-sm font-semibold transition-all"
                           style={{
                             background: isCompleted ? 'var(--green)' : isActive ? 'var(--blue)' : 'var(--border)',
-                            color: isCompleted || isActive ? 'white' : 'var(--t3)',
+                            color: isCompleted || isActive ? 'var(--color-champagne)' : 'var(--t3)',
                             border: isActive ? '2px solid var(--blue)' : 'none',
                             boxShadow: isActive ? '0 0 0 4px var(--blue-1)' : 'none'
                           }}
@@ -715,7 +715,7 @@ export default function PlanningWizard() {
               <div className="fixed inset-0 z-50 flex items-center justify-center" style={{background: 'rgba(26, 25, 23, 0.5)'}}>
                 <div className="card-clinical p-8 text-center animate-slide-up" style={{background: 'var(--green-1)', border: '2px solid var(--green)'}}>
                   <div className="w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center" style={{background: 'var(--green)'}}>
-                    <CheckCircle2 className="h-10 w-10" style={{color: 'white'}} />
+                    <CheckCircle2 className="h-10 w-10" style={{color: 'var(--color-champagne)'}} />
                   </div>
                   <h3 className="text-xl font-semibold mb-2" style={{color: 'var(--green)', fontFamily: "'Lora', serif"}}>
                     Step Complete!

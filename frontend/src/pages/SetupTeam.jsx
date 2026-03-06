@@ -115,16 +115,16 @@ const SetupTeam = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-50 p-4">
-      <Card className="w-full max-w-3xl p-8 space-y-6 shadow-xl">
+    <div className="min-h-screen flex items-center justify-center bg-champagne p-4">
+      <Card className="w-full max-w-3xl p-8 space-y-6 ">
         <div className="text-center space-y-2">
           <div className="flex justify-center mb-4">
             <div className="p-4 bg-green-100 rounded-full">
-              <Users className="h-8 w-8 text-green-600" />
+              <Users className="h-8 w-8 text-forest" />
             </div>
           </div>
-          <h1 className="text-3xl font-bold text-gray-900">Add Your Team</h1>
-          <p className="text-sm text-gray-600">
+          <h1 className="text-3xl font-bold text-charcoal">Add Your Team</h1>
+          <p className="text-sm text-warmgray">
             Add team members who will work with you (optional)
           </p>
         </div>
@@ -132,15 +132,15 @@ const SetupTeam = () => {
         {/* Added Members List */}
         {members.length > 0 && (
           <div className="space-y-3">
-            <h3 className="text-sm font-semibold text-gray-700">Team Members ({members.length})</h3>
+            <h3 className="text-sm font-semibold text-charcoal">Team Members ({members.length})</h3>
             {members.map((member, index) => (
               <div
                 key={index}
-                className="flex items-center justify-between p-4 bg-gray-50 rounded-lg border border-gray-200"
+                className="flex items-center justify-between p-4 bg-gray-50 rounded-lg border border-divider"
               >
                 <div className="flex-1">
-                  <p className="font-medium text-gray-900">{member.name}</p>
-                  <p className="text-sm text-gray-600">{member.role} • {member.mobileNumber}</p>
+                  <p className="font-medium text-charcoal">{member.name}</p>
+                  <p className="text-sm text-warmgray">{member.role} • {member.mobileNumber}</p>
                 </div>
                 <button
                   onClick={() => handleRemoveMember(index)}
@@ -158,7 +158,7 @@ const SetupTeam = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {/* Name */}
             <div className="space-y-2">
-              <label htmlFor="name" className="text-sm font-medium text-gray-700">
+              <label htmlFor="name" className="text-sm font-medium text-charcoal">
                 Name *
               </label>
               <Input
@@ -177,7 +177,7 @@ const SetupTeam = () => {
 
             {/* Role */}
             <div className="space-y-2">
-              <label htmlFor="role" className="text-sm font-medium text-gray-700">
+              <label htmlFor="role" className="text-sm font-medium text-charcoal">
                 Role *
               </label>
               <select
@@ -198,7 +198,7 @@ const SetupTeam = () => {
 
           {/* Mobile Number */}
           <div className="space-y-2">
-            <label htmlFor="mobileNumber" className="text-sm font-medium text-gray-700">
+            <label htmlFor="mobileNumber" className="text-sm font-medium text-charcoal">
               Mobile Number *
             </label>
             <Input
@@ -248,17 +248,17 @@ const SetupTeam = () => {
 
         {/* Added Members List */}
         {members.length > 0 && (
-          <div className="pt-4 border-t border-gray-200 mt-4">
-            <h3 className="text-sm font-semibold text-gray-900 mb-3">
+          <div className="pt-4 border-t border-divider mt-4">
+            <h3 className="text-sm font-semibold text-charcoal mb-3">
               Team Members Added ({members.length})
             </h3>
             <div className="space-y-2">
               {members.map((member, index) => (
                 <div key={index} className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-                  <Users className="h-5 w-5 text-gray-600" />
+                  <Users className="h-5 w-5 text-warmgray" />
                   <div className="flex-1">
-                    <p className="font-medium text-gray-900">{member.name}</p>
-                    <p className="text-sm text-gray-600">{member.role}</p>
+                    <p className="font-medium text-charcoal">{member.name}</p>
+                    <p className="text-sm text-warmgray">{member.role}</p>
                   </div>
                 </div>
               ))}
@@ -266,8 +266,8 @@ const SetupTeam = () => {
           </div>
         )}
 
-        <div className="pt-4 border-t border-gray-200">
-          <p className="text-xs text-center text-gray-500">
+        <div className="pt-4 border-t border-divider">
+          <p className="text-xs text-center text-warmgray">
             Step 2 of 2 - Team Setup (Optional)
           </p>
         </div>

@@ -113,18 +113,18 @@ const Login = ({ onAuthenticated }) => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-50 p-4">
-      <Card className="w-full max-w-md p-8 space-y-6 shadow-xl">
+    <div className="min-h-screen flex items-center justify-center bg-champagne p-4">
+      <Card className="w-full max-w-md p-8 space-y-6 ">
         <div className="text-center space-y-2">
           <div className="flex justify-center mb-4">
             {step === 'phone' ? (
-              <MessageCircle className="h-12 w-12 text-blue-600" />
+              <MessageCircle className="h-12 w-12 text-forest" />
             ) : (
-              <ShieldCheck className="h-12 w-12 text-green-600" />
+              <ShieldCheck className="h-12 w-12 text-forest" />
             )}
           </div>
-          <h1 className="text-3xl font-bold text-gray-900">ImplantFlow Login</h1>
-          <p className="text-sm text-gray-600">
+          <h1 className="text-3xl font-bold text-charcoal">ImplantFlow Login</h1>
+          <p className="text-sm text-warmgray">
             Secure clinician access via WhatsApp OTP
           </p>
         </div>
@@ -132,7 +132,7 @@ const Login = ({ onAuthenticated }) => {
         {step === 'phone' ? (
           <form onSubmit={handleRequestOtp} className="space-y-6">
             <div className="space-y-2">
-              <label htmlFor="phoneNumber" className="text-sm font-medium text-gray-700">
+              <label htmlFor="phoneNumber" className="text-sm font-medium text-charcoal">
                 Phone Number
               </label>
               <Input
@@ -145,14 +145,14 @@ const Login = ({ onAuthenticated }) => {
                 className="w-full"
                 autoFocus
               />
-              <p className="text-xs text-gray-500">
+              <p className="text-xs text-warmgray">
                 Enter your registered phone number with country code
               </p>
-              <div className="mt-2 p-3 bg-blue-50 border border-blue-200 rounded-md">
-                <p className="text-xs text-blue-800 font-medium">
+              <div className="mt-2 p-3 bg-champagne border border-divider rounded-md">
+                <p className="text-xs text-forest font-medium">
                   📱 WhatsApp Sandbox Setup Required:
                 </p>
-                <p className="text-xs text-blue-700 mt-1">
+                <p className="text-xs text-warmgray mt-1">
                   Before first login, send "join" to <span className="font-mono font-semibold">+1 415 523 8886</span> on WhatsApp
                 </p>
               </div>
@@ -165,7 +165,7 @@ const Login = ({ onAuthenticated }) => {
             >
               {loading ? (
                 <>
-                  <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                  <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-champagne border-t-transparent" />
                   Sending OTP...
                 </>
               ) : (
@@ -181,7 +181,7 @@ const Login = ({ onAuthenticated }) => {
             <button
               type="button"
               onClick={handleBackToPhone}
-              className="flex items-center text-sm text-gray-600 hover:text-gray-900 transition-colors"
+              className="flex items-center text-sm text-warmgray hover:text-charcoal transition-colors"
               disabled={loading}
             >
               <ArrowLeft className="mr-1 h-4 w-4" />
@@ -189,10 +189,10 @@ const Login = ({ onAuthenticated }) => {
             </button>
 
             <div className="space-y-2">
-              <label className="text-sm font-medium text-gray-700">
+              <label className="text-sm font-medium text-charcoal">
                 Verification Code
               </label>
-              <p className="text-xs text-gray-500 mb-4">
+              <p className="text-xs text-warmgray mb-4">
                 Enter the 6-digit code sent to {phoneNumber}
               </p>
               <div className="flex justify-center">
@@ -221,7 +221,7 @@ const Login = ({ onAuthenticated }) => {
             >
               {loading ? (
                 <>
-                  <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                  <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-champagne border-t-transparent" />
                   Verifying...
                 </>
               ) : (
@@ -239,8 +239,8 @@ const Login = ({ onAuthenticated }) => {
                 disabled={resendIn > 0 || loading}
                 className={`text-sm ${
                   resendIn > 0 || loading
-                    ? 'text-gray-400 cursor-not-allowed'
-                    : 'text-blue-600 hover:text-blue-800 font-medium'
+                    ? 'text-warmgray/70 cursor-not-allowed'
+                    : 'text-forest hover:text-forest font-medium'
                 } transition-colors`}
               >
                 {resendIn > 0 ? (
@@ -253,8 +253,8 @@ const Login = ({ onAuthenticated }) => {
           </form>
         )}
 
-        <div className="pt-4 border-t border-gray-200">
-          <p className="text-xs text-center text-gray-500">
+        <div className="pt-4 border-t border-divider">
+          <p className="text-xs text-center text-warmgray">
             Protected by WhatsApp OTP verification
           </p>
         </div>
