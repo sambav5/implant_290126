@@ -3,10 +3,20 @@ import MessageItem from './MessageItem';
 
 export default function MessageList({ messages, onReply, onReact, onDelete, canDelete }) {
   const listRef = useRef(null);
+  const prevMessageCountRef = useRef(0);
 
   useEffect(() => {
-    if (listRef.current) {
-      listRef.current.scrollTop = listRef.current.scrollHeight;
+    if (listRef.current && messages.length > 0) {
+      const { scrollTop, scrollHeight, clientHeight } = listRef.current;
+      const isAtBottom = scrollTop + clientHeight >= scrollHeight - 100;
+      const newMessagesAdded = messages.length > prevMessageCountRef.current;
+      
+      // Only auto-scroll if user is already at bottom OR on initial load
+      if (isAtBottom || prevMessageCountRef.current === 0) {
+        listRef.current.scrollTop = scrollHeight;
+      }
+      
+      prevMessageCountRef.current = messages.length;
     }
   }, [messages]);
 
