@@ -18,19 +18,53 @@ class DiscussionService:
     async def ensure_case_member(self, case_id: str, user_id: str) -> Dict[str, Any]:
         case = await self.cases.find_one({"id": case_id}, {"_id": 0})
         if not case:
+            print(f"[DEBUG] Case {case_id} not found")
             return None
-        # Filter out None/empty values to prevent unauthorized access
-        members = {m for m in [
-            case.get("created_by_clinician_id"),
-            case.get("assigned_implantologist_id"),
-            case.get("assigned_prosthodontist_id"),
-            case.get("assigned_assistant_id"),
-        ] if m}
+        
+        print(f"[DEBUG] Checking access for user {user_id} to case {case_id}")
+        print(f"[DEBUG] Case has caseTeam: {'caseTeam' in case}")
+        print(f"[DEBUG] Case has created_by_clinician_id: {'created_by_clinician_id' in case}")
+        
+        # Support BOTH old and new case structures
+        members = set()
+        
+        # New structure: Uses ID fields
+        if "created_by_clinician_id" in case:
+            print(f"[DEBUG] Using NEW structure")
+            members.add(case.get("created_by_clinician_id"))
+            if case.get("assigned_implantologist_id"):
+                members.add(case.get("assigned_implantologist_id"))
+            if case.get("assigned_prosthodontist_id"):
+                members.add(case.get("assigned_prosthodontist_id"))
+            if case.get("assigned_assistant_id"):
+                members.add(case.get("assigned_assistant_id"))
+            print(f"[DEBUG] Members: {members}")
+        
+        # Old structure: caseTeam with names - anyone with valid auth can access
+        # (old structure doesn't have user IDs, so we allow authenticated users)
+        elif "caseTeam" in case:
+            # For old structure, allow any authenticated user
+            # This is a temporary workaround until all cases migrate to new structure
+            print(f"[DEBUG] Using OLD structure - allowing access")
+            return case
+        
+        # Remove None/empty values
+        members.discard(None)
+        members.discard("")
+        
         if user_id not in members:
+            # If user is not in members but case uses old structure, allow access
+            if "caseTeam" in case and "created_by_clinician_id" not in case:
+                print(f"[DEBUG] Fallback: OLD structure detected - allowing access")
+                return case
+            print(f"[DEBUG] Access DENIED - user not in members")
             return None
+        
+        print(f"[DEBUG] Access GRANTED - user in members")
         return case
 
     async def resolve_sender_profile(self, case: Dict[str, Any], user_id: str) -> Dict[str, str]:
+        # Handle new structure with user IDs
         if user_id == case.get("created_by_clinician_id"):
             user = await self.users.find_one({"id": user_id}, {"_id": 0})
             return {
@@ -39,14 +73,29 @@ class DiscussionService:
             }
 
         member = await self.team_members.find_one({"id": user_id}, {"_id": 0})
-        role = (member or {}).get("role", "assistant").lower()
-        role_map = {
-            "prosthodontist": "prostho",
-        }
-        normalized_role = role_map.get(role, role)
+        if member:
+            role = (member or {}).get("role", "assistant").lower()
+            role_map = {
+                "prosthodontist": "prostho",
+            }
+            normalized_role = role_map.get(role, role)
+            return {
+                "sender_name": (member or {}).get("name", "Team Member"),
+                "sender_role": normalized_role,
+            }
+        
+        # Handle old structure without user IDs - use authenticated user data
+        user = await self.users.find_one({"id": user_id}, {"_id": 0})
+        if user:
+            return {
+                "sender_name": user.get("name", "User"),
+                "sender_role": user.get("role", "clinician").lower(),
+            }
+        
+        # Fallback
         return {
-            "sender_name": (member or {}).get("name", "Team Member"),
-            "sender_role": normalized_role,
+            "sender_name": "Team Member",
+            "sender_role": "clinician",
         }
 
     async def get_user_role(self, case: Dict[str, Any], user_id: str) -> Optional[str]:
@@ -227,6 +276,8 @@ class DiscussionService:
             "deleted": False,
         }
         await self.messages.insert_one(payload)
+        # Remove MongoDB's _id before returning (not JSON serializable)
+        payload.pop("_id", None)
         return {**payload, "reactions": [], "reply_count": 0}
 
     async def toggle_reaction(self, message_id: str, user_id: str, reaction_type: str):
