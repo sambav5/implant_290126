@@ -73,7 +73,7 @@ const SetupProfile = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-champagne p-4">
-      <Card className="w-full max-w-2xl p-8 space-y-6 ">
+      <Card className="w-full max-w-[1100px] mx-auto px-6 p-8 space-y-6 ">
         <div className="text-center space-y-2">
           <div className="flex justify-center mb-4">
             <div className="p-4 bg-blue-100 rounded-full">

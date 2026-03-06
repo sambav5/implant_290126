@@ -76,20 +76,22 @@ export default function Dashboard() {
   const activeCases = filteredCases.filter(c => c.status !== 'completed');
 
   return (
-    <div className="app-shell">
-      <aside className="app-sidebar">
-        <p className="wordmark">SEAMLESS</p>
-        <p className="mt-6 type-caption text-champagne/80">Infrastructure workflows for implant teams.</p>
-      </aside>
+    <div className="min-h-screen bg-champagne pb-24">
+      <header className="border-b border-divider bg-forest py-6">
+        <ContentContainer className="flex items-center justify-between">
+          <div>
+            <p className="wordmark text-champagne">SEAMLESS</p>
+            <p className="mt-2 type-caption text-champagne/80">Infrastructure workflows for implant teams.</p>
+          </div>
+          <ProfileMenu />
+        </ContentContainer>
+      </header>
 
-      <main className="app-content">
+      <main className="page-section">
         <ContentContainer className="space-y-10">
-          <div className="flex items-start justify-between gap-6">
-            <div className="text-stack-24">
-              <h1 className="type-hero text-forest">Case Operations</h1>
-              <p className="type-body text-warmgray">Track planning progress and move through high-confidence clinical execution.</p>
-            </div>
-            <ProfileMenu />
+          <div className="text-stack-24">
+            <h1 className="type-hero text-forest">Case Operations</h1>
+            <p className="type-body text-warmgray">Track planning progress and move through high-confidence clinical execution.</p>
           </div>
 
           <div className="relative">
@@ -117,8 +119,6 @@ export default function Dashboard() {
           )}
         </ContentContainer>
       </main>
-
-      <div />
 
       <Link to="/case/new" className="fab bg-forest text-champagne" data-testid="new-case-fab">
         <Plus className="h-6 w-6" />
