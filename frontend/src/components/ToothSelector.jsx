@@ -56,7 +56,7 @@ export default function ToothSelector({ value, onChange, required, multiple = fa
           width="24"
           height="28"
           rx="5"
-          fill={selected ? "#2563EB" : isHovered ? "#DBEAFE" : "#FFFFFF"}
+          fill={selected ? "#2563EB" : isHovered ? "#DBEAFE" : "#E8DFC8"}
           stroke={selected ? "#1D4ED8" : "#64748B"}
           strokeWidth={selected ? "2" : "1.5"}
         />
@@ -66,17 +66,17 @@ export default function ToothSelector({ value, onChange, required, multiple = fa
           y="4"
           fontSize="11"
           fontWeight="600"
-          fill={selected ? "white" : "#475569"}
+          fill={selected ? "#E8DFC8" : "#6E6A60"}
         >
           {number}
         </text>
         
         {/* Checkmark for selected teeth in multiple mode */}
         {multiple && selected && (
-          <circle cx="8" cy="-8" r="6" fill="#10B981" stroke="white" strokeWidth="1.5"/>
+          <circle cx="8" cy="-8" r="6" fill="#183328" stroke="#E8DFC8" strokeWidth="1.5"/>
         )}
         {multiple && selected && (
-          <text x="8" y="-5" textAnchor="middle" fontSize="8" fill="white" fontWeight="bold">✓</text>
+          <text x="8" y="-5" textAnchor="middle" fontSize="8" fill="#E8DFC8" fontWeight="bold">✓</text>
         )}
       </g>
     );

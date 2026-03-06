@@ -94,7 +94,7 @@ const CreateCase = () => {
   if (teamLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
-        <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+        <Loader2 className="h-8 w-8 animate-spin text-forest" />
       </div>
     );
   }
@@ -102,26 +102,26 @@ const CreateCase = () => {
   return (
     <div className="min-h-screen bg-background p-4">
       <div className="max-w-3xl mx-auto pt-8">
-        <Card className="p-8 space-y-6 shadow-xl">
+        <Card className="p-8 space-y-6 ">
           <div className="space-y-2">
             <div className="flex items-center gap-3 mb-4">
               <div className="p-3 bg-blue-100 rounded-full">
-                <Briefcase className="h-6 w-6 text-blue-600" />
+                <Briefcase className="h-6 w-6 text-forest" />
               </div>
-              <h1 className="text-3xl font-bold text-gray-900">Create Case</h1>
+              <h1 className="text-3xl font-bold text-charcoal">Create Case</h1>
             </div>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Patient Details */}
             <div className="space-y-4">
-              <h2 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+              <h2 className="text-lg font-semibold text-charcoal flex items-center gap-2">
                 <User className="h-5 w-5" />
                 Patient Details
               </h2>
               
               <div className="space-y-2">
-                <label htmlFor="patientName" className="text-sm font-medium text-gray-700">
+                <label htmlFor="patientName" className="text-sm font-medium text-charcoal">
                   Patient Name *
                 </label>
                 <Input
@@ -140,7 +140,7 @@ const CreateCase = () => {
               </div>
 
               <div className="space-y-2">
-                <label htmlFor="caseTitle" className="text-sm font-medium text-gray-700">
+                <label htmlFor="caseTitle" className="text-sm font-medium text-charcoal">
                   Case Title *
                 </label>
                 <Input
@@ -159,20 +159,20 @@ const CreateCase = () => {
             </div>
 
             {/* Team Assignment */}
-            <div className="space-y-4 pt-4 border-t border-gray-200">
+            <div className="space-y-4 pt-4 border-t border-divider">
               <div>
-                <h2 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+                <h2 className="text-lg font-semibold text-charcoal flex items-center gap-2">
                   <Users className="h-5 w-5" />
                   Assign Team For This Case
                 </h2>
-                <p className="text-sm text-gray-600 mt-1">
+                <p className="text-sm text-warmgray mt-1">
                   Assign names to clinical roles for this case. You can always edit this later.
                 </p>
               </div>
 
               {/* Implantologist */}
               <div className="space-y-2">
-                <label htmlFor="implantologist" className="text-sm font-medium text-gray-700">
+                <label htmlFor="implantologist" className="text-sm font-medium text-charcoal">
                   Implantologist (Optional)
                 </label>
                 <select
@@ -190,13 +190,13 @@ const CreateCase = () => {
                   ))}
                 </select>
                 {implantologists.length === 0 && (
-                  <p className="text-xs text-gray-500">No implantologists in your team</p>
+                  <p className="text-xs text-warmgray">No implantologists in your team</p>
                 )}
               </div>
 
               {/* Prosthodontist */}
               <div className="space-y-2">
-                <label htmlFor="prosthodontist" className="text-sm font-medium text-gray-700">
+                <label htmlFor="prosthodontist" className="text-sm font-medium text-charcoal">
                   Prosthodontist (Optional)
                 </label>
                 <select
@@ -214,13 +214,13 @@ const CreateCase = () => {
                   ))}
                 </select>
                 {prosthodontists.length === 0 && (
-                  <p className="text-xs text-gray-500">No prosthodontists in your team</p>
+                  <p className="text-xs text-warmgray">No prosthodontists in your team</p>
                 )}
               </div>
 
               {/* Assistant */}
               <div className="space-y-2">
-                <label htmlFor="assistant" className="text-sm font-medium text-gray-700">
+                <label htmlFor="assistant" className="text-sm font-medium text-charcoal">
                   Assistant (Optional)
                 </label>
                 <select
@@ -238,7 +238,7 @@ const CreateCase = () => {
                   ))}
                 </select>
                 {assistants.length === 0 && (
-                  <p className="text-xs text-gray-500">No assistants in your team</p>
+                  <p className="text-xs text-warmgray">No assistants in your team</p>
                 )}
               </div>
             </div>
