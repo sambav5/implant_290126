@@ -276,6 +276,8 @@ class DiscussionService:
             "deleted": False,
         }
         await self.messages.insert_one(payload)
+        # Remove MongoDB's _id before returning (not JSON serializable)
+        payload.pop("_id", None)
         return {**payload, "reactions": [], "reply_count": 0}
 
     async def toggle_reaction(self, message_id: str, user_id: str, reaction_type: str):
