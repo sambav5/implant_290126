@@ -9,9 +9,9 @@
 
 .fab {
   position: fixed;
-  bottom: 24px;
-  right: 24px;
-  z-index: 50;
+  bottom: 80px;
+  right: 20px;
+  z-index: 100;
   width: 56px;
   height: 56px;
   border-radius: 2px;

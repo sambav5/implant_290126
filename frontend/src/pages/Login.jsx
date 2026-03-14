@@ -22,8 +22,10 @@ const Login = ({ onAuthenticated }) => {
   }, [resendIn]);
 
   const isPhoneValid = useMemo(() => {
-    return phoneNumber.trim().length >= 10;
+    return phoneNumber.length === 10;
   }, [phoneNumber]);
+
+  const fullPhoneNumber = useMemo(() => `+91${phoneNumber}`, [phoneNumber]);
 
   const isOtpComplete = useMemo(() => {
     return otp.length === 6;
@@ -38,7 +40,7 @@ const Login = ({ onAuthenticated }) => {
 
     setLoading(true);
     try {
-      await authApi.requestWhatsappOtp(phoneNumber);
+      await authApi.requestWhatsappOtp(fullPhoneNumber);
       setStep('otp');
       setResendIn(60);
       toast.success('OTP sent to your WhatsApp');
@@ -59,7 +61,7 @@ const Login = ({ onAuthenticated }) => {
 
     setLoading(true);
     try {
-      const response = await authApi.verifyWhatsappOtp(phoneNumber, otp);
+      const response = await authApi.verifyWhatsappOtp(fullPhoneNumber, otp);
       const sessionData = response.data;
 
       localStorage.setItem('clinician_auth_session', JSON.stringify(sessionData));
@@ -94,7 +96,7 @@ const Login = ({ onAuthenticated }) => {
 
     setLoading(true);
     try {
-      await authApi.requestWhatsappOtp(phoneNumber);
+      await authApi.requestWhatsappOtp(fullPhoneNumber);
       setResendIn(60);
       setOtp('');
       toast.success('OTP resent to your WhatsApp');
@@ -123,7 +125,7 @@ const Login = ({ onAuthenticated }) => {
               <ShieldCheck className="h-12 w-12 text-forest" />
             )}
           </div>
-          <h1 className="text-3xl font-bold text-charcoal">ImplantFlow Login</h1>
+          <h1 className="text-3xl font-bold text-charcoal">Seamless</h1>
           <p className="text-sm text-warmgray">
             Secure clinician access via WhatsApp OTP
           </p>
@@ -138,15 +140,15 @@ const Login = ({ onAuthenticated }) => {
               <Input
                 id="phoneNumber"
                 type="tel"
-                placeholder="+91 9876543210"
+                placeholder="9876543210"
                 value={phoneNumber}
-                onChange={(e) => setPhoneNumber(e.target.value)}
+                onChange={(e) => setPhoneNumber(e.target.value.replace(/\D/g, '').slice(0, 10))}
                 disabled={loading}
                 className="w-full"
                 autoFocus
               />
               <p className="text-xs text-warmgray">
-                Enter your registered phone number with country code
+                Enter your registered 10-digit mobile number
               </p>
               <div className="mt-2 p-3 bg-champagne border border-divider rounded-md">
                 <p className="text-xs text-forest font-medium">
@@ -193,7 +195,7 @@ const Login = ({ onAuthenticated }) => {
                 Verification Code
               </label>
               <p className="text-xs text-warmgray mb-4">
-                Enter the 6-digit code sent to {phoneNumber}
+                Enter the 6-digit code sent to {fullPhoneNumber}
               </p>
               <div className="flex justify-center">
                 <InputOTP
@@ -201,6 +203,9 @@ const Login = ({ onAuthenticated }) => {
                   value={otp}
                   onChange={(value) => setOtp(value)}
                   disabled={loading}
+                  autoFocus
+                  inputMode="numeric"
+                  pattern="[0-9]*"
                 >
                   <InputOTPGroup>
                     <InputOTPSlot index={0} />
@@ -227,7 +232,7 @@ const Login = ({ onAuthenticated }) => {
               ) : (
                 <>
                   <ShieldCheck className="mr-2 h-4 w-4" />
-                  Verify & Login
+                  VERIFY & LOGIN
                 </>
               )}
             </Button>
