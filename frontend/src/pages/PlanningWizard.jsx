@@ -12,6 +12,7 @@ import { Switch } from '@/components/ui/switch';
 import { caseApi } from '@/services/api';
 import { toast } from 'sonner';
 import { trackPlanningCompleted, trackRiskAnalysisRun } from '@/lib/analytics';
+import ContentContainer from '@/components/ui/ContentContainer';
 
 const PLANNING_STEPS = [
   {
@@ -379,7 +380,7 @@ export default function PlanningWizard() {
     <div className="min-h-screen pb-32" style={{background: 'var(--bg)'}}>
       {/* Header */}
       <header className="glass-header sticky top-0 z-40 px-4 py-4">
-        <div className="page-container">
+        <ContentContainer>
           <div className="flex items-center gap-3 mb-4">
             <button
               onClick={() => navigate(`/case/${id}`)}
@@ -463,10 +464,10 @@ export default function PlanningWizard() {
               </div>
             </div>
           )}
-        </div>
+        </ContentContainer>
       </header>
       
-      <main className="page-container py-6">
+      <ContentContainer className="py-6">
         {/* Results View */}
         {showResults && caseData?.riskAssessment && (
           <div className="space-y-5 animate-fade-in">
@@ -831,12 +832,12 @@ export default function PlanningWizard() {
             </div>
           </div>
         )}
-      </main>
+      </ContentContainer>
       
       {/* Bottom Navigation */}
       {!showResults && (
         <div className="fixed bottom-0 left-0 right-0 p-4 border-t safe-area-pb" style={{background: 'var(--card)', borderColor: 'var(--border)'}}>
-          <div className="page-container">
+          <ContentContainer>
             <div className="flex gap-3">
               <Button
                 variant="outline"
@@ -864,7 +865,7 @@ export default function PlanningWizard() {
             <p className="text-center mt-2 text-xs mono" style={{color: 'var(--t3)'}}>
               Auto-saves on every change • {progress}% complete
             </p>
-          </div>
+          </ContentContainer>
         </div>
       )}
     </div>

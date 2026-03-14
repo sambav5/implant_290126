@@ -43,6 +43,7 @@ import CaseFilesTab from '@/components/CaseFilesTab';
 import SocialPostGenerator from '@/components/social-post/SocialPostGenerator';
 import DiscussionTab from '@/components/discussion/DiscussionTab';
 import { toast } from 'sonner';
+import ContentContainer from '@/components/ui/ContentContainer';
 
 const statusConfig = {
   planning: { label: 'Planning', className: 'status-planning px-2 py-1 text-xs rounded-md border mono', icon: FileText },
@@ -134,7 +135,7 @@ export default function CaseDetail() {
     <div className="min-h-screen pb-24" style={{background: 'var(--bg)'}}>
       {/* Header */}
       <header className="glass-header sticky top-0 z-40 px-4 py-4">
-        <div className="page-container">
+        <ContentContainer>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <button
@@ -179,10 +180,10 @@ export default function CaseDetail() {
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
-        </div>
+        </ContentContainer>
       </header>
       
-      <main className="page-container py-6 space-y-6">
+      <ContentContainer className="py-6 space-y-6">
         <div className="flex gap-2 overflow-x-auto pb-1">
           {['Overview', 'Notes', 'Files', 'Social Media Post', 'Discussion'].map((tab) => {
             const key = tab.toLowerCase().replace(/\s+/g, '-');
@@ -422,7 +423,7 @@ export default function CaseDetail() {
         </div>
         </>
         )}
-      </main>
+      </ContentContainer>
       
       {/* Recent Activity Modal */}
       {activityModalOpen && (

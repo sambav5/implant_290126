@@ -9,6 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { caseApi, feedbackApi } from '@/services/api';
 import { toast } from 'sonner';
 import { trackFeedbackSubmitted } from '@/lib/analytics';
+import ContentContainer from '@/components/ui/ContentContainer';
 
 export default function LearningLoop() {
   const { id } = useParams();
@@ -105,7 +106,7 @@ export default function LearningLoop() {
     <div className="min-h-screen pb-32" style={{background: 'var(--bg)'}}>
       {/* Header */}
       <header className="glass-header sticky top-0 z-40 px-4 py-4">
-        <div className="page-container">
+        <ContentContainer>
           <div className="flex items-center gap-3">
             <button
               onClick={() => navigate(`/case/${id}`)}
@@ -122,10 +123,10 @@ export default function LearningLoop() {
               <p className="text-sm" style={{color: 'var(--t2)'}}>{caseData?.caseName}</p>
             </div>
           </div>
-        </div>
+        </ContentContainer>
       </header>
       
-      <main className="page-container py-6 space-y-6">
+      <ContentContainer className="py-6 space-y-6">
         {/* Introduction */}
         <div className="card-clinical animate-slide-up">
           <div className="flex items-center gap-3 mb-4">
@@ -261,11 +262,11 @@ export default function LearningLoop() {
             </p>
           </div>
         </div>
-      </main>
+      </ContentContainer>
       
       {/* Bottom CTA */}
       <div className="fixed bottom-0 left-0 right-0 p-4 safe-area-pb" style={{background: 'var(--card)', borderTop: '1.5px solid var(--border)'}}>
-        <div className="page-container">
+        <ContentContainer>
           <Button
             onClick={handleSubmit}
             disabled={saving}
@@ -274,7 +275,7 @@ export default function LearningLoop() {
           >
             {saving ? 'Saving...' : isCompleted ? 'Update Reflection' : 'Save Reflection'}
           </Button>
-        </div>
+        </ContentContainer>
       </div>
     </div>
   );
