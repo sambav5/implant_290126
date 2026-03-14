@@ -110,7 +110,7 @@ export default function NewCase() {
         </ContentContainer>
       </header>
       
-      <ContentContainer className="py-8">
+      <ContentContainer className="pt-6 pb-8">
         <form onSubmit={handleSubmit} className="space-y-6 animate-fade-in">
           {/* Quick tip */}
           <div className="card-clinical flex items-start gap-3">
