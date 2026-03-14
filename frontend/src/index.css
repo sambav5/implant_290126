@@ -53,12 +53,14 @@
 
 @layer components {
   .app-shell {
-    @apply min-h-screen grid;
-    grid-template-columns: 240px minmax(0, 640px) minmax(160px, 1fr);
+    @apply grid;
+    grid-template-columns: 240px minmax(0, 1fr);
+    min-height: 100vh;
     background: var(--color-champagne);
   }
 
   .app-sidebar {
+    width: 240px;
     background: var(--color-forest);
     color: var(--color-champagne);
     padding: 32px 24px;

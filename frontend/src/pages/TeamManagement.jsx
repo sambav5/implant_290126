@@ -27,6 +27,7 @@ import {
 } from '../components/ui/alert-dialog';
 import { teamApi } from '../api/teamApi';
 import ProfileMenu from '../components/ProfileMenu';
+import ContentContainer from '@/components/ui/ContentContainer';
 
 const ROLES = ['Assistant', 'Implantologist', 'Prosthodontist'];
 
@@ -168,7 +169,7 @@ const TeamManagement = () => {
   return (
     <div className="min-h-screen" style={{background: 'var(--bg)'}}>
       <header className="glass-header sticky top-0 z-40 px-4 py-4">
-        <div className="page-container">
+        <ContentContainer>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <button
@@ -187,10 +188,10 @@ const TeamManagement = () => {
             </div>
             <ProfileMenu />
           </div>
-        </div>
+        </ContentContainer>
       </header>
 
-      <main className="page-container py-8">
+      <ContentContainer className="py-8">
         <div className="flex justify-between items-center mb-6">
           <div>
             <h2 className="text-lg font-semibold" style={{color: 'var(--t1)'}}>Team Members ({teamMembers.length})</h2>
@@ -269,7 +270,7 @@ const TeamManagement = () => {
             </div>
           </Card>
         )}
-      </main>
+      </ContentContainer>
 
       <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
         <DialogContent>

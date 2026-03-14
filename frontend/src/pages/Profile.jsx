@@ -8,6 +8,7 @@ import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
 import { userApi } from '../api/userApi';
 import ProfileMenu from '../components/ProfileMenu';
+import ContentContainer from '@/components/ui/ContentContainer';
 
 const Profile = () => {
   const navigate = useNavigate();
@@ -64,7 +65,7 @@ const Profile = () => {
   return (
     <div className="min-h-screen" style={{background: 'var(--bg)'}}>
       <header className="glass-header sticky top-0 z-40 px-4 py-4">
-        <div className="page-container">
+        <ContentContainer>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <button
@@ -83,10 +84,10 @@ const Profile = () => {
             </div>
             <ProfileMenu />
           </div>
-        </div>
+        </ContentContainer>
       </header>
 
-      <main className="page-container py-8">
+      <ContentContainer className="py-8">
         <Card className="p-6 space-y-6">
           <div className="flex items-center gap-3">
             <div
@@ -153,7 +154,7 @@ const Profile = () => {
             </div>
           </form>
         </Card>
-      </main>
+      </ContentContainer>
     </div>
   );
 };
