@@ -164,8 +164,6 @@ export default function Dashboard() {
         </ContentContainer>
       </main>
 
-      <div />
-
       <Link to="/case/new" className="fab bg-forest text-champagne" data-testid="new-case-fab">
         <Plus className="h-6 w-6" />
       </Link>
