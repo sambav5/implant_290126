@@ -323,9 +323,9 @@ export default function CaseDetail() {
             <h3 className="font-semibold mb-3" style={{ color: 'var(--t1)', fontFamily: "'Lora', serif" }}>Case Workflow</h3>
             <div className="space-y-2">
               {orderedWorkflowAssignments.map((assignment, index) => (
-                <div key={`${assignment.stage}-${assignment.user.id}`} className="flex items-center justify-between text-sm" style={{ color: 'var(--t1)' }}>
+                <div key={`${assignment.stage}-${assignment.user?.id || index}`} className="flex items-center justify-between text-sm" style={{ color: 'var(--t1)' }}>
                   <span>{workflowStageLabels[assignment.stage] || assignment.stage}</span>
-                  <span className="mono">{getWorkflowIcon(index)} {assignment.user.name}</span>
+                  <span className="mono">{getWorkflowIcon(index)} {assignment.user?.name || 'Unassigned'}</span>
                 </div>
               ))}
             </div>
