@@ -55,9 +55,25 @@ export default function Dashboard() {
   const [cases, setCases] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
+  const [isMobile, setIsMobile] = useState(() => window.innerWidth < 768);
+  const [sidebarOpen, setSidebarOpen] = useState(() => window.innerWidth >= 768);
 
   useEffect(() => {
     loadCases();
+  }, []);
+
+  useEffect(() => {
+    const handleResize = () => {
+      const mobile = window.innerWidth < 768;
+      setIsMobile(mobile);
+      setSidebarOpen(!mobile);
+    };
+
+    window.addEventListener('resize', handleResize);
+
+    return () => {
+      window.removeEventListener('resize', handleResize);
+    };
   }, []);
 
   const loadCases = async () => {
@@ -84,13 +100,21 @@ export default function Dashboard() {
 
   const filteredCases = cases.filter(c => c.caseName.toLowerCase().includes(searchQuery.toLowerCase()) || c.toothNumber.includes(searchQuery));
   const activeCases = filteredCases.filter(c => c.status !== 'completed');
+  const closeSidebar = () => setSidebarOpen(false);
+  const handleSidebarNavigation = () => {
+    if (isMobile) {
+      closeSidebar();
+    }
+  };
 
   return (
     <div className="app-shell">
-      <aside className="app-sidebar">
-        <p className="wordmark">SEAMLESS</p>
+      <aside className={`app-sidebar ${sidebarOpen ? 'open' : ''}`}>
+        <Link to="/" className="wordmark" onClick={handleSidebarNavigation}>SEAMLESS</Link>
         <p className="mt-6 type-caption text-champagne/80">Infrastructure workflows for implant teams.</p>
       </aside>
+
+      {isMobile && sidebarOpen && <div className="sidebar-overlay" onClick={closeSidebar} />}
 
       <main className="app-content">
         <ContentContainer className="space-y-10">
@@ -99,7 +123,19 @@ export default function Dashboard() {
               <h1 className="type-hero text-forest">Case Operations</h1>
               <p className="type-body text-warmgray">Track planning progress and move through high-confidence clinical execution.</p>
             </div>
-            <ProfileMenu />
+            <div className="flex items-start gap-3">
+              {isMobile && (
+                <button
+                  type="button"
+                  className="mobile-menu-button"
+                  aria-label="Toggle sidebar"
+                  onClick={() => setSidebarOpen(!sidebarOpen)}
+                >
+                  ☰
+                </button>
+              )}
+              <ProfileMenu />
+            </div>
           </div>
 
           <div className="relative">
