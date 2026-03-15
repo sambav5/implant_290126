@@ -8,6 +8,7 @@ class CreateCaseRequest(BaseModel):
     assignedImplantologistId: Optional[str] = Field(None, description="Assigned implantologist ID")
     assignedProsthodontistId: Optional[str] = Field(None, description="Assigned prosthodontist ID")
     assignedAssistantId: Optional[str] = Field(None, description="Assigned assistant ID")
+    assignedPeriodontistId: Optional[str] = Field(None, description="Assigned periodontist ID")
     
     class Config:
         json_schema_extra = {
@@ -16,7 +17,8 @@ class CreateCaseRequest(BaseModel):
                 "caseTitle": "Dental Implant - Tooth 36",
                 "assignedImplantologistId": "impl-123",
                 "assignedProsthodontistId": "pros-456",
-                "assignedAssistantId": "asst-789"
+                "assignedAssistantId": "asst-789",
+                "assignedPeriodontistId": "perio-321"
             }
         }
 
@@ -37,6 +39,7 @@ class CaseResponse(BaseModel):
     implantologist: Optional[TeamMemberInfo] = None
     prosthodontist: Optional[TeamMemberInfo] = None
     assistant: Optional[TeamMemberInfo] = None
+    periodontist: Optional[TeamMemberInfo] = None
     
     createdAt: datetime
     updatedAt: datetime

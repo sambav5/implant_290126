@@ -73,7 +73,8 @@ async def create_case(
             case_title=case_data.caseTitle,
             assigned_implantologist_id=case_data.assignedImplantologistId,
             assigned_prosthodontist_id=case_data.assignedProsthodontistId,
-            assigned_assistant_id=case_data.assignedAssistantId
+            assigned_assistant_id=case_data.assignedAssistantId,
+            assigned_periodontist_id=case_data.assignedPeriodontistId
         )
         
         # Build response with team member info
@@ -81,6 +82,7 @@ async def create_case(
         implantologist_info = await case_service.get_team_member_info(case_data.assignedImplantologistId)
         prosthodontist_info = await case_service.get_team_member_info(case_data.assignedProsthodontistId)
         assistant_info = await case_service.get_team_member_info(case_data.assignedAssistantId)
+        periodontist_info = await case_service.get_team_member_info(case_data.assignedPeriodontistId)
         
         return CaseResponse(
             id=case["id"],
@@ -92,6 +94,7 @@ async def create_case(
             implantologist=TeamMemberInfo(**implantologist_info) if implantologist_info else None,
             prosthodontist=TeamMemberInfo(**prosthodontist_info) if prosthodontist_info else None,
             assistant=TeamMemberInfo(**assistant_info) if assistant_info else None,
+            periodontist=TeamMemberInfo(**periodontist_info) if periodontist_info else None,
             createdAt=case["created_at"],
             updatedAt=case["updated_at"]
         )
@@ -123,6 +126,7 @@ async def get_my_cases(
     - Implantologist (assigned)
     - Prosthodontist (assigned)
     - Assistant (assigned)
+    - Periodontist (assigned)
     """
     try:
         db = get_db(request)
@@ -152,6 +156,7 @@ async def get_my_cases(
             implantologist_info = await case_service.get_team_member_info(case.get("assigned_implantologist_id"))
             prosthodontist_info = await case_service.get_team_member_info(case.get("assigned_prosthodontist_id"))
             assistant_info = await case_service.get_team_member_info(case.get("assigned_assistant_id"))
+            periodontist_info = await case_service.get_team_member_info(case.get("assigned_periodontist_id"))
             
             case_responses.append(
                 CaseResponse(
@@ -164,6 +169,7 @@ async def get_my_cases(
                     implantologist=TeamMemberInfo(**implantologist_info) if implantologist_info else None,
                     prosthodontist=TeamMemberInfo(**prosthodontist_info) if prosthodontist_info else None,
                     assistant=TeamMemberInfo(**assistant_info) if assistant_info else None,
+                    periodontist=TeamMemberInfo(**periodontist_info) if periodontist_info else None,
                     createdAt=case["created_at"],
                     updatedAt=case["updated_at"]
                 )
@@ -194,7 +200,7 @@ async def upload_case_file(
 
     case = await service.ensure_case_access(case_id, current_user["userId"])
     role = await service.resolve_user_role_for_case(case, current_user["userId"])
-    if role not in {"Clinician", "Implantologist", "Prosthodontist", "Assistant"}:
+    if role not in {"Clinician", "Implantologist", "Prosthodontist", "Assistant", "Periodontist"}:
         raise HTTPException(status_code=403, detail="You cannot upload files for this case")
 
     content = await file.read()

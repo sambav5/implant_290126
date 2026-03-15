@@ -27,7 +27,8 @@ export default function NewCase() {
       clinician: 'Case Owner',
       implantologist: '',
       prosthodontist: '',
-      assistant: ''
+      assistant: '',
+      periodontist: ''
     }
   });
 
@@ -50,6 +51,7 @@ export default function NewCase() {
   const implantologists = teamMembers.filter(m => m.role === 'Implantologist');
   const prosthodontists = teamMembers.filter(m => m.role === 'Prosthodontist');
   const assistants = teamMembers.filter(m => m.role === 'Assistant');
+  const periodontists = teamMembers.filter(m => m.role === 'Periodontist');
   
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -332,6 +334,48 @@ export default function NewCase() {
                   )}
                 </div>
                 
+                {/* Periodontist */}
+                <div className="space-y-2">
+                  <Label htmlFor="periodontist" className="text-sm font-medium flex items-center gap-2" style={{color: 'var(--t1)'}}>
+                    <span className="w-24">Periodontist</span>
+                    <span className="text-xs" style={{color: 'var(--t3)'}}>(Optional)</span>
+                  </Label>
+                  {teamLoading ? (
+                    <Input disabled placeholder="Loading team..." className="input-clinical" />
+                  ) : periodontists.length > 0 ? (
+                    <Select
+                      value={formData.caseTeam.periodontist || "_none"}
+                      onValueChange={(value) => setFormData({
+                        ...formData,
+                        caseTeam: { ...formData.caseTeam, periodontist: value === "_none" ? "" : value }
+                      })}
+                    >
+                      <SelectTrigger className="input-clinical">
+                        <SelectValue placeholder="Select periodontist" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="_none">-- None --</SelectItem>
+                        {periodontists.map((member) => (
+                          <SelectItem key={member.id} value={member.name}>
+                            {member.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  ) : (
+                    <Input
+                      id="periodontist"
+                      placeholder="Specialist for gum and supporting tissue care"
+                      value={formData.caseTeam.periodontist}
+                      onChange={(e) => setFormData({
+                        ...formData,
+                        caseTeam: { ...formData.caseTeam, periodontist: e.target.value }
+                      })}
+                      className="input-clinical"
+                    />
+                  )}
+                </div>
+
                 {/* Assistant */}
                 <div className="space-y-2">
                   <Label htmlFor="assistant" className="text-sm font-medium flex items-center gap-2" style={{color: 'var(--t1)'}}>

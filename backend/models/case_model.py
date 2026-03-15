@@ -19,6 +19,7 @@ class CaseModel(BaseModel):
     assigned_implantologist_id: Optional[str] = None
     assigned_prosthodontist_id: Optional[str] = None
     assigned_assistant_id: Optional[str] = None
+    assigned_periodontist_id: Optional[str] = None
     
     # Timestamps
     created_at: datetime = Field(default_factory=datetime.utcnow)
@@ -32,6 +33,7 @@ class CaseModel(BaseModel):
                 "case_status": "active",
                 "assigned_implantologist_id": "impl-123",
                 "assigned_prosthodontist_id": "pros-456",
-                "assigned_assistant_id": "asst-789"
+                "assigned_assistant_id": "asst-789",
+                "assigned_periodontist_id": "perio-321"
             }
         }
