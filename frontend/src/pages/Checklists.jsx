@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/dialog";
 import { caseApi, checklistApi } from '@/services/api';
 import { toast } from 'sonner';
+import ContentContainer from '@/components/ui/ContentContainer';
 
 const PHASE_CONFIG = {
   pre_treatment: {
@@ -250,7 +251,7 @@ export default function Checklists() {
     <div className="min-h-screen pb-32" style={{background: 'var(--bg)'}}>
       {/* Header */}
       <header className="glass-header sticky top-0 z-40 px-4 py-4">
-        <div className="page-container">
+        <ContentContainer>
           <div className="flex items-center gap-3">
             <button
               onClick={() => navigate(`/case/${id}`)}
@@ -269,10 +270,10 @@ export default function Checklists() {
               </p>
             </div>
           </div>
-        </div>
+        </ContentContainer>
       </header>
       
-      <main className="page-container py-6">
+      <ContentContainer className="py-6">
         {/* Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className="grid w-full grid-cols-3 mb-6" style={{background: 'var(--card)', border: '1.5px solid var(--border)', borderRadius: '12px', padding: '4px'}}>
@@ -351,11 +352,11 @@ export default function Checklists() {
             </p>
           </div>
         </div>
-      </main>
+      </ContentContainer>
       
       {/* Bottom Navigation */}
       <div className="fixed bottom-0 left-0 right-0 p-4 safe-area-pb" style={{background: 'var(--card)', borderTop: '1.5px solid var(--border)'}}>
-        <div className="page-container">
+        <ContentContainer>
           {caseData?.status === 'completed' ? (
             <Button
               onClick={() => navigate(`/case/${id}/learning`)}
@@ -376,7 +377,7 @@ export default function Checklists() {
               <ChevronRight className="h-5 w-5 ml-2" />
             </Button>
           )}
-        </div>
+        </ContentContainer>
       </div>
       
       {/* Add Item Dialog */}

@@ -43,6 +43,7 @@ import CaseFilesTab from '@/components/CaseFilesTab';
 import SocialPostGenerator from '@/components/social-post/SocialPostGenerator';
 import DiscussionTab from '@/components/discussion/DiscussionTab';
 import { toast } from 'sonner';
+import ContentContainer from '@/components/ui/ContentContainer';
 
 const statusConfig = {
   planning: { label: 'Planning', className: 'status-planning px-2 py-1 text-xs rounded-md border mono', icon: FileText },
@@ -55,6 +56,17 @@ const riskConfig = {
   moderate: { label: 'Moderate', className: 'risk-badge-moderate', color: 'var(--amber)' },
   high: { label: 'High Risk', className: 'risk-badge-high', color: 'var(--red)' },
 };
+
+
+const workflowStageLabels = {
+  DIAGNOSIS: 'Diagnosis',
+  IMPLANT_PLANNING: 'Planning',
+  SURGERY: 'Surgery',
+  PROSTHETIC_DESIGN: 'Prosthetic',
+  ASSISTANT_SUPPORT: 'Assistant Support',
+};
+
+const workflowStageOrder = ['DIAGNOSIS', 'IMPLANT_PLANNING', 'SURGERY', 'PROSTHETIC_DESIGN', 'ASSISTANT_SUPPORT'];
 
 export default function CaseDetail() {
   const { id } = useParams();
@@ -129,12 +141,25 @@ export default function CaseDetail() {
   ];
   const completedChecks = totalChecks.filter(item => item.completed).length;
   const checklistProgress = totalChecks.length > 0 ? Math.round((completedChecks / totalChecks.length) * 100) : 0;
+  const orderedWorkflowAssignments = (caseData.stageAssignments || [])
+    .slice()
+    .sort((a, b) => workflowStageOrder.indexOf(a.stage) - workflowStageOrder.indexOf(b.stage));
+
+  const getWorkflowIcon = (index) => {
+    if (caseData.status === 'completed') return '✓';
+    if (caseData.status === 'in_progress') {
+      if (index === 0) return '✓';
+      if (index === 1) return '⏳';
+      return '○';
+    }
+    return index === 0 ? '⏳' : '○';
+  };
   
   return (
     <div className="min-h-screen pb-24" style={{background: 'var(--bg)'}}>
       {/* Header */}
       <header className="glass-header sticky top-0 z-40 px-4 py-4">
-        <div className="page-container">
+        <ContentContainer>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <button
@@ -179,10 +204,10 @@ export default function CaseDetail() {
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
-        </div>
+        </ContentContainer>
       </header>
       
-      <main className="page-container py-6 space-y-6">
+      <ContentContainer className="py-6 space-y-6">
         <div className="flex gap-2 overflow-x-auto pb-1">
           {['Overview', 'Notes', 'Files', 'Social Media Post', 'Discussion'].map((tab) => {
             const key = tab.toLowerCase().replace(/\s+/g, '-');
@@ -292,6 +317,20 @@ export default function CaseDetail() {
             )}
           </div>
         </div>
+
+        {orderedWorkflowAssignments.length > 0 && (
+          <div className="card-clinical animate-slide-up stagger-1" data-testid="case-workflow-timeline">
+            <h3 className="font-semibold mb-3" style={{ color: 'var(--t1)', fontFamily: "'Lora', serif" }}>Case Workflow</h3>
+            <div className="space-y-2">
+              {orderedWorkflowAssignments.map((assignment, index) => (
+                <div key={`${assignment.stage}-${assignment.user.id}`} className="flex items-center justify-between text-sm" style={{ color: 'var(--t1)' }}>
+                  <span>{workflowStageLabels[assignment.stage] || assignment.stage}</span>
+                  <span className="mono">{getWorkflowIcon(index)} {assignment.user.name}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
         
         {/* Risk Assessment (if available) */}
         {caseData.riskAssessment && (
@@ -422,7 +461,7 @@ export default function CaseDetail() {
         </div>
         </>
         )}
-      </main>
+      </ContentContainer>
       
       {/* Recent Activity Modal */}
       {activityModalOpen && (

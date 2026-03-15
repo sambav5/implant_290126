@@ -55,15 +55,41 @@ export default function Dashboard() {
   const [cases, setCases] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
+  const [isMobile, setIsMobile] = useState(() => window.innerWidth < 768);
+  const [sidebarOpen, setSidebarOpen] = useState(() => window.innerWidth >= 768);
 
   useEffect(() => {
     loadCases();
   }, []);
 
+  useEffect(() => {
+    const handleResize = () => {
+      const mobile = window.innerWidth < 768;
+      setIsMobile(mobile);
+      setSidebarOpen(!mobile);
+    };
+
+    window.addEventListener('resize', handleResize);
+
+    return () => {
+      window.removeEventListener('resize', handleResize);
+    };
+  }, []);
+
   const loadCases = async () => {
     try {
-      const response = await caseApi.getAll();
-      setCases(response.data);
+      const response = await caseApi.getMy();
+      const rawCases = response.data.cases || response.data || [];
+      const normalizedCases = rawCases.map((c) => ({
+        ...c,
+        caseName: c.caseName || c.caseTitle || 'Untitled case',
+        toothNumber: c.toothNumber || 'N/A',
+        status: c.status || c.caseStatus || 'planning',
+        preTreatmentChecklist: c.preTreatmentChecklist || [],
+        treatmentChecklist: c.treatmentChecklist || [],
+        postTreatmentChecklist: c.postTreatmentChecklist || [],
+      }));
+      setCases(normalizedCases);
     } catch (error) {
       toast.error('Failed to load cases');
       console.error(error);
@@ -74,24 +100,42 @@ export default function Dashboard() {
 
   const filteredCases = cases.filter(c => c.caseName.toLowerCase().includes(searchQuery.toLowerCase()) || c.toothNumber.includes(searchQuery));
   const activeCases = filteredCases.filter(c => c.status !== 'completed');
+  const closeSidebar = () => setSidebarOpen(false);
+  const handleSidebarNavigation = () => {
+    if (isMobile) {
+      closeSidebar();
+    }
+  };
 
   return (
-    <div className="min-h-screen bg-champagne pb-24">
-      <header className="border-b border-divider bg-forest py-6">
-        <ContentContainer className="flex items-center justify-between">
-          <div>
-            <p className="wordmark text-champagne">SEAMLESS</p>
-            <p className="mt-2 type-caption text-champagne/80">Infrastructure workflows for implant teams.</p>
-          </div>
-          <ProfileMenu />
-        </ContentContainer>
-      </header>
+    <div className="app-shell">
+      <aside className={`app-sidebar ${sidebarOpen ? 'open' : ''}`}>
+        <Link to="/" className="wordmark" onClick={handleSidebarNavigation}>SEAMLESS</Link>
+        <p className="mt-6 type-caption text-champagne/80">Infrastructure workflows for implant teams.</p>
+      </aside>
 
-      <main className="page-section">
+      {isMobile && sidebarOpen && <div className="sidebar-overlay" onClick={closeSidebar} />}
+
+      <main className="app-content">
         <ContentContainer className="space-y-10">
-          <div className="text-stack-24">
-            <h1 className="type-hero text-forest">Case Operations</h1>
-            <p className="type-body text-warmgray">Track planning progress and move through high-confidence clinical execution.</p>
+          <div className="flex items-start justify-between gap-6">
+            <div className="text-stack-24">
+              <h1 className="type-hero text-forest">Case Operations</h1>
+              <p className="type-body text-warmgray">Track planning progress and move through high-confidence clinical execution.</p>
+            </div>
+            <div className="flex items-start gap-3">
+              {isMobile && (
+                <button
+                  type="button"
+                  className="mobile-menu-button"
+                  aria-label="Toggle sidebar"
+                  onClick={() => setSidebarOpen(!sidebarOpen)}
+                >
+                  ☰
+                </button>
+              )}
+              <ProfileMenu />
+            </div>
           </div>
 
           <div className="relative">

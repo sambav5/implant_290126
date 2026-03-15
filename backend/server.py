@@ -358,6 +358,17 @@ class CaseStatus(str, Enum):
     IN_PROGRESS = "in_progress"
     COMPLETED = "completed"
 
+class WorkflowStage(str, Enum):
+    DIAGNOSIS = "DIAGNOSIS"
+    IMPLANT_PLANNING = "IMPLANT_PLANNING"
+    SURGERY = "SURGERY"
+    PROSTHETIC_DESIGN = "PROSTHETIC_DESIGN"
+    ASSISTANT_SUPPORT = "ASSISTANT_SUPPORT"
+
+class StageAssignment(BaseModel):
+    stage: WorkflowStage
+    userId: str
+
 # ============ MODELS ============
 class ChecklistItemBase(BaseModel):
     id: str
@@ -454,6 +465,7 @@ class Case(BaseModel):
     status: CaseStatus = CaseStatus.PLANNING
     planningData: PlanningData = Field(default_factory=PlanningData)
     caseTeam: CaseTeam = Field(default_factory=CaseTeam)  # NEW: Team assignment
+    stageAssignments: List[StageAssignment] = []
     preTreatmentChecklist: List[ChecklistItem] = []
     treatmentChecklist: List[ChecklistItem] = []
     postTreatmentChecklist: List[ChecklistItem] = []
@@ -471,6 +483,7 @@ class CaseCreate(BaseModel):
     toothNumber: str
     optionalAge: Optional[int] = None
     optionalSex: Optional[str] = None
+    stageAssignments: List[StageAssignment] = []
 
 class CaseUpdate(BaseModel):
     caseName: Optional[str] = None

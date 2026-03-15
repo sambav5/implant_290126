@@ -17,7 +17,8 @@ const CreateCase = () => {
     caseTitle: '',
     assignedImplantologistId: '',
     assignedProsthodontistId: '',
-    assignedAssistantId: ''
+    assignedAssistantId: '',
+    assignedPeriodontistId: ''
   });
 
   const [errors, setErrors] = useState({});
@@ -40,6 +41,7 @@ const CreateCase = () => {
   const implantologists = teamMembers.filter(m => m.role === 'Implantologist');
   const prosthodontists = teamMembers.filter(m => m.role === 'Prosthodontist');
   const assistants = teamMembers.filter(m => m.role === 'Assistant');
+  const periodontists = teamMembers.filter(m => m.role === 'Periodontist');
 
   const validateForm = () => {
     const newErrors = {};
@@ -78,7 +80,8 @@ const CreateCase = () => {
         caseTitle: formData.caseTitle,
         assignedImplantologistId: formData.assignedImplantologistId || null,
         assignedProsthodontistId: formData.assignedProsthodontistId || null,
-        assignedAssistantId: formData.assignedAssistantId || null
+        assignedAssistantId: formData.assignedAssistantId || null,
+        assignedPeriodontistId: formData.assignedPeriodontistId || null
       });
       
       toast.success('Case created successfully!');
@@ -215,6 +218,30 @@ const CreateCase = () => {
                 </select>
                 {prosthodontists.length === 0 && (
                   <p className="text-xs text-warmgray">No prosthodontists in your team</p>
+                )}
+              </div>
+
+              {/* Periodontist */}
+              <div className="space-y-2">
+                <label htmlFor="periodontist" className="text-sm font-medium text-charcoal">
+                  Periodontist (Optional)
+                </label>
+                <select
+                  id="periodontist"
+                  value={formData.assignedPeriodontistId}
+                  onChange={handleChange('assignedPeriodontistId')}
+                  disabled={loading}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="">-- Select Periodontist --</option>
+                  {periodontists.map((member) => (
+                    <option key={member.id} value={member.id}>
+                      {member.name}
+                    </option>
+                  ))}
+                </select>
+                {periodontists.length === 0 && (
+                  <p className="text-xs text-warmgray">No periodontists in your team</p>
                 )}
               </div>
 

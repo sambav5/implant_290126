@@ -12,6 +12,7 @@ import { RoleSwitcher } from '@/components/RoleSwitcher';
 import { RoleBadge } from '@/components/RoleBadge';
 import { useActiveRole } from '@/hooks/useActiveRole';
 import { canEditItem, getRoleName } from '@/utils/rolePermissions';
+import ContentContainer from '@/components/ui/ContentContainer';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8001';
 
@@ -489,7 +490,7 @@ export default function ProstheticChecklist() {
     <div className="min-h-screen pb-24" style={{background: 'var(--bg)'}}>
       {/* Header */}
       <header className="glass-header sticky top-0 z-40 px-4 py-3 border-b">
-        <div className="page-container">
+        <ContentContainer>
           {/* Top Row: Back button, Title, Role Switcher */}
           <div className="flex items-center gap-3 mb-4">
             <button
@@ -541,11 +542,11 @@ export default function ProstheticChecklist() {
               );
             })}
           </div>
-        </div>
+        </ContentContainer>
       </header>
       
       
-      <main className="page-container py-4" ref={checklistRef}>
+      <ContentContainer className="py-4" ref={checklistRef}>
         {/* Scope Toggle */}
         <div className="mb-4 p-3 rounded-lg" style={{background: 'var(--card)', border: '1px solid var(--border)'}}>
           <div className="flex items-center justify-between gap-3">
@@ -611,10 +612,10 @@ export default function ProstheticChecklist() {
           </div>
           <Progress value={overallProgress.percentage} className="h-2" />
         </div>
-      </main>
+      </ContentContainer>
       {/* Completion Buttons - Show when progress is 100% */}
       {overallProgress.percentage === 100 && (
-        <div className="page-container py-4 space-y-3">
+        <ContentContainer className="py-4 space-y-3">
           <div className="rounded-lg p-4 text-center" style={{background: 'var(--green-1)', border: '1.5px solid var(--green-b)'}}>
             <CheckCircle2 className="h-8 w-8 mx-auto mb-2" style={{color: 'var(--green)'}} />
             <h3 className="font-semibold mb-1" style={{color: 'var(--green)', fontFamily: "'Lora', serif"}}>Treatment Blueprint Complete! 🎉</h3>
@@ -638,16 +639,16 @@ export default function ProstheticChecklist() {
               Learning Reflections
             </Button>
           </div>
-        </div>
+        </ContentContainer>
       )}
 
       {/* Disclaimer */}
       <div className="fixed bottom-0 left-0 right-0 p-4 border-t" style={{background: 'var(--card)', borderColor: 'var(--border)'}}>
-        <div className="page-container">
+        <ContentContainer>
           <p className="text-xs text-center disclaimer-text">
             Workflow tracking only. Clinical judgment lies with the practitioner.
           </p>
-        </div>
+        </ContentContainer>
       </div>
     </div>
   );
