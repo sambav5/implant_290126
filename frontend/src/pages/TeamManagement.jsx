@@ -29,7 +29,7 @@ import { teamApi } from '../api/teamApi';
 import ProfileMenu from '../components/ProfileMenu';
 import ContentContainer from '@/components/ui/ContentContainer';
 
-const ROLES = ['Assistant', 'Implantologist', 'Prosthodontist'];
+const ROLES = ['Assistant', 'Implantologist', 'Prosthodontist', 'Periodontist'];
 
 const TeamManagement = () => {
   const navigate = useNavigate();
@@ -235,9 +235,9 @@ const TeamManagement = () => {
                         <span
                           className="px-2 py-1 text-xs font-medium rounded"
                           style={{
-                            background: member.role === 'Implantologist' ? 'var(--blue-1)' : member.role === 'Prosthodontist' ? 'var(--green-1)' : 'var(--orange-1)',
-                            color: member.role === 'Implantologist' ? 'var(--blue)' : member.role === 'Prosthodontist' ? 'var(--green)' : 'var(--orange)',
-                            border: `1px solid ${member.role === 'Implantologist' ? 'var(--blue-b)' : member.role === 'Prosthodontist' ? 'var(--green-b)' : 'var(--orange-b)'}`
+                            background: member.role === 'Implantologist' ? 'var(--blue-1)' : member.role === 'Prosthodontist' ? 'var(--green-1)' : member.role === 'Periodontist' ? 'var(--purple-1)' : 'var(--orange-1)',
+                            color: member.role === 'Implantologist' ? 'var(--blue)' : member.role === 'Prosthodontist' ? 'var(--green)' : member.role === 'Periodontist' ? 'var(--purple)' : 'var(--orange)',
+                            border: `1px solid ${member.role === 'Implantologist' ? 'var(--blue-b)' : member.role === 'Prosthodontist' ? 'var(--green-b)' : member.role === 'Periodontist' ? 'var(--purple-b)' : 'var(--orange-b)'}`
                           }}
                         >
                           {member.role}
