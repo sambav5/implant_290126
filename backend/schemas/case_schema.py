@@ -24,6 +24,10 @@ class TeamMemberInfo(BaseModel):
     role: str
 
 
+class UpdateStageAssignmentsRequest(BaseModel):
+    stageAssignments: List[StageAssignmentRequest] = Field(default_factory=list, description="Updated stage based assignees")
+
+
 class StageAssignmentResponse(BaseModel):
     stage: WorkflowStage
     user: TeamMemberInfo
