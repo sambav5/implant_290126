@@ -74,6 +74,8 @@ class CaseFileService:
             return "Prosthodontist"
         if case.get("assigned_assistant_id") == user_id:
             return "Assistant"
+        if case.get("assigned_periodontist_id") == user_id:
+            return "Periodontist"
 
         # Legacy case fallback: owner of the legacy case can act as clinician.
         return "Clinician"

@@ -12,6 +12,34 @@ import { trackCaseCreated } from '@/lib/analytics';
 import axios from 'axios';
 import ContentContainer from '@/components/ui/ContentContainer';
 
+const WORKFLOW_STAGES = [
+  {
+    key: 'DIAGNOSIS',
+    title: 'Diagnosis Review',
+    helper: 'Choose the dentist responsible for diagnosis validation and treatment readiness.',
+  },
+  {
+    key: 'IMPLANT_PLANNING',
+    title: 'Implant Planning',
+    helper: 'Choose the dentist responsible for planning implant position and size.',
+  },
+  {
+    key: 'SURGERY',
+    title: 'Surgery',
+    helper: 'Choose who is responsible for implant surgery and intra-operative decisions.',
+  },
+  {
+    key: 'PROSTHETIC_DESIGN',
+    title: 'Prosthetic Design',
+    helper: 'Choose who is responsible for restoration design and final prosthetic planning.',
+  },
+  {
+    key: 'ASSISTANT_SUPPORT',
+    title: 'Assistant Support',
+    helper: 'Choose the team member coordinating support tasks and stage readiness.',
+  },
+];
+
 export default function NewCase() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
@@ -22,13 +50,13 @@ export default function NewCase() {
     toothNumber: '',
     optionalAge: '',
     optionalSex: '',
-    caseTeam: {
-      teamName: '',
-      clinician: 'Case Owner',
-      implantologist: '',
-      prosthodontist: '',
-      assistant: ''
-    }
+    stageAssignments: {
+      DIAGNOSIS: '',
+      IMPLANT_PLANNING: '',
+      SURGERY: '',
+      PROSTHETIC_DESIGN: '',
+      ASSISTANT_SUPPORT: '',
+    },
   });
 
   useEffect(() => {
@@ -41,39 +69,48 @@ export default function NewCase() {
       setTeamMembers(response.data);
     } catch (error) {
       console.error('Failed to load team members:', error);
-      // Don't show error toast, just continue with empty team
     } finally {
       setTeamLoading(false);
     }
   };
 
-  const implantologists = teamMembers.filter(m => m.role === 'Implantologist');
-  const prosthodontists = teamMembers.filter(m => m.role === 'Prosthodontist');
-  const assistants = teamMembers.filter(m => m.role === 'Assistant');
-  
+  const handleStageAssignmentChange = (stageKey, value) => {
+    setFormData((prev) => ({
+      ...prev,
+      stageAssignments: {
+        ...prev.stageAssignments,
+        [stageKey]: value === '_none' ? '' : value,
+      },
+    }));
+  };
+
+  const buildStageAssignmentsPayload = () => {
+    return WORKFLOW_STAGES
+      .map((stage) => ({ stage: stage.key, userId: formData.stageAssignments[stage.key] }))
+      .filter((assignment) => assignment.userId);
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     if (!formData.caseName.trim() || !formData.toothNumber) {
       toast.error('Please fill in required fields');
       return;
     }
-    
+
     setLoading(true);
     try {
       const payload = {
         caseName: formData.caseName.trim(),
         toothNumber: formData.toothNumber,
-        optionalAge: formData.optionalAge ? parseInt(formData.optionalAge) : null,
+        optionalAge: formData.optionalAge ? parseInt(formData.optionalAge, 10) : null,
         optionalSex: formData.optionalSex || null,
-        caseTeam: formData.caseTeam,
+        stageAssignments: buildStageAssignmentsPayload(),
       };
-      
+
       const response = await caseApi.create(payload);
-      
-      // Track case creation
       trackCaseCreated(response.data);
-      
+
       toast.success('Case created successfully');
       navigate(`/case/${response.data.id}`);
     } catch (error) {
@@ -83,12 +120,11 @@ export default function NewCase() {
       setLoading(false);
     }
   };
-  
+
   const isValid = formData.caseName.trim() && formData.toothNumber;
-  
+
   return (
     <div className="min-h-screen pb-24" style={{background: 'var(--bg)'}}>
-      {/* Header */}
       <header className="glass-header sticky top-0 z-40 px-4 py-4">
         <ContentContainer>
           <div className="flex items-center gap-3">
@@ -109,25 +145,22 @@ export default function NewCase() {
           </div>
         </ContentContainer>
       </header>
-      
+
       <ContentContainer className="pt-6 pb-8">
         <form onSubmit={handleSubmit} className="space-y-6 animate-fade-in">
-          {/* Quick tip */}
           <div className="card-clinical flex items-start gap-3">
             <Zap className="h-5 w-5 shrink-0 mt-0.5" style={{color: 'var(--blue)'}} />
             <p className="text-sm" style={{color: 'var(--t2)'}}>
               Create a case in seconds. Add details later in Planning Engine.
             </p>
           </div>
-          
-          {/* Primary Fields */}
+
           <div className="card-clinical space-y-6">
             <div>
               <h2 className="text-lg font-semibold mb-4" style={{fontFamily: "'Lora', serif", color: 'var(--t1)'}}>
                 Case Information
               </h2>
-              
-              {/* Case Name */}
+
               <div className="space-y-2 mb-6">
                 <Label htmlFor="caseName" className="text-sm font-medium" style={{color: 'var(--t1)'}}>
                   Case Name <span style={{color: 'var(--red)'}}>*</span>
@@ -145,8 +178,7 @@ export default function NewCase() {
                   A nickname to identify this case
                 </p>
               </div>
-              
-              {/* Tooth Number - Visual Selector */}
+
               <ToothSelector
                 value={formData.toothNumber}
                 onChange={(value) => setFormData({ ...formData, toothNumber: value })}
@@ -154,232 +186,52 @@ export default function NewCase() {
                 multiple
               />
             </div>
-            
-            {/* Optional Fields */}
-            <div className="pt-4" style={{borderTop: '1px solid var(--border)'}}>
-              <p className="text-sm font-medium mb-4 label-endo">Optional Details</p>
-              
-              <div className="grid grid-cols-2 gap-4">
-                {/* Age */}
-                <div className="space-y-2">
-                  <Label htmlFor="age" className="text-sm font-medium" style={{color: 'var(--t1)'}}>
-                    Patient Age
-                  </Label>
-                  <Input
-                    id="age"
-                    type="number"
-                    placeholder="Years"
-                    min="1"
-                    max="120"
-                    value={formData.optionalAge}
-                    onChange={(e) => setFormData({ ...formData, optionalAge: e.target.value })}
-                    className="input-clinical"
-                    data-testid="age-input"
-                  />
-                </div>
-                
-                {/* Sex */}
-                <div className="space-y-2">
-                  <Label htmlFor="sex" className="text-sm font-medium" style={{color: 'var(--t1)'}}>
-                    Patient Sex
-                  </Label>
-                  <Select
-                    value={formData.optionalSex}
-                    onValueChange={(value) => setFormData({ ...formData, optionalSex: value })}
-                  >
-                    <SelectTrigger className="input-clinical" data-testid="sex-select">
-                      <SelectValue placeholder="Select" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="male">Male</SelectItem>
-                      <SelectItem value="female">Female</SelectItem>
-                      <SelectItem value="other">Other</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-            </div>
-            
-            {/* Case Team Assignment */}
-            <div className="pt-4" style={{borderTop: '1px solid var(--border)'}}>
-              <p className="text-sm font-medium mb-2" style={{color: 'var(--t1)'}}>Assign Team For This Case</p>
-              <p className="text-xs mb-4" style={{color: 'var(--t3)'}}>
-                Assign names to clinical roles for this case. You can always edit this later.
+
+            <div className="pt-4" style={{borderTop: '1.5px solid var(--border)'}}>
+              <h3 className="text-lg font-semibold mb-1" style={{fontFamily: "'Lora', serif", color: 'var(--t1)'}}>
+                Case Workflow
+              </h3>
+              <p className="text-sm mb-4" style={{color: 'var(--t2)'}}>
+                Assign one responsible person per treatment stage. Dropdowns show all clinic team members.
               </p>
-              
-              <div className="space-y-3">
-                {/* Team Name */}
-                <div className="space-y-2 pb-3" style={{borderBottom: '1px solid var(--border)'}}>
-                  <Label htmlFor="teamName" className="text-sm font-medium" style={{color: 'var(--t1)'}}>
-                    Team Name (Optional)
-                  </Label>
-                  <Input
-                    id="teamName"
-                    placeholder="e.g., Implant Team Alpha, Dr. Smith's Team"
-                    value={formData.caseTeam.teamName}
-                    onChange={(e) => setFormData({
-                      ...formData,
-                      caseTeam: { ...formData.caseTeam, teamName: e.target.value }
-                    })}
-                    className="input-clinical"
-                  />
-                  <p className="text-xs" style={{color: 'var(--t3)'}}>
-                    Give this case team a memorable name
-                  </p>
-                </div>
-                
-                {/* Clinician */}
-                <div className="space-y-2">
-                  <Label htmlFor="clinician" className="text-sm font-medium flex items-center gap-2" style={{color: 'var(--t1)'}}>
-                    <span className="w-24">Clinician</span>
-                    <span className="px-2 py-0.5 text-xs font-medium rounded" style={{background: 'var(--blue-1)', color: 'var(--blue)', border: '1px solid var(--blue-b)'}}>
-                      Case Owner
-                    </span>
-                  </Label>
-                  <Input
-                    id="clinician"
-                    placeholder="Your name or designation"
-                    value={formData.caseTeam.clinician}
-                    onChange={(e) => setFormData({
-                      ...formData,
-                      caseTeam: { ...formData.caseTeam, clinician: e.target.value }
-                    })}
-                    className="input-clinical"
-                  />
-                </div>
-                
-                {/* Implantologist */}
-                <div className="space-y-2">
-                  <Label htmlFor="implantologist" className="text-sm font-medium flex items-center gap-2" style={{color: 'var(--t1)'}}>
-                    <span className="w-24">Implantologist</span>
-                    <span className="text-xs" style={{color: 'var(--t3)'}}>(Optional)</span>
-                  </Label>
-                  {teamLoading ? (
-                    <Input disabled placeholder="Loading team..." className="input-clinical" />
-                  ) : implantologists.length > 0 ? (
-                    <Select
-                      value={formData.caseTeam.implantologist || "_none"}
-                      onValueChange={(value) => setFormData({
-                        ...formData,
-                        caseTeam: { ...formData.caseTeam, implantologist: value === "_none" ? "" : value }
-                      })}
-                    >
-                      <SelectTrigger className="input-clinical">
-                        <SelectValue placeholder="Select implantologist" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="_none">-- None --</SelectItem>
-                        {implantologists.map((member) => (
-                          <SelectItem key={member.id} value={member.name}>
-                            {member.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  ) : (
-                    <Input
-                      id="implantologist"
-                      placeholder="Surgeon handling implant placement"
-                      value={formData.caseTeam.implantologist}
-                      onChange={(e) => setFormData({
-                        ...formData,
-                        caseTeam: { ...formData.caseTeam, implantologist: e.target.value }
-                      })}
-                      className="input-clinical"
-                    />
-                  )}
-                </div>
-                
-                {/* Prosthodontist */}
-                <div className="space-y-2">
-                  <Label htmlFor="prosthodontist" className="text-sm font-medium flex items-center gap-2" style={{color: 'var(--t1)'}}>
-                    <span className="w-24">Prosthodontist</span>
-                    <span className="text-xs" style={{color: 'var(--t3)'}}>(Optional)</span>
-                  </Label>
-                  {teamLoading ? (
-                    <Input disabled placeholder="Loading team..." className="input-clinical" />
-                  ) : prosthodontists.length > 0 ? (
-                    <Select
-                      value={formData.caseTeam.prosthodontist || "_none"}
-                      onValueChange={(value) => setFormData({
-                        ...formData,
-                        caseTeam: { ...formData.caseTeam, prosthodontist: value === "_none" ? "" : value }
-                      })}
-                    >
-                      <SelectTrigger className="input-clinical">
-                        <SelectValue placeholder="Select prosthodontist" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="_none">-- None --</SelectItem>
-                        {prosthodontists.map((member) => (
-                          <SelectItem key={member.id} value={member.name}>
-                            {member.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  ) : (
-                    <Input
-                      id="prosthodontist"
-                      placeholder="Specialist for final restoration"
-                      value={formData.caseTeam.prosthodontist}
-                      onChange={(e) => setFormData({
-                        ...formData,
-                        caseTeam: { ...formData.caseTeam, prosthodontist: e.target.value }
-                      })}
-                      className="input-clinical"
-                    />
-                  )}
-                </div>
-                
-                {/* Assistant */}
-                <div className="space-y-2">
-                  <Label htmlFor="assistant" className="text-sm font-medium flex items-center gap-2" style={{color: 'var(--t1)'}}>
-                    <span className="w-24">Assistant</span>
-                    <span className="text-xs" style={{color: 'var(--t3)'}}>(Optional)</span>
-                  </Label>
-                  {teamLoading ? (
-                    <Input disabled placeholder="Loading team..." className="input-clinical" />
-                  ) : assistants.length > 0 ? (
-                    <Select
-                      value={formData.caseTeam.assistant || "_none"}
-                      onValueChange={(value) => setFormData({
-                        ...formData,
-                        caseTeam: { ...formData.caseTeam, assistant: value === "_none" ? "" : value }
-                      })}
-                    >
-                      <SelectTrigger className="input-clinical">
-                        <SelectValue placeholder="Select assistant" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="_none">-- None --</SelectItem>
-                        {assistants.map((member) => (
-                          <SelectItem key={member.id} value={member.name}>
-                            {member.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  ) : (
-                    <Input
-                      id="assistant"
-                      placeholder="Clinical assistant or coordinator"
-                      value={formData.caseTeam.assistant}
-                      onChange={(e) => setFormData({
-                        ...formData,
-                        caseTeam: { ...formData.caseTeam, assistant: e.target.value }
-                      })}
-                      className="input-clinical"
-                    />
-                  )}
-                </div>
+
+              <div className="space-y-4">
+                {WORKFLOW_STAGES.map((stage) => (
+                  <div key={stage.key} className="rounded-xl p-4" style={{border: '1.5px solid var(--border)', background: 'var(--card)'}}>
+                    <div className="space-y-2">
+                      <Label htmlFor={`stage-${stage.key}`} className="text-sm font-semibold" style={{color: 'var(--t1)'}}>
+                        {stage.title}
+                      </Label>
+                      {teamLoading ? (
+                        <Input disabled placeholder="Loading team..." className="input-clinical" />
+                      ) : (
+                        <Select
+                          value={formData.stageAssignments[stage.key] || '_none'}
+                          onValueChange={(value) => handleStageAssignmentChange(stage.key, value)}
+                        >
+                          <SelectTrigger id={`stage-${stage.key}`} className="input-clinical">
+                            <SelectValue placeholder="Select responsible team member" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="_none">-- Not assigned --</SelectItem>
+                            {teamMembers.map((member) => (
+                              <SelectItem key={member.id} value={member.id}>
+                                {member.name} • {member.role}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      )}
+                      <p className="text-xs" style={{color: 'var(--t3)'}}>{stage.helper}</p>
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
           </div>
         </form>
       </ContentContainer>
-      
-      {/* Bottom CTA */}
+
       <div className="fixed bottom-0 left-0 right-0 p-4 safe-area-pb" style={{background: 'var(--card)', borderTop: '1.5px solid var(--border)'}}>
         <ContentContainer>
           <Button

@@ -55,7 +55,9 @@ class CaseService:
         case_title: str,
         assigned_implantologist_id: Optional[str],
         assigned_prosthodontist_id: Optional[str],
-        assigned_assistant_id: Optional[str]
+        assigned_assistant_id: Optional[str],
+        assigned_periodontist_id: Optional[str],
+        stage_assignments: Optional[List[Dict[str, str]]] = None
     ) -> Dict[str, Any]:
         """Create a new case with role validation"""
         
@@ -71,6 +73,10 @@ class CaseService:
         if assigned_assistant_id:
             if not await self.validate_team_member(assigned_assistant_id, "Assistant", clinic_id):
                 raise ValueError("Invalid assistant assignment")
+
+        if assigned_periodontist_id:
+            if not await self.validate_team_member(assigned_periodontist_id, "Periodontist", clinic_id):
+                raise ValueError("Invalid periodontist assignment")
         
         # Create case
         case = {
@@ -83,6 +89,8 @@ class CaseService:
             "assigned_implantologist_id": assigned_implantologist_id,
             "assigned_prosthodontist_id": assigned_prosthodontist_id,
             "assigned_assistant_id": assigned_assistant_id,
+            "assigned_periodontist_id": assigned_periodontist_id,
+            "stage_assignments": stage_assignments or [],
             "created_at": datetime.utcnow(),
             "updated_at": datetime.utcnow()
         }
@@ -101,7 +109,9 @@ class CaseService:
                         {"created_by_clinician_id": user_id},
                         {"assigned_implantologist_id": user_id},
                         {"assigned_prosthodontist_id": user_id},
-                        {"assigned_assistant_id": user_id}
+                        {"assigned_assistant_id": user_id},
+                        {"assigned_periodontist_id": user_id},
+                        {"stage_assignments": {"$elemMatch": {"userId": user_id}}}
                     ]
                 }
             ]

@@ -358,6 +358,21 @@ class CaseStatus(str, Enum):
     IN_PROGRESS = "in_progress"
     COMPLETED = "completed"
 
+class WorkflowStage(str, Enum):
+    DIAGNOSIS = "DIAGNOSIS"
+    IMPLANT_PLANNING = "IMPLANT_PLANNING"
+    SURGERY = "SURGERY"
+    PROSTHETIC_DESIGN = "PROSTHETIC_DESIGN"
+    ASSISTANT_SUPPORT = "ASSISTANT_SUPPORT"
+
+DEFAULT_WORKFLOW_STAGES = [
+    WorkflowStage.DIAGNOSIS,
+    WorkflowStage.IMPLANT_PLANNING,
+    WorkflowStage.SURGERY,
+    WorkflowStage.PROSTHETIC_DESIGN,
+    WorkflowStage.ASSISTANT_SUPPORT,
+]
+
 # ============ MODELS ============
 class ChecklistItemBase(BaseModel):
     id: str
@@ -387,6 +402,18 @@ class CaseTeam(BaseModel):
     implantologist: Optional[str] = None
     prosthodontist: Optional[str] = None
     assistant: Optional[str] = None
+
+class StageAssignment(BaseModel):
+    stage: WorkflowStage
+    userId: str
+    userName: Optional[str] = None
+
+class CaseStageAssignmentRecord(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    case_id: str
+    stage: WorkflowStage
+    user_id: str
+    created_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
 
 class PlanningData(BaseModel):
     boneAvailability: Optional[BoneAvailability] = None
@@ -454,6 +481,9 @@ class Case(BaseModel):
     status: CaseStatus = CaseStatus.PLANNING
     planningData: PlanningData = Field(default_factory=PlanningData)
     caseTeam: CaseTeam = Field(default_factory=CaseTeam)  # NEW: Team assignment
+    stageAssignments: List[StageAssignment] = []
+    createdByUserId: Optional[str] = None
+    clinicId: Optional[str] = None
     preTreatmentChecklist: List[ChecklistItem] = []
     treatmentChecklist: List[ChecklistItem] = []
     postTreatmentChecklist: List[ChecklistItem] = []
@@ -471,6 +501,7 @@ class CaseCreate(BaseModel):
     toothNumber: str
     optionalAge: Optional[int] = None
     optionalSex: Optional[str] = None
+    stageAssignments: List[StageAssignment] = []
 
 class CaseUpdate(BaseModel):
     caseName: Optional[str] = None
@@ -1059,6 +1090,56 @@ async def get_user_custom_checklist_items() -> List[str]:
     
     return list(set(suggestions))[:10]
 
+
+async def _get_assignment_user_directory(current_user: Optional[dict]) -> dict[str, str]:
+    """Map assignable user IDs to display names within the clinic."""
+    directory: dict[str, str] = {}
+    if not current_user:
+        return directory
+
+    clinic_owner_id = current_user.get("userId")
+    phone = current_user.get("phoneNumber")
+
+    if clinic_owner_id:
+        owner_doc = await db.users.find_one({"id": clinic_owner_id}, {"_id": 0, "name": 1})
+        if owner_doc and owner_doc.get("name"):
+            directory[clinic_owner_id] = owner_doc["name"]
+        else:
+            directory[clinic_owner_id] = "Case Owner"
+
+    if clinic_owner_id:
+        members = await db.team_members.find({"clinic_id": clinic_owner_id}, {"_id": 0, "id": 1, "name": 1}).to_list(200)
+        for member in members:
+            if member.get("id"):
+                directory[member["id"]] = member.get("name") or "Team Member"
+
+    # Fallback to mobile lookup when clinic owner doc is missing
+    if phone and clinic_owner_id and clinic_owner_id not in directory:
+        owner_by_phone = await db.users.find_one({"mobile_number": phone}, {"_id": 0, "name": 1})
+        if owner_by_phone and owner_by_phone.get("name"):
+            directory[clinic_owner_id] = owner_by_phone["name"]
+
+    return directory
+
+
+async def _get_allowed_assignment_user_ids(current_user: Optional[dict]) -> set[str]:
+    """Allowed assignees for the clinic: clinic owner + team members."""
+    if not current_user:
+        return set()
+
+    clinic_owner_id = current_user.get("userId")
+    allowed = {clinic_owner_id} if clinic_owner_id else set()
+    if not clinic_owner_id:
+        return allowed
+
+    members = await db.team_members.find({"clinic_id": clinic_owner_id}, {"_id": 0, "id": 1}).to_list(200)
+    for member in members:
+        member_id = member.get("id")
+        if member_id:
+            allowed.add(member_id)
+    return allowed
+
+
 # ============ ROUTES ============
 @api_router.get("/")
 async def root():
@@ -1069,12 +1150,12 @@ async def root():
 async def create_case(input: CaseCreate, current_user: Optional[dict] = Depends(get_current_user_optional)):
     # Get custom checklist items from past learning
     custom_items = await get_user_custom_checklist_items()
-    
+
     # Create default checklists with custom items
     pre_checklist = [ChecklistItem(**item) for item in DEFAULT_PRE_TREATMENT_CHECKLIST]
     treatment_checklist = [ChecklistItem(**item) for item in DEFAULT_TREATMENT_CHECKLIST]
     post_checklist = [ChecklistItem(**item) for item in DEFAULT_POST_TREATMENT_CHECKLIST]
-    
+
     # Add custom items from learning loop
     for suggestion in custom_items:
         custom_item = ChecklistItem(
@@ -1082,26 +1163,74 @@ async def create_case(input: CaseCreate, current_user: Optional[dict] = Depends(
             isCustom=True
         )
         pre_checklist.append(custom_item)
-    
+
+    stage_assignments = input.stageAssignments or []
+    if not stage_assignments:
+        stage_assignments = [
+            StageAssignment(stage=stage, userId=current_user.get("userId"))
+            for stage in DEFAULT_WORKFLOW_STAGES
+            if current_user and current_user.get("userId")
+        ]
+
+    user_directory = await _get_assignment_user_directory(current_user)
+    allowed_user_ids = set(user_directory.keys()) or await _get_allowed_assignment_user_ids(current_user)
+    if allowed_user_ids:
+        for assignment in stage_assignments:
+            if assignment.userId not in allowed_user_ids:
+                raise HTTPException(status_code=400, detail=f"Invalid stage assignment for {assignment.stage}")
+
+    hydrated_stage_assignments = [
+        StageAssignment(stage=a.stage, userId=a.userId, userName=user_directory.get(a.userId))
+        for a in stage_assignments
+    ]
+
     case = Case(
-        **input.model_dump(),
+        **input.model_dump(exclude={"stageAssignments"}),
+        stageAssignments=hydrated_stage_assignments,
+        createdByUserId=(current_user or {}).get("userId"),
+        clinicId=(current_user or {}).get("userId"),
         preTreatmentChecklist=pre_checklist,
         treatmentChecklist=treatment_checklist,
         postTreatmentChecklist=post_checklist,
     )
-    
+
     case = add_timeline_entry(
         case.model_dump(),
         "Case created",
         f"Tooth #{input.toothNumber}"
     )
-    
+
     await db.cases.insert_one(case)
+
+    if stage_assignments:
+        docs = [
+            {**CaseStageAssignmentRecord(
+                case_id=case["id"],
+                stage=assignment.stage,
+                user_id=assignment.userId,
+            ).model_dump(), "user_name": user_directory.get(assignment.userId)}
+            for assignment in stage_assignments
+        ]
+        await db.case_stage_assignments.insert_many(docs)
+
     return Case(**case)
 
 @api_router.get("/cases", response_model=List[Case])
 async def get_cases(current_user: Optional[dict] = Depends(get_current_user_optional)):
-    cases = await db.cases.find({}, {"_id": 0}).to_list(1000)
+    if not current_user or not current_user.get("userId"):
+        cases = await db.cases.find({}, {"_id": 0}).to_list(1000)
+        return [Case(**case) for case in cases]
+
+    user_id = current_user["userId"]
+    stage_case_ids = await db.case_stage_assignments.distinct("case_id", {"user_id": user_id})
+
+    query = {
+        "$or": [
+            {"createdByUserId": user_id},
+            {"id": {"$in": stage_case_ids}},
+        ]
+    }
+    cases = await db.cases.find(query, {"_id": 0}).to_list(1000)
     return [Case(**case) for case in cases]
 
 @api_router.get("/cases/{case_id}", response_model=Case)
@@ -1109,6 +1238,11 @@ async def get_case(case_id: str, current_user: Optional[dict] = Depends(get_curr
     case = await db.cases.find_one({"id": case_id}, {"_id": 0})
     if not case:
         raise HTTPException(status_code=404, detail="Case not found")
+
+    if not case.get("stageAssignments"):
+        rows = await db.case_stage_assignments.find({"case_id": case_id}, {"_id": 0, "stage": 1, "user_id": 1, "user_name": 1}).to_list(100)
+        case["stageAssignments"] = [{"stage": r["stage"], "userId": r["user_id"], "userName": r.get("user_name")} for r in rows]
+
     return Case(**case)
 
 @api_router.put("/cases/{case_id}", response_model=Case)
@@ -1471,6 +1605,9 @@ async def startup_db_indexes():
     await clinic_service.ensure_indexes()
     await discussion_service.ensure_indexes()
     await case_file_service.ensure_indexes()
+    await db.case_stage_assignments.create_index("id", unique=True)
+    await db.case_stage_assignments.create_index("case_id")
+    await db.case_stage_assignments.create_index("user_id")
     logger.info("Database indexes initialized")
 
 @app.on_event("shutdown")

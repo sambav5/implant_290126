@@ -51,6 +51,38 @@ const statusConfig = {
   completed: { label: 'Completed', className: 'status-completed px-2 py-1 text-xs rounded-md border mono', icon: CheckCircle2 },
 };
 
+
+const workflowStageMeta = {
+  DIAGNOSIS: { label: 'Diagnosis Review', helper: 'Initial diagnosis and treatment readiness' },
+  IMPLANT_PLANNING: { label: 'Implant Planning', helper: 'Implant position, size, and strategy' },
+  SURGERY: { label: 'Surgery', helper: 'Surgical placement and intra-operative execution' },
+  PROSTHETIC_DESIGN: { label: 'Prosthetic Design', helper: 'Restoration design and finalization' },
+  ASSISTANT_SUPPORT: { label: 'Assistant Support', helper: 'Support coordination and follow-up readiness' },
+};
+
+function buildWorkflowTimeline(stageAssignments = [], status = 'planning') {
+  const ordered = ['DIAGNOSIS', 'IMPLANT_PLANNING', 'SURGERY', 'PROSTHETIC_DESIGN', 'ASSISTANT_SUPPORT'];
+  return ordered
+    .map((stageKey, index) => {
+      const assignment = stageAssignments.find((item) => item.stage === stageKey);
+      if (!assignment) {
+        return null;
+      }
+
+      let indicator = '○';
+      if (status === 'completed') indicator = '✓';
+      else if (status === 'in_progress' && index === 0) indicator = '⏳';
+
+      return {
+        stageKey,
+        stageLabel: workflowStageMeta[stageKey]?.label || stageKey,
+        indicator,
+        responsible: assignment.userName || assignment.userDisplayName || assignment.userId,
+      };
+    })
+    .filter(Boolean);
+}
+
 const riskConfig = {
   low: { label: 'Low Risk', className: 'risk-badge-low', color: 'var(--green)' },
   moderate: { label: 'Moderate', className: 'risk-badge-moderate', color: 'var(--amber)' },
@@ -317,6 +349,27 @@ export default function CaseDetail() {
           </div>
         )}
         
+
+        {buildWorkflowTimeline(caseData.stageAssignments, caseData.status).length > 0 && (
+          <div className="card-clinical animate-slide-up stagger-2">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="font-semibold" style={{color: 'var(--t1)', fontFamily: "'Lora', serif"}}>Case Workflow</h3>
+              <span className="text-xs" style={{color: 'var(--t3)'}}>Stage responsibilities</span>
+            </div>
+            <div className="space-y-2">
+              {buildWorkflowTimeline(caseData.stageAssignments, caseData.status).map((item) => (
+                <div key={item.stageKey} className="flex items-center justify-between text-sm rounded-lg px-3 py-2" style={{background: 'var(--bg)'}}>
+                  <div className="flex items-center gap-2" style={{color: 'var(--t1)'}}>
+                    <span>{item.indicator}</span>
+                    <span>{item.stageLabel}</span>
+                  </div>
+                  <span style={{color: 'var(--t2)'}}>{item.responsible}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* Action Cards */}
         <div className="space-y-3">
           {/* Planning */}
