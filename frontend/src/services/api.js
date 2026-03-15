@@ -48,8 +48,8 @@ export const authApi = {
 
 // Case API
 export const caseApi = {
-  getAll: () => axios.get(`${API}/cases`),
-  getMy: () => axios.get(`${API}/cases`),
+  getAll: () => axios.get(`${API}/cases/my`),  // Updated to use new endpoint
+  getMy: () => axios.get(`${API}/cases/my`),   // Updated to use new endpoint
   getById: (id) => axios.get(`${API}/cases/${id}`),
   create: (data) => axios.post(`${API}/cases`, data),
   update: (id, data) => axios.put(`${API}/cases/${id}`, data),

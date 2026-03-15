@@ -1112,10 +1112,11 @@ async def root():
 #     await db.cases.insert_one(case)
 #     return Case(**case)
 
-@api_router.get("/cases", response_model=List[Case])
-async def get_cases(current_user: Optional[dict] = Depends(get_current_user_optional)):
-    cases = await db.cases.find({}, {"_id": 0}).to_list(1000)
-    return [Case(**case) for case in cases]
+# OLD ENDPOINT COMMENTED OUT (replaced by routes/case_routes.py)
+# @api_router.get("/cases", response_model=List[Case])
+# async def get_cases(current_user: Optional[dict] = Depends(get_current_user_optional)):
+#     cases = await db.cases.find({}, {"_id": 0}).to_list(1000)
+#     return [Case(**case) for case in cases]
 
 @api_router.get("/cases/{case_id}", response_model=Case)
 async def get_case(case_id: str, current_user: Optional[dict] = Depends(get_current_user_optional)):
