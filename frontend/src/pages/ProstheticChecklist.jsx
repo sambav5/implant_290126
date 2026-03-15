@@ -13,6 +13,7 @@ import { RoleBadge } from '@/components/RoleBadge';
 import { useActiveRole } from '@/hooks/useActiveRole';
 import { canEditItem, getRoleName } from '@/utils/rolePermissions';
 import ContentContainer from '@/components/ui/ContentContainer';
+import AppLayout from '@/layout/AppLayout';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8001';
 
@@ -485,11 +486,18 @@ export default function ProstheticChecklist() {
   }
 
   const overallProgress = calculateOverallProgress();
+  const footerActions = (
+    <ContentContainer>
+      <p className="text-xs text-center disclaimer-text">
+        Workflow tracking only. Clinical judgment lies with the practitioner.
+      </p>
+    </ContentContainer>
+  );
 
   return (
-    <div className="min-h-screen pb-24" style={{background: 'var(--bg)'}}>
-      {/* Header */}
-      <header className="glass-header sticky top-0 z-40 px-4 py-3 border-b">
+    <AppLayout
+      headerContent={
+        <div className="px-4 py-3" style={{background: 'var(--card)'}}>
         <ContentContainer>
           {/* Top Row: Back button, Title, Role Switcher */}
           <div className="flex items-center gap-3 mb-4">
@@ -543,9 +551,10 @@ export default function ProstheticChecklist() {
             })}
           </div>
         </ContentContainer>
-      </header>
-      
-      
+      </div>
+      }
+      footerActions={footerActions}
+    >
       <ContentContainer className="py-4" ref={checklistRef}>
         {/* Scope Toggle */}
         <div className="mb-4 p-3 rounded-lg" style={{background: 'var(--card)', border: '1px solid var(--border)'}}>
@@ -642,14 +651,6 @@ export default function ProstheticChecklist() {
         </ContentContainer>
       )}
 
-      {/* Disclaimer */}
-      <div className="fixed bottom-0 left-0 right-0 p-4 border-t" style={{background: 'var(--card)', borderColor: 'var(--border)'}}>
-        <ContentContainer>
-          <p className="text-xs text-center disclaimer-text">
-            Workflow tracking only. Clinical judgment lies with the practitioner.
-          </p>
-        </ContentContainer>
-      </div>
-    </div>
+    </AppLayout>
   );
 }

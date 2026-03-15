@@ -9,6 +9,7 @@ import { Label } from '../components/ui/label';
 import { userApi } from '../api/userApi';
 import ProfileMenu from '../components/ProfileMenu';
 import ContentContainer from '@/components/ui/ContentContainer';
+import AppLayout from '@/layout/AppLayout';
 
 const Profile = () => {
   const navigate = useNavigate();
@@ -63,8 +64,8 @@ const Profile = () => {
   }
 
   return (
-    <div className="min-h-screen" style={{background: 'var(--bg)'}}>
-      <header className="glass-header sticky top-0 z-40 px-4 py-4">
+    <AppLayout headerContent={
+      <div className="px-4 py-4" style={{background: 'var(--card)'}}>
         <ContentContainer>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
@@ -85,7 +86,8 @@ const Profile = () => {
             <ProfileMenu />
           </div>
         </ContentContainer>
-      </header>
+      </div>
+    }>
 
       <ContentContainer className="py-8">
         <Card className="p-6 space-y-6">
@@ -155,7 +157,7 @@ const Profile = () => {
           </form>
         </Card>
       </ContentContainer>
-    </div>
+    </AppLayout>
   );
 };
 

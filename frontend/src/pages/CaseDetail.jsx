@@ -44,6 +44,7 @@ import SocialPostGenerator from '@/components/social-post/SocialPostGenerator';
 import DiscussionTab from '@/components/discussion/DiscussionTab';
 import { toast } from 'sonner';
 import ContentContainer from '@/components/ui/ContentContainer';
+import AppLayout from '@/layout/AppLayout';
 
 const statusConfig = {
   planning: { label: 'Planning', className: 'status-planning px-2 py-1 text-xs rounded-md border mono', icon: FileText },
@@ -156,9 +157,9 @@ export default function CaseDetail() {
   };
   
   return (
-    <div className="min-h-screen pb-24" style={{background: 'var(--bg)'}}>
-      {/* Header */}
-      <header className="glass-header sticky top-0 z-40 px-4 py-4">
+    <AppLayout
+      headerContent={
+        <div className="px-4 py-4" style={{background: 'var(--card)'}}>
         <ContentContainer>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
@@ -205,8 +206,9 @@ export default function CaseDetail() {
             </DropdownMenu>
           </div>
         </ContentContainer>
-      </header>
-      
+      </div>
+      }
+    >
       <ContentContainer className="py-6 space-y-6">
         <div className="flex gap-2 overflow-x-auto pb-1">
           {['Overview', 'Notes', 'Files', 'Social Media Post', 'Discussion'].map((tab) => {
@@ -536,6 +538,6 @@ export default function CaseDetail() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </div>
+    </AppLayout>
   );
 }

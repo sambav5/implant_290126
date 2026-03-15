@@ -16,6 +16,7 @@ import {
 import { caseApi, checklistApi } from '@/services/api';
 import { toast } from 'sonner';
 import ContentContainer from '@/components/ui/ContentContainer';
+import AppLayout from '@/layout/AppLayout';
 
 const PHASE_CONFIG = {
   pre_treatment: {
@@ -247,10 +248,35 @@ export default function Checklists() {
   const overallTotal = allChecklists.length;
   const overallProgress = overallTotal > 0 ? Math.round((overallCompleted / overallTotal) * 100) : 0;
   
+  const footerActions = (
+    <ContentContainer>
+      {caseData?.status === 'completed' ? (
+        <Button
+          onClick={() => navigate(`/case/${id}/learning`)}
+          className="w-full btn-clinical btn-green-endo min-h-[44px]"
+          data-testid="continue-learning-btn"
+        >
+          <Lightbulb className="h-5 w-5 mr-2" />
+          Complete Learning Reflection
+          <ChevronRight className="h-5 w-5 ml-2" />
+        </Button>
+      ) : (
+        <Button
+          onClick={() => navigate(`/case/${id}`)}
+          className="w-full btn-clinical btn-primary-endo min-h-[44px]"
+          data-testid="continue-btn"
+        >
+          Continue to Case Overview
+          <ChevronRight className="h-5 w-5 ml-2" />
+        </Button>
+      )}
+    </ContentContainer>
+  );
+
   return (
-    <div className="min-h-screen pb-32" style={{background: 'var(--bg)'}}>
-      {/* Header */}
-      <header className="glass-header sticky top-0 z-40 px-4 py-4">
+    <AppLayout
+      headerContent={
+        <div className="px-4 py-4" style={{background: 'var(--card)'}}>
         <ContentContainer>
           <div className="flex items-center gap-3">
             <button
@@ -271,8 +297,10 @@ export default function Checklists() {
             </div>
           </div>
         </ContentContainer>
-      </header>
-      
+      </div>
+      }
+      footerActions={footerActions}
+    >
       <ContentContainer className="py-6">
         {/* Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
@@ -354,32 +382,7 @@ export default function Checklists() {
         </div>
       </ContentContainer>
       
-      {/* Bottom Navigation */}
-      <div className="fixed bottom-0 left-0 right-0 p-4 safe-area-pb" style={{background: 'var(--card)', borderTop: '1.5px solid var(--border)'}}>
-        <ContentContainer>
-          {caseData?.status === 'completed' ? (
-            <Button
-              onClick={() => navigate(`/case/${id}/learning`)}
-              className="w-full btn-clinical btn-green-endo"
-              data-testid="continue-learning-btn"
-            >
-              <Lightbulb className="h-5 w-5 mr-2" />
-              Complete Learning Reflection
-              <ChevronRight className="h-5 w-5 ml-2" />
-            </Button>
-          ) : (
-            <Button
-              onClick={() => navigate(`/case/${id}`)}
-              className="w-full btn-clinical btn-primary-endo"
-              data-testid="continue-btn"
-            >
-              Continue to Case Overview
-              <ChevronRight className="h-5 w-5 ml-2" />
-            </Button>
-          )}
-        </ContentContainer>
-      </div>
-      
+
       {/* Add Item Dialog */}
       <Dialog open={addItemDialogOpen} onOpenChange={setAddItemDialogOpen}>
         <DialogContent>
@@ -410,6 +413,6 @@ export default function Checklists() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </div>
+    </AppLayout>
   );
 }

@@ -10,6 +10,7 @@ import { caseApi, feedbackApi } from '@/services/api';
 import { toast } from 'sonner';
 import { trackFeedbackSubmitted } from '@/lib/analytics';
 import ContentContainer from '@/components/ui/ContentContainer';
+import AppLayout from '@/layout/AppLayout';
 
 export default function LearningLoop() {
   const { id } = useParams();
@@ -101,11 +102,23 @@ export default function LearningLoop() {
   }
   
   const isCompleted = caseData?.feedback?.reflectionCompletedAt;
-  
+  const footerActions = (
+    <ContentContainer>
+      <Button
+        onClick={handleSubmit}
+        disabled={saving}
+        className="w-full btn-clinical btn-primary-endo min-h-[44px]"
+        data-testid="save-reflection-btn"
+      >
+        {saving ? 'Saving...' : isCompleted ? 'Update Reflection' : 'Save Reflection'}
+      </Button>
+    </ContentContainer>
+  );
+
   return (
-    <div className="min-h-screen pb-32" style={{background: 'var(--bg)'}}>
-      {/* Header */}
-      <header className="glass-header sticky top-0 z-40 px-4 py-4">
+    <AppLayout
+      headerContent={
+        <div className="px-4 py-4" style={{background: 'var(--card)'}}>
         <ContentContainer>
           <div className="flex items-center gap-3">
             <button
@@ -124,8 +137,10 @@ export default function LearningLoop() {
             </div>
           </div>
         </ContentContainer>
-      </header>
-      
+      </div>
+      }
+      footerActions={footerActions}
+    >
       <ContentContainer className="py-6 space-y-6">
         {/* Introduction */}
         <div className="card-clinical animate-slide-up">
@@ -264,19 +279,6 @@ export default function LearningLoop() {
         </div>
       </ContentContainer>
       
-      {/* Bottom CTA */}
-      <div className="fixed bottom-0 left-0 right-0 p-4 safe-area-pb" style={{background: 'var(--card)', borderTop: '1.5px solid var(--border)'}}>
-        <ContentContainer>
-          <Button
-            onClick={handleSubmit}
-            disabled={saving}
-            className="w-full btn-clinical btn-primary-endo"
-            data-testid="save-reflection-btn"
-          >
-            {saving ? 'Saving...' : isCompleted ? 'Update Reflection' : 'Save Reflection'}
-          </Button>
-        </ContentContainer>
-      </div>
-    </div>
+    </AppLayout>
   );
 }

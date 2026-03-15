@@ -13,6 +13,7 @@ import { caseApi } from '@/services/api';
 import { toast } from 'sonner';
 import { trackPlanningCompleted, trackRiskAnalysisRun } from '@/lib/analytics';
 import ContentContainer from '@/components/ui/ContentContainer';
+import AppLayout from '@/layout/AppLayout';
 
 const PLANNING_STEPS = [
   {
@@ -376,10 +377,41 @@ export default function PlanningWizard() {
   const risk = caseData?.riskAssessment ? riskConfig[caseData.riskAssessment.overallRisk] : null;
   const isCurrentStepComplete = completedSteps[currentStep];
   
+  const footerActions = !showResults ? (
+    <ContentContainer>
+      <div className="flex gap-3">
+        <Button
+          variant="outline"
+          onClick={goToPrevStep}
+          disabled={currentStep === 0}
+          className="flex-1 btn-clinical btn-secondary-endo min-h-[44px]"
+          data-testid="prev-btn"
+        >
+          <ChevronLeft className="h-5 w-5 mr-1" />
+          Back
+        </Button>
+
+        <Button
+          onClick={goToNextStep}
+          disabled={analyzing}
+          className="flex-1 btn-clinical btn-primary-endo min-h-[44px]"
+          data-testid="next-btn"
+        >
+          {analyzing ? 'Analyzing...' : currentStep === PLANNING_STEPS.length - 1 ? 'Analyze' : 'Next'}
+          {!analyzing && <ChevronRight className="h-5 w-5 ml-1" />}
+        </Button>
+      </div>
+
+      <p className="text-center mt-2 text-xs mono" style={{color: 'var(--t3)'}}>
+        Auto-saves on every change • {progress}% complete
+      </p>
+    </ContentContainer>
+  ) : null;
+
   return (
-    <div className="min-h-screen pb-32" style={{background: 'var(--bg)'}}>
-      {/* Header */}
-      <header className="glass-header sticky top-0 z-40 px-4 py-4">
+    <AppLayout
+      headerContent={
+        <div className="px-4 py-4" style={{background: 'var(--card)'}}>
         <ContentContainer>
           <div className="flex items-center gap-3 mb-4">
             <button
@@ -465,8 +497,10 @@ export default function PlanningWizard() {
             </div>
           )}
         </ContentContainer>
-      </header>
-      
+      </div>
+      }
+      footerActions={footerActions}
+    >
       <ContentContainer className="py-6">
         {/* Results View */}
         {showResults && caseData?.riskAssessment && (
@@ -834,40 +868,6 @@ export default function PlanningWizard() {
         )}
       </ContentContainer>
       
-      {/* Bottom Navigation */}
-      {!showResults && (
-        <div className="fixed bottom-0 left-0 right-0 p-4 border-t safe-area-pb" style={{background: 'var(--card)', borderColor: 'var(--border)'}}>
-          <ContentContainer>
-            <div className="flex gap-3">
-              <Button
-                variant="outline"
-                onClick={goToPrevStep}
-                disabled={currentStep === 0}
-                className="flex-1 btn-clinical btn-secondary-endo"
-                data-testid="prev-btn"
-              >
-                <ChevronLeft className="h-5 w-5 mr-1" />
-                Back
-              </Button>
-              
-              <Button
-                onClick={goToNextStep}
-                disabled={analyzing}
-                className="flex-1 btn-clinical btn-primary-endo"
-                data-testid="next-btn"
-              >
-                {analyzing ? 'Analyzing...' : currentStep === PLANNING_STEPS.length - 1 ? 'Analyze' : 'Next'}
-                {!analyzing && <ChevronRight className="h-5 w-5 ml-1" />}
-              </Button>
-            </div>
-            
-            {/* Progress hint */}
-            <p className="text-center mt-2 text-xs mono" style={{color: 'var(--t3)'}}>
-              Auto-saves on every change • {progress}% complete
-            </p>
-          </ContentContainer>
-        </div>
-      )}
-    </div>
+    </AppLayout>
   );
 }

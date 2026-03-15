@@ -28,6 +28,7 @@ import {
 import { teamApi } from '../api/teamApi';
 import ProfileMenu from '../components/ProfileMenu';
 import ContentContainer from '@/components/ui/ContentContainer';
+import AppLayout from '@/layout/AppLayout';
 
 const ROLES = ['Assistant', 'Implantologist', 'Prosthodontist', 'Periodontist'];
 
@@ -167,8 +168,8 @@ const TeamManagement = () => {
   }
 
   return (
-    <div className="min-h-screen" style={{background: 'var(--bg)'}}>
-      <header className="glass-header sticky top-0 z-40 px-4 py-4">
+    <AppLayout headerContent={
+      <div className="px-4 py-4" style={{background: 'var(--card)'}}>
         <ContentContainer>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
@@ -189,7 +190,8 @@ const TeamManagement = () => {
             <ProfileMenu />
           </div>
         </ContentContainer>
-      </header>
+      </div>
+    }>
 
       <ContentContainer className="py-8">
         <div className="flex justify-between items-center mb-6">
@@ -463,7 +465,7 @@ const TeamManagement = () => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </div>
+    </AppLayout>
   );
 };
 

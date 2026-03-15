@@ -11,6 +11,7 @@ import { toast } from 'sonner';
 import { trackCaseCreated } from '@/lib/analytics';
 import axios from 'axios';
 import ContentContainer from '@/components/ui/ContentContainer';
+import AppLayout from '@/layout/AppLayout';
 
 const WORKFLOW_STAGES = [
   {
@@ -124,8 +125,8 @@ export default function NewCase() {
   const isValid = formData.caseName.trim() && formData.toothNumber;
 
   return (
-    <div className="min-h-screen pb-24" style={{ background: 'var(--bg)' }}>
-      <header className="glass-header sticky top-0 z-40 px-4 py-4">
+    <AppLayout headerContent={
+      <div className="px-4 py-4" style={{ background: 'var(--card)' }}>
         <ContentContainer>
           <div className="flex items-center gap-3">
             <button
@@ -144,7 +145,8 @@ export default function NewCase() {
             </div>
           </div>
         </ContentContainer>
-      </header>
+      </div>
+    }>
 
       <ContentContainer className="pt-6 pb-8">
         <form onSubmit={handleSubmit} className="space-y-6 animate-fade-in">
@@ -251,6 +253,6 @@ export default function NewCase() {
           </Button>
         </form>
       </ContentContainer>
-    </div>
+    </AppLayout>
   );
 }

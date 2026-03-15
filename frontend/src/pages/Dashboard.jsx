@@ -116,7 +116,7 @@ export default function Dashboard() {
 
       {isMobile && sidebarOpen && <div className="sidebar-overlay" onClick={closeSidebar} />}
 
-      <main className="app-content">
+      <main className="app-shell-content">
         <ContentContainer className="space-y-10">
           <div className="flex items-start justify-between gap-6">
             <div className="text-stack-24">
