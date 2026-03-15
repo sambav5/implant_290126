@@ -12,6 +12,7 @@ import { trackCaseCreated } from '@/lib/analytics';
 import axios from 'axios';
 import ContentContainer from '@/components/ui/ContentContainer';
 import AppLayout from '@/layout/AppLayout';
+import CaseSummary from '@/components/CaseSummary';
 
 const WORKFLOW_STAGES = [
   {
@@ -46,19 +47,14 @@ export default function NewCase() {
   const [loading, setLoading] = useState(false);
   const [teamLoading, setTeamLoading] = useState(true);
   const [teamMembers, setTeamMembers] = useState([]);
+  const [showSummary, setShowSummary] = useState(false);
+  const [caseDraft, setCaseDraft] = useState(null);
   const [formData, setFormData] = useState({
-    caseName: '',
+    patientName: '',
+    caseTitle: '',
     toothNumber: '',
     optionalAge: '',
     optionalSex: '',
-    caseTeam: {
-      teamName: '',
-      clinician: 'Case Owner',
-      implantologist: '',
-      prosthodontist: '',
-      assistant: '',
-      periodontist: ''
-    },
     workflowAssignments: {
       DIAGNOSIS: '',
       IMPLANT_PLANNING: '',
@@ -74,42 +70,67 @@ export default function NewCase() {
 
   const loadTeamMembers = async () => {
     try {
-      const response = await axios.get('/api/team');
-      setTeamMembers(response.data || []);
+      const [teamResponse, userResponse] = await Promise.all([
+        axios.get('/api/team'),
+        axios.get('/api/user/me')
+      ]);
+
+      const clinicianOption = {
+        id: userResponse.data.id,
+        name: userResponse.data.name || 'Clinician',
+        role: userResponse.data.role || 'Clinician'
+      };
+
+      const members = teamResponse.data || [];
+      const membersWithClinician = members.some((member) => member.id === clinicianOption.id)
+        ? members
+        : [clinicianOption, ...members];
+
+      setTeamMembers(membersWithClinician);
     } catch (error) {
       console.error('Failed to load team members:', error);
+      toast.error('Failed to load team members');
     } finally {
       setTeamLoading(false);
     }
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
 
-    if (!formData.caseName.trim() || !formData.toothNumber) {
+    if (!formData.patientName.trim() || !formData.caseTitle.trim() || !formData.toothNumber) {
       toast.error('Please fill in required fields');
+      return;
+    }
+
+    const stageAssignments = WORKFLOW_STAGES
+      .filter((stage) => formData.workflowAssignments[stage.key])
+      .map((stage) => ({
+        stage: stage.key,
+        userId: formData.workflowAssignments[stage.key]
+      }));
+
+    const payload = {
+      patientName: formData.patientName.trim(),
+      caseTitle: formData.caseTitle.trim(),
+      toothNumber: formData.toothNumber,
+      optionalAge: formData.optionalAge ? parseInt(formData.optionalAge, 10) : null,
+      optionalSex: formData.optionalSex || null,
+      stageAssignments
+    };
+
+    setCaseDraft(payload);
+    setShowSummary(true);
+  };
+
+  const handleConfirmCreate = async () => {
+    if (!caseDraft) {
       return;
     }
 
     setLoading(true);
     try {
-      const stageAssignments = WORKFLOW_STAGES
-        .filter((stage) => formData.workflowAssignments[stage.key])
-        .map((stage) => ({
-          stage: stage.key,
-          userId: formData.workflowAssignments[stage.key]
-        }));
-
-      const payload = {
-        caseName: formData.caseName.trim(),
-        toothNumber: formData.toothNumber,
-        optionalAge: formData.optionalAge ? parseInt(formData.optionalAge, 10) : null,
-        optionalSex: formData.optionalSex || null,
-        caseTeam: formData.caseTeam,
-        stageAssignments
-      };
-
-      const response = await caseApi.create(payload);
+      const response = await caseApi.create(caseDraft);
       trackCaseCreated(response.data);
 
       toast.success('Case created successfully');
@@ -122,7 +143,22 @@ export default function NewCase() {
     }
   };
 
-  const isValid = formData.caseName.trim() && formData.toothNumber;
+  const isValid = formData.patientName.trim() && formData.caseTitle.trim() && formData.toothNumber;
+  const teamMemberMap = teamMembers.reduce((acc, member) => {
+    acc[member.id] = member;
+    return acc;
+  }, {});
+  const summaryStageAssignments = WORKFLOW_STAGES.map((stage) => {
+    const assignedId = (showSummary ? caseDraft : formData)?.workflowAssignments?.[stage.key]
+      || caseDraft?.stageAssignments?.find((assignment) => assignment.stage === stage.key)?.userId
+      || '';
+    const assignedMember = teamMemberMap[assignedId];
+    return {
+      key: stage.key,
+      title: stage.title,
+      assigneeName: assignedMember ? `${assignedMember.name} • ${assignedMember.role}` : 'Unassigned'
+    };
+  });
 
   return (
     <AppLayout headerContent={
@@ -141,7 +177,9 @@ export default function NewCase() {
             </button>
             <div>
               <h1 className="text-xl font-semibold" style={{ fontFamily: "'Lora', serif", color: 'var(--t1)' }}>New Case</h1>
-              <p className="text-sm" style={{ color: 'var(--t2)' }}>Quick case creation</p>
+              <p className="text-sm" style={{ color: 'var(--t2)' }}>
+                {showSummary ? 'Step 3 of 4 • Case Summary' : 'Step 1-2 of 4 • Case Details & Workflow'}
+              </p>
             </div>
           </div>
         </ContentContainer>
@@ -149,6 +187,15 @@ export default function NewCase() {
     }>
 
       <ContentContainer className="pt-6 pb-8">
+        {showSummary ? (
+          <CaseSummary
+            draft={caseDraft}
+            stageAssignments={summaryStageAssignments}
+            onEdit={() => setShowSummary(false)}
+            onConfirm={handleConfirmCreate}
+            loading={loading}
+          />
+        ) : (
         <form onSubmit={handleSubmit} className="space-y-6 animate-fade-in">
           <div className="card-clinical flex items-start gap-3">
             <Zap className="h-5 w-5 shrink-0 mt-0.5" style={{ color: 'var(--blue)' }} />
@@ -159,14 +206,25 @@ export default function NewCase() {
 
           <div className="card-clinical space-y-6">
             <div className="space-y-2">
-              <Label htmlFor="caseName">Case Name *</Label>
+              <Label htmlFor="patientName">Patient Name *</Label>
               <Input
-                id="caseName"
-                value={formData.caseName}
-                onChange={(e) => setFormData({ ...formData, caseName: e.target.value })}
-                placeholder="e.g., Upper Right Molar Replacement"
+                id="patientName"
+                value={formData.patientName}
+                onChange={(e) => setFormData({ ...formData, patientName: e.target.value })}
+                placeholder="e.g., Ramesh"
                 className="input-clinical"
                 data-testid="case-name-input"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="caseTitle">Case Title *</Label>
+              <Input
+                id="caseTitle"
+                value={formData.caseTitle}
+                onChange={(e) => setFormData({ ...formData, caseTitle: e.target.value })}
+                placeholder="e.g., Implant 46"
+                className="input-clinical"
               />
             </div>
 
@@ -249,9 +307,10 @@ export default function NewCase() {
           </div>
 
           <Button type="submit" disabled={!isValid || loading} className="w-full" data-testid="create-case-btn">
-            {loading ? 'Creating...' : 'Create Case'}
+            Review Summary
           </Button>
         </form>
+        )}
       </ContentContainer>
     </AppLayout>
   );

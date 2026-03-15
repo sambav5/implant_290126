@@ -56,6 +56,7 @@ export const caseApi = {
   delete: (id) => axios.delete(`${API}/cases/${id}`),
   analyze: (id) => axios.post(`${API}/cases/${id}/analyze`),
   updateStatus: (id, status) => axios.put(`${API}/cases/${id}/status?status=${status}`),
+  updateStageAssignments: (id, data) => axios.put(`${API}/cases/${id}/stage-assignments`, data),
 };
 
 

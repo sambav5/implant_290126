@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { 
   DropdownMenu, 
   DropdownMenuContent, 
@@ -43,6 +44,7 @@ import CaseFilesTab from '@/components/CaseFilesTab';
 import SocialPostGenerator from '@/components/social-post/SocialPostGenerator';
 import DiscussionTab from '@/components/discussion/DiscussionTab';
 import { toast } from 'sonner';
+import axios from 'axios';
 import ContentContainer from '@/components/ui/ContentContainer';
 import AppLayout from '@/layout/AppLayout';
 
@@ -60,10 +62,10 @@ const riskConfig = {
 
 
 const workflowStageLabels = {
-  DIAGNOSIS: 'Diagnosis',
-  IMPLANT_PLANNING: 'Planning',
+  DIAGNOSIS: 'Diagnosis Review',
+  IMPLANT_PLANNING: 'Implant Planning',
   SURGERY: 'Surgery',
-  PROSTHETIC_DESIGN: 'Prosthetic',
+  PROSTHETIC_DESIGN: 'Prosthetic Design',
   ASSISTANT_SUPPORT: 'Assistant Support',
 };
 
@@ -78,6 +80,11 @@ export default function CaseDetail() {
   const [activityModalOpen, setActivityModalOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('overview');
   const [activeRole] = useActiveRole();
+  const [teamMembers, setTeamMembers] = useState([]);
+  const [workflowEditMode, setWorkflowEditMode] = useState(false);
+  const [savingWorkflow, setSavingWorkflow] = useState(false);
+  const [workflowAssignmentsDraft, setWorkflowAssignmentsDraft] = useState({});
+  const [updatedStages, setUpdatedStages] = useState([]);
   
   useEffect(() => {
     loadCase();
@@ -121,6 +128,82 @@ export default function CaseDetail() {
       toast.success(`${variant === 'lab' ? 'Lab' : 'Dentist'} copy downloaded`);
     }
   };
+  const loadWorkflowTeamOptions = async () => {
+    try {
+      const [teamResponse, userResponse] = await Promise.all([
+        axios.get('/api/team'),
+        axios.get('/api/user/me')
+      ]);
+
+      const clinicianOption = {
+        id: userResponse.data.id,
+        name: userResponse.data.name || 'Clinician',
+        role: userResponse.data.role || 'Clinician'
+      };
+
+      const team = teamResponse.data || [];
+      const mergedTeam = team.some((member) => member.id === clinicianOption.id)
+        ? team
+        : [clinicianOption, ...team];
+
+      setTeamMembers(mergedTeam);
+    } catch (error) {
+      toast.error('Failed to load team members');
+    }
+  };
+
+  const getAssignmentsMap = (assignments) =>
+    (assignments || []).reduce((acc, assignment) => {
+      acc[assignment.stage] = assignment.user?.id || '';
+      return acc;
+    }, {});
+
+  const handleStartWorkflowEdit = async () => {
+    if (!teamMembers.length) {
+      await loadWorkflowTeamOptions();
+    }
+    setWorkflowAssignmentsDraft(getAssignmentsMap(caseData.stageAssignments));
+    setWorkflowEditMode(true);
+  };
+
+  const handleCancelWorkflowEdit = () => {
+    setWorkflowAssignmentsDraft(getAssignmentsMap(caseData.stageAssignments));
+    setWorkflowEditMode(false);
+  };
+
+  const handleSaveWorkflowAssignments = async () => {
+    setSavingWorkflow(true);
+    try {
+      const stageAssignments = workflowStageOrder
+        .filter((stage) => workflowAssignmentsDraft[stage])
+        .map((stage) => ({
+          stage,
+          userId: workflowAssignmentsDraft[stage],
+        }));
+
+      const response = await caseApi.updateStageAssignments(id, { stageAssignments });
+      const latestStageAssignments = response.data.stageAssignments || [];
+
+      const previousMap = getAssignmentsMap(caseData.stageAssignments);
+      const latestMap = getAssignmentsMap(latestStageAssignments);
+      const changedStages = workflowStageOrder.filter((stage) => previousMap[stage] !== latestMap[stage]);
+
+      setCaseData((prev) => ({
+        ...prev,
+        stageAssignments: latestStageAssignments,
+      }));
+      setWorkflowAssignmentsDraft(latestMap);
+      setWorkflowEditMode(false);
+      setUpdatedStages(changedStages);
+
+      toast.success('Team updated successfully');
+      window.setTimeout(() => setUpdatedStages([]), 2200);
+    } catch (error) {
+      toast.error(error?.response?.data?.detail || 'Failed to update team assignments');
+    } finally {
+      setSavingWorkflow(false);
+    }
+  };
   
   if (loading) {
     return (
@@ -142,19 +225,16 @@ export default function CaseDetail() {
   ];
   const completedChecks = totalChecks.filter(item => item.completed).length;
   const checklistProgress = totalChecks.length > 0 ? Math.round((completedChecks / totalChecks.length) * 100) : 0;
-  const orderedWorkflowAssignments = (caseData.stageAssignments || [])
-    .slice()
-    .sort((a, b) => workflowStageOrder.indexOf(a.stage) - workflowStageOrder.indexOf(b.stage));
+  const assignmentsByStage = (caseData.stageAssignments || []).reduce((acc, assignment) => {
+    acc[assignment.stage] = assignment.user;
+    return acc;
+  }, {});
 
-  const getWorkflowIcon = (index) => {
-    if (caseData.status === 'completed') return '✓';
-    if (caseData.status === 'in_progress') {
-      if (index === 0) return '✓';
-      if (index === 1) return '⏳';
-      return '○';
-    }
-    return index === 0 ? '⏳' : '○';
-  };
+  const workflowRows = workflowStageOrder.map((stage) => ({
+    stage,
+    label: workflowStageLabels[stage] || stage,
+    user: assignmentsByStage[stage] || null,
+  }));
   
   return (
     <AppLayout
@@ -320,20 +400,79 @@ export default function CaseDetail() {
           </div>
         </div>
 
-        {orderedWorkflowAssignments.length > 0 && (
-          <div className="card-clinical animate-slide-up stagger-1" data-testid="case-workflow-timeline">
-            <h3 className="font-semibold mb-3" style={{ color: 'var(--t1)', fontFamily: "'Lora', serif" }}>Case Workflow</h3>
-            <div className="space-y-2">
-              {orderedWorkflowAssignments.map((assignment, index) => (
-                <div key={`${assignment.stage}-${assignment.user?.id || index}`} className="flex items-center justify-between text-sm" style={{ color: 'var(--t1)' }}>
-                  <span>{workflowStageLabels[assignment.stage] || assignment.stage}</span>
-                  <span className="mono">{getWorkflowIcon(index)} {assignment.user?.name || 'Unassigned'}</span>
-                </div>
-              ))}
-            </div>
+        <div className="card-clinical animate-slide-up stagger-1" data-testid="case-workflow-timeline">
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="font-semibold" style={{ color: 'var(--t1)', fontFamily: "'Lora', serif" }}>Case Workflow</h3>
+            {activeRole === ROLES.CLINICIAN && !workflowEditMode && (
+              <Button type="button" variant="outline" size="sm" onClick={handleStartWorkflowEdit}>
+                Edit Team
+              </Button>
+            )}
           </div>
-        )}
-        
+
+          <div className="space-y-3">
+            {workflowRows.map((row) => {
+              const rowUpdated = updatedStages.includes(row.stage);
+              const rowClassName = rowUpdated ? 'border-green-300 bg-green-50 transition-all duration-500' : '';
+
+              return (
+                <div
+                  key={row.stage}
+                  className={`rounded-md border p-3 ${rowClassName}`}
+                  style={{ borderColor: rowUpdated ? '#86efac' : 'var(--border)' }}
+                >
+                  <p className="text-sm font-semibold mb-2" style={{ color: 'var(--t1)' }}>{row.label}</p>
+                  {workflowEditMode ? (
+                    <Select
+                      value={workflowAssignmentsDraft[row.stage] || '_none'}
+                      onValueChange={(value) =>
+                        setWorkflowAssignmentsDraft((prev) => ({
+                          ...prev,
+                          [row.stage]: value === '_none' ? '' : value,
+                        }))
+                      }
+                    >
+                      <SelectTrigger className="input-clinical">
+                        <SelectValue placeholder="Select responsible" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="_none">Unassigned</SelectItem>
+                        {teamMembers.map((member) => (
+                          <SelectItem key={member.id} value={member.id}>{member.name} • {member.role}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  ) : (
+                    <p className="mono text-sm" style={{ color: 'var(--t2)' }}>{row.user?.name || 'Unassigned'}</p>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+
+          {workflowEditMode && (
+            <div className="flex gap-2 mt-4">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={handleCancelWorkflowEdit}
+                disabled={savingWorkflow}
+                className="flex-1"
+              >
+                Cancel
+              </Button>
+              <Button
+                type="button"
+                onClick={handleSaveWorkflowAssignments}
+                disabled={savingWorkflow}
+                className="flex-1"
+              >
+                {savingWorkflow ? 'Saving...' : 'Save Changes'}
+              </Button>
+            </div>
+          )}
+        </div>
+
         {/* Risk Assessment (if available) */}
         {caseData.riskAssessment && (
           <div className="card-clinical animate-slide-up stagger-1">
