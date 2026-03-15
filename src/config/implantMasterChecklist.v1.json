@@ -1,91 +1,411 @@
 {
-  "version": "1.0",
-  "description": "Master Implant Checklist – Dynamic, Planning-Driven",
+  "version": "2.0",
+  "description": "Master Implant Checklist – Expanded Clinical + Experience Workflow",
   "phases": [
     {
-      "id": "pre_surgical_planning",
-      "name": "Pre-Surgical Planning",
+      "id": "case_selection_risk",
+      "name": "Case Selection & Risk Stratification",
       "order": 1,
       "sections": [
         {
-          "id": "clinical_evaluation",
-          "name": "Clinical Evaluation",
+          "id": "patient_experience_start",
+          "name": "Patient Experience",
           "items": [
-            { "id": "cbct_opg_review", "text": "CBCT scan and OPG reviewed", "importance": "essential", "conditions": { "requiresImaging": true }, "assignedRole": "implantologist" },
-            { "id": "bone_quality_quantity", "text": "Bone quality and quantity assessed", "importance": "essential", "assignedRole": "implantologist" },
-            { "id": "adjacent_opposing_teeth", "text": "Adjacent and opposing teeth evaluated", "importance": "essential", "assignedRole": "prosthodontist" },
-            { "id": "soft_tissue_evaluation", "text": "Soft tissues evaluated", "importance": "essential", "assignedRole": "implantologist" },
-            { "id": "medical_history_review", "text": "Medical history reviewed (physician consent, blood tests, contraindicating medications, antibiotic prophylaxis)", "importance": "essential", "assignedRole": "clinician" },
-            { "id": "esthetic_expectations", "text": "Esthetic expectations discussed with patient", "importance": "essential", "conditions": { "estheticZone": true }, "assignedRole": "prosthodontist" },
-            { "id": "rx_finalized", "text": "Treatment plan finalized (constraints, budget, timelines, post-op care)", "importance": "essential", "assignedRole": "clinician" },
-            { "id": "informed_consent", "text": "Informed consent obtained", "importance": "essential", "assignedRole": "clinician" },
-            { "id": "prosthetic_driven_position", "text": "Implant position planned prosthetically (restoration-driven)", "importance": "essential", "assignedRole": "prosthodontist" },
-            { "id": "diagnostic_impressions", "text": "Diagnostic impressions made", "importance": "advanced", "assignedRole": "assistant" },
-            { "id": "clinical_photos", "text": "Clinical photographs taken", "importance": "advanced", "assignedRole": "assistant" },
-            { "id": "implant_specs_locked", "text": "Implant specifications finalized (diameter, length, platform, brand)", "importance": "essential", "assignedRole": "implantologist" },
-            { "id": "implant_timing_protocol", "text": "Implant timing protocol decided", "importance": "essential", "assignedRole": "implantologist" },
-            { "id": "augmentation_planned", "text": "Hard or soft tissue augmentation planned if required", "importance": "advanced", "conditions": { "needsGBR": true }, "assignedRole": "implantologist" }
+            {
+              "id": "offer_water_patient",
+              "text": "Offer a glass of water when the patient sits down",
+              "type": "experience",
+              "category": "patient_experience",
+              "importance": "advanced",
+              "assignedRole": "assistant"
+            },
+            {
+              "id": "use_patient_name",
+              "text": "Use patient name when greeting",
+              "type": "experience",
+              "category": "communication",
+              "importance": "advanced",
+              "assignedRole": "clinician"
+            }
           ]
         },
         {
-          "id": "lab_case_setup",
-          "name": "Lab Communication – Case Setup",
-          "isLabSection": true,
+          "id": "systemic_risk_evaluation",
+          "name": "Systemic Risk Evaluation",
           "items": [
-            { "id": "precase_consult_form", "text": "Pre-case consultation form sent to lab", "importance": "essential", "assignedRole": "assistant" },
-            { "id": "virtual_surgery", "text": "Virtual surgery planned with lab", "importance": "advanced", "conditions": { "guideRequired": true }, "assignedRole": "implantologist" },
-            { "id": "surgical_guide_discussion", "text": "Need for surgical guide/stent discussed", "importance": "essential", "conditions": { "guideRequired": true }, "assignedRole": "implantologist" },
-            { "id": "provisionalization_specs", "text": "Provisionalization specifications discussed", "importance": "essential", "conditions": { "provisionalization": true }, "assignedRole": "prosthodontist" },
-            { "id": "complete_denture_plan", "text": "Plan for complete denture discussed (if applicable)", "importance": "advanced", "conditions": { "prostheticType": ["complete_denture"] }, "assignedRole": "prosthodontist" },
-            { "id": "abutment_capability", "text": "Confirmed lab can accommodate abutment selection", "importance": "essential", "assignedRole": "prosthodontist" },
-            { "id": "margin_location_discussion", "text": "Margin location requirements discussed", "importance": "essential", "assignedRole": "prosthodontist" },
-            { "id": "turnaround_policy", "text": "Turnaround time and remake policy confirmed", "importance": "essential", "assignedRole": "assistant" },
-            { "id": "esthetic_photos_shared", "text": "Esthetic photos and concerns shared with lab", "importance": "advanced", "conditions": { "estheticZone": true }, "assignedRole": "assistant" },
-            { "id": "lab_contact", "text": "Lab point of contact established", "importance": "essential", "assignedRole": "assistant" }
+            {
+              "id": "diabetes_controlled",
+              "text": "Diabetes status evaluated and HbA1c reviewed",
+              "type": "checklist",
+              "category": "clinical",
+              "importance": "essential",
+              "assignedRole": "clinician"
+            },
+            {
+              "id": "pacemaker_check",
+              "text": "Pacemaker or ICD presence assessed and electrosurgery contraindications confirmed",
+              "type": "checklist",
+              "category": "clinical",
+              "importance": "essential",
+              "assignedRole": "clinician"
+            },
+            {
+              "id": "bisphosphonate_risk",
+              "text": "Bisphosphonate or antiresorptive therapy evaluated",
+              "type": "checklist",
+              "category": "risk",
+              "importance": "essential",
+              "assignedRole": "clinician"
+            },
+            {
+              "id": "hypertension_control",
+              "text": "Blood pressure assessed and uncontrolled hypertension ruled out",
+              "type": "checklist",
+              "category": "clinical",
+              "importance": "essential",
+              "assignedRole": "clinician"
+            },
+            {
+              "id": "systemic_inflammation_stop",
+              "text": "Systemic inflammation must be stabilised before implant treatment",
+              "type": "stop",
+              "category": "risk",
+              "importance": "essential",
+              "assignedRole": "clinician"
+            }
+          ]
+        },
+        {
+          "id": "local_risk_assessment",
+          "name": "Local Risk Assessment",
+          "items": [
+            {
+              "id": "keratinized_tissue",
+              "text": "Keratinized tissue width evaluated",
+              "type": "checklist",
+              "category": "clinical",
+              "importance": "essential",
+              "assignedRole": "implantologist"
+            },
+            {
+              "id": "biotype_assessment",
+              "text": "Soft tissue biotype assessed",
+              "type": "checklist",
+              "category": "clinical",
+              "importance": "essential",
+              "assignedRole": "implantologist"
+            },
+            {
+              "id": "bone_height_assessment",
+              "text": "Bone height and ridge dimensions assessed",
+              "type": "checklist",
+              "category": "clinical",
+              "importance": "essential",
+              "assignedRole": "implantologist"
+            },
+            {
+              "id": "buccal_plate_thin_flag",
+              "text": "Thin buccal plate (<1mm) flagged as risk in esthetic zone",
+              "type": "flag",
+              "category": "risk",
+              "importance": "essential",
+              "assignedRole": "implantologist"
+            }
           ]
         }
       ]
     },
-
     {
-      "id": "surgical_treatment",
-      "name": "Surgical Treatment",
+      "id": "diagnostic_protocol",
+      "name": "Diagnostic Protocol",
       "order": 2,
       "sections": [
         {
-          "id": "surgery_execution",
-          "name": "Surgical Execution",
+          "id": "periodontal_occlusal",
+          "name": "Periodontal & Occlusal Evaluation",
           "items": [
-            { "id": "verify_site_tooth", "text": "Surgical site and tooth number verified", "importance": "essential", "assignedRole": "assistant" },
-            { "id": "preop_medications", "text": "Pre-operative medications administered", "importance": "essential", "assignedRole": "assistant" },
-            { "id": "guide_available", "text": "Surgical guide/stent available chairside", "importance": "essential", "conditions": { "guideRequired": true }, "assignedRole": "assistant" },
-            { "id": "site_prepared_anesthesia", "text": "Surgical site prepared and anesthetized", "importance": "essential", "assignedRole": "implantologist" },
-            { "id": "osteotomy_prepared", "text": "Osteotomy prepared to planned depth", "importance": "essential", "assignedRole": "implantologist" },
-            { "id": "implant_positioned", "text": "Implant placed at correct angulation", "importance": "essential", "assignedRole": "implantologist" },
-            { "id": "primary_stability", "text": "Primary stability achieved", "importance": "essential", "assignedRole": "implantologist" },
-            { "id": "torque_recorded", "text": "Insertion torque recorded", "importance": "essential", "assignedRole": "assistant" },
-            { "id": "cover_or_healing_abutment", "text": "Cover screw or healing abutment placed", "importance": "essential", "assignedRole": "implantologist" },
-            { "id": "implant_position_verified", "text": "Implant position verified clinically and radiographically", "importance": "essential", "assignedRole": "implantologist" },
-            { "id": "soft_tissue_closure", "text": "Soft tissue closure completed", "importance": "essential", "assignedRole": "implantologist" },
-            { "id": "surgery_documented", "text": "Implant details and post-operative instructions documented", "importance": "essential", "assignedRole": "assistant" }
+            {
+              "id": "periodontal_charting",
+              "text": "Full periodontal charting completed",
+              "type": "checklist",
+              "category": "clinical",
+              "importance": "essential",
+              "assignedRole": "clinician"
+            },
+            {
+              "id": "occlusion_evaluated",
+              "text": "Occlusal relationship evaluated including CR–MIP discrepancy",
+              "type": "checklist",
+              "category": "clinical",
+              "importance": "essential",
+              "assignedRole": "prosthodontist"
+            }
+          ]
+        },
+        {
+          "id": "cbct_review",
+          "name": "CBCT Review",
+          "items": [
+            {
+              "id": "cbct_three_planes",
+              "text": "CBCT reviewed in axial, sagittal and coronal planes",
+              "type": "checklist",
+              "category": "clinical",
+              "importance": "essential",
+              "assignedRole": "implantologist"
+            },
+            {
+              "id": "anatomical_structures",
+              "text": "IAN, sinus floor and nasal floor mapped",
+              "type": "checklist",
+              "category": "clinical",
+              "importance": "essential",
+              "assignedRole": "implantologist"
+            },
+            {
+              "id": "surgical_guide_mandatory",
+              "text": "Implant corridor <4mm triggers mandatory surgical guide",
+              "type": "flag",
+              "category": "risk",
+              "importance": "essential",
+              "assignedRole": "implantologist"
+            }
           ]
         }
       ]
     },
-
     {
-      "id": "maintenance",
-      "name": "Ongoing Maintenance",
-      "order": 8,
+      "id": "preclinical_setup",
+      "name": "Pre-Clinical Setup",
+      "order": 3,
       "sections": [
         {
-          "id": "six_month_recall",
-          "name": "6-Month Recall",
+          "id": "implant_system",
+          "name": "Implant System Identification",
           "items": [
-            { "id": "maintenance_radiograph", "text": "Radiograph taken to assess bone stability", "importance": "essential", "assignedRole": "implantologist" },
-            { "id": "probing", "text": "Probing performed (<4mm, no BOP)", "importance": "essential", "assignedRole": "implantologist" },
-            { "id": "occlusion_check_maintenance", "text": "Occlusion checked", "importance": "essential", "assignedRole": "prosthodontist" },
-            { "id": "professional_cleaning", "text": "Professional implant maintenance performed", "importance": "essential", "assignedRole": "assistant" }
+            {
+              "id": "implant_manufacturer_confirmed",
+              "text": "Implant manufacturer and system confirmed",
+              "type": "checklist",
+              "category": "clinical",
+              "importance": "essential",
+              "assignedRole": "implantologist"
+            },
+            {
+              "id": "component_match",
+              "text": "All implant components confirmed compatible",
+              "type": "checklist",
+              "category": "clinical",
+              "importance": "essential",
+              "assignedRole": "assistant"
+            },
+            {
+              "id": "component_mismatch_stop",
+              "text": "Any implant component mismatch stops procedure until corrected",
+              "type": "stop",
+              "category": "risk",
+              "importance": "essential",
+              "assignedRole": "implantologist"
+            }
+          ]
+        },
+        {
+          "id": "consent_documentation",
+          "name": "Consent & Documentation",
+          "items": [
+            {
+              "id": "informed_consent_signed",
+              "text": "Site specific informed consent obtained",
+              "type": "checklist",
+              "category": "clinical",
+              "importance": "essential",
+              "assignedRole": "clinician"
+            },
+            {
+              "id": "preop_photographs",
+              "text": "Pre-treatment photographs captured",
+              "type": "checklist",
+              "category": "clinical",
+              "importance": "advanced",
+              "assignedRole": "assistant"
+            },
+            {
+              "id": "no_consent_stop",
+              "text": "Surgery cannot proceed without signed consent",
+              "type": "stop",
+              "category": "risk",
+              "importance": "essential",
+              "assignedRole": "clinician"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "surgical_execution",
+      "name": "Surgical Execution",
+      "order": 4,
+      "sections": [
+        {
+          "id": "anesthesia",
+          "name": "Local Anaesthesia",
+          "items": [
+            {
+              "id": "topical_anesthetic",
+              "text": "Topical anesthetic applied for minimum 2 minutes before injection",
+              "type": "checklist",
+              "category": "clinical",
+              "importance": "essential",
+              "assignedRole": "implantologist"
+            },
+            {
+              "id": "slow_injection",
+              "text": "Local anesthetic delivered slowly (~1ml per minute)",
+              "type": "checklist",
+              "category": "clinical",
+              "importance": "essential",
+              "assignedRole": "implantologist"
+            }
+          ]
+        },
+        {
+          "id": "implant_placement",
+          "name": "Implant Placement",
+          "items": [
+            {
+              "id": "implant_position",
+              "text": "Implant positioned with correct angulation and depth",
+              "type": "checklist",
+              "category": "clinical",
+              "importance": "essential",
+              "assignedRole": "implantologist"
+            },
+            {
+              "id": "primary_stability",
+              "text": "Primary implant stability achieved and torque recorded",
+              "type": "checklist",
+              "category": "clinical",
+              "importance": "essential",
+              "assignedRole": "implantologist"
+            },
+            {
+              "id": "implant_mobility_stop",
+              "text": "Implant mobility detected at placement requires delayed loading protocol",
+              "type": "stop",
+              "category": "risk",
+              "importance": "essential",
+              "assignedRole": "implantologist"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "prosthetic_phase",
+      "name": "Prosthetic Phase",
+      "order": 5,
+      "sections": [
+        {
+          "id": "impression_workflow",
+          "name": "Impression Workflow",
+          "items": [
+            {
+              "id": "airway_gauze",
+              "text": "Airway protection gauze placed before removing components",
+              "type": "checklist",
+              "category": "clinical",
+              "importance": "essential",
+              "assignedRole": "assistant"
+            },
+            {
+              "id": "coping_radiograph",
+              "text": "Radiograph confirms no gap at implant–abutment junction",
+              "type": "checklist",
+              "category": "clinical",
+              "importance": "essential",
+              "assignedRole": "implantologist"
+            }
+          ]
+        },
+        {
+          "id": "prosthetic_delivery",
+          "name": "Prosthetic Delivery",
+          "items": [
+            {
+              "id": "passive_fit_test",
+              "text": "Passive fit verified using Sheffield test",
+              "type": "checklist",
+              "category": "clinical",
+              "importance": "essential",
+              "assignedRole": "prosthodontist"
+            },
+            {
+              "id": "torque_protocol",
+              "text": "Final prosthetic screws torqued to manufacturer specification and re-torqued after 10 minutes",
+              "type": "checklist",
+              "category": "clinical",
+              "importance": "essential",
+              "assignedRole": "prosthodontist"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "maintenance_phase",
+      "name": "Maintenance",
+      "order": 6,
+      "sections": [
+        {
+          "id": "baseline_records",
+          "name": "Baseline Records",
+          "items": [
+            {
+              "id": "baseline_probing",
+              "text": "Baseline probing depths recorded at implant sites",
+              "type": "checklist",
+              "category": "clinical",
+              "importance": "essential",
+              "assignedRole": "implantologist"
+            },
+            {
+              "id": "baseline_radiograph",
+              "text": "Baseline radiograph captured using standardized technique",
+              "type": "checklist",
+              "category": "clinical",
+              "importance": "essential",
+              "assignedRole": "implantologist"
+            }
+          ]
+        },
+        {
+          "id": "recall_assessment",
+          "name": "Recall Assessment",
+          "items": [
+            {
+              "id": "bop_check",
+              "text": "Bleeding on probing assessed at recall visits",
+              "type": "checklist",
+              "category": "clinical",
+              "importance": "essential",
+              "assignedRole": "implantologist"
+            },
+            {
+              "id": "bone_loss_monitor",
+              "text": "Radiographic bone level change monitored against baseline",
+              "type": "checklist",
+              "category": "clinical",
+              "importance": "essential",
+              "assignedRole": "implantologist"
+            },
+            {
+              "id": "peri_implantitis_stop",
+              "text": "Progressive peri-implant bone loss triggers specialist referral",
+              "type": "stop",
+              "category": "risk",
+              "importance": "essential",
+              "assignedRole": "implantologist"
+            }
           ]
         }
       ]
