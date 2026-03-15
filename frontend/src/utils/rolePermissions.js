@@ -5,6 +5,7 @@ export const ROLES = {
   IMPLANTOLOGIST: 'implantologist',
   PROSTHODONTIST: 'prosthodontist',
   ASSISTANT: 'assistant',
+  PERIODONTIST: 'periodontist',
 };
 
 export const ROLE_LABELS = {
@@ -12,6 +13,7 @@ export const ROLE_LABELS = {
   [ROLES.IMPLANTOLOGIST]: 'Implantologist',
   [ROLES.PROSTHODONTIST]: 'Prosthodontist',
   [ROLES.ASSISTANT]: 'Assistant',
+  [ROLES.PERIODONTIST]: 'Periodontist',
 };
 
 export const ROLE_COLORS = {
@@ -19,6 +21,7 @@ export const ROLE_COLORS = {
   [ROLES.IMPLANTOLOGIST]: 'purple',
   [ROLES.PROSTHODONTIST]: 'green',
   [ROLES.ASSISTANT]: 'amber',
+  [ROLES.PERIODONTIST]: 'violet',
 };
 
 export const ROLE_BG_COLORS = {
@@ -26,6 +29,7 @@ export const ROLE_BG_COLORS = {
   [ROLES.IMPLANTOLOGIST]: 'role-badge-implantologist',
   [ROLES.PROSTHODONTIST]: 'role-badge-prosthodontist',
   [ROLES.ASSISTANT]: 'role-badge-assistant',
+  [ROLES.PERIODONTIST]: 'role-badge-periodontist',
 };
 
 /**

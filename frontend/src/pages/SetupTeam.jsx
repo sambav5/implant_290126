@@ -11,7 +11,8 @@ import { userApi } from '../api/userApi';
 const ROLES = [
   'Assistant',
   'Implantologist',
-  'Prosthodontist'
+  'Prosthodontist',
+  'Periodontist'
 ];
 
 const SetupTeam = () => {
