@@ -7,7 +7,13 @@ import logging
 from fastapi import APIRouter, HTTPException, status, Request, Depends, UploadFile, File, Form
 from typing import Dict, Any
 
-from schemas.case_schema import CreateCaseRequest, CaseResponse, CaseListResponse, TeamMemberInfo
+from schemas.case_schema import (
+    CreateCaseRequest,
+    CaseResponse,
+    CaseListResponse,
+    TeamMemberInfo,
+    StageAssignmentResponse,
+)
 from services.case_service import CaseService
 from services.user_service import UserService
 from services.case_file_service import CaseFileService
@@ -66,6 +72,11 @@ async def create_case(
             )
         
         # Create case with validation
+        stage_assignments_payload = [
+            {"stage": assignment.stage.value, "user_id": assignment.userId}
+            for assignment in case_data.stageAssignments
+        ]
+
         case = await case_service.create_case(
             clinic_id=clinic_id,
             clinician_id=clinic_id,
@@ -74,7 +85,8 @@ async def create_case(
             assigned_implantologist_id=case_data.assignedImplantologistId,
             assigned_prosthodontist_id=case_data.assignedProsthodontistId,
             assigned_assistant_id=case_data.assignedAssistantId,
-            assigned_periodontist_id=case_data.assignedPeriodontistId
+            assigned_periodontist_id=case_data.assignedPeriodontistId,
+            stage_assignments=stage_assignments_payload,
         )
         
         # Build response with team member info
@@ -84,6 +96,15 @@ async def create_case(
         assistant_info = await case_service.get_team_member_info(case_data.assignedAssistantId)
         periodontist_info = await case_service.get_team_member_info(case_data.assignedPeriodontistId)
         
+        created_stage_assignments = await case_service.get_case_stage_assignments(case["id"])
+        stage_assignment_responses = []
+        for assignment in created_stage_assignments:
+            assigned_user = await case_service.get_team_member_info(assignment["user_id"])
+            if assigned_user:
+                stage_assignment_responses.append(
+                    StageAssignmentResponse(stage=assignment["stage"], user=TeamMemberInfo(**assigned_user))
+                )
+
         return CaseResponse(
             id=case["id"],
             clinicId=case["clinic_id"],
@@ -95,6 +116,7 @@ async def create_case(
             prosthodontist=TeamMemberInfo(**prosthodontist_info) if prosthodontist_info else None,
             assistant=TeamMemberInfo(**assistant_info) if assistant_info else None,
             periodontist=TeamMemberInfo(**periodontist_info) if periodontist_info else None,
+            stageAssignments=stage_assignment_responses,
             createdAt=case["created_at"],
             updatedAt=case["updated_at"]
         )
@@ -144,8 +166,8 @@ async def get_my_cases(
                 detail="User not found"
             )
         
-        clinic_id = user["id"]
-        
+        clinic_id = user.get("clinic_id") or user["id"]
+
         # Get cases
         cases = await case_service.get_user_cases(user_id, clinic_id)
         
@@ -158,6 +180,15 @@ async def get_my_cases(
             assistant_info = await case_service.get_team_member_info(case.get("assigned_assistant_id"))
             periodontist_info = await case_service.get_team_member_info(case.get("assigned_periodontist_id"))
             
+            stage_assignments = await case_service.get_case_stage_assignments(case["id"])
+            stage_assignment_responses = []
+            for assignment in stage_assignments:
+                assigned_user = await case_service.get_team_member_info(assignment["user_id"])
+                if assigned_user:
+                    stage_assignment_responses.append(
+                        StageAssignmentResponse(stage=assignment["stage"], user=TeamMemberInfo(**assigned_user))
+                    )
+
             case_responses.append(
                 CaseResponse(
                     id=case["id"],
@@ -170,6 +201,7 @@ async def get_my_cases(
                     prosthodontist=TeamMemberInfo(**prosthodontist_info) if prosthodontist_info else None,
                     assistant=TeamMemberInfo(**assistant_info) if assistant_info else None,
                     periodontist=TeamMemberInfo(**periodontist_info) if periodontist_info else None,
+                    stageAssignments=stage_assignment_responses,
                     createdAt=case["created_at"],
                     updatedAt=case["updated_at"]
                 )

@@ -57,6 +57,17 @@ const riskConfig = {
   high: { label: 'High Risk', className: 'risk-badge-high', color: 'var(--red)' },
 };
 
+
+const workflowStageLabels = {
+  DIAGNOSIS: 'Diagnosis',
+  IMPLANT_PLANNING: 'Planning',
+  SURGERY: 'Surgery',
+  PROSTHETIC_DESIGN: 'Prosthetic',
+  ASSISTANT_SUPPORT: 'Assistant Support',
+};
+
+const workflowStageOrder = ['DIAGNOSIS', 'IMPLANT_PLANNING', 'SURGERY', 'PROSTHETIC_DESIGN', 'ASSISTANT_SUPPORT'];
+
 export default function CaseDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -130,6 +141,19 @@ export default function CaseDetail() {
   ];
   const completedChecks = totalChecks.filter(item => item.completed).length;
   const checklistProgress = totalChecks.length > 0 ? Math.round((completedChecks / totalChecks.length) * 100) : 0;
+  const orderedWorkflowAssignments = (caseData.stageAssignments || [])
+    .slice()
+    .sort((a, b) => workflowStageOrder.indexOf(a.stage) - workflowStageOrder.indexOf(b.stage));
+
+  const getWorkflowIcon = (index) => {
+    if (caseData.status === 'completed') return '✓';
+    if (caseData.status === 'in_progress') {
+      if (index === 0) return '✓';
+      if (index === 1) return '⏳';
+      return '○';
+    }
+    return index === 0 ? '⏳' : '○';
+  };
   
   return (
     <div className="min-h-screen pb-24" style={{background: 'var(--bg)'}}>
@@ -293,6 +317,20 @@ export default function CaseDetail() {
             )}
           </div>
         </div>
+
+        {orderedWorkflowAssignments.length > 0 && (
+          <div className="card-clinical animate-slide-up stagger-1" data-testid="case-workflow-timeline">
+            <h3 className="font-semibold mb-3" style={{ color: 'var(--t1)', fontFamily: "'Lora', serif" }}>Case Workflow</h3>
+            <div className="space-y-2">
+              {orderedWorkflowAssignments.map((assignment, index) => (
+                <div key={`${assignment.stage}-${assignment.user.id}`} className="flex items-center justify-between text-sm" style={{ color: 'var(--t1)' }}>
+                  <span>{workflowStageLabels[assignment.stage] || assignment.stage}</span>
+                  <span className="mono">{getWorkflowIcon(index)} {assignment.user.name}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
         
         {/* Risk Assessment (if available) */}
         {caseData.riskAssessment && (

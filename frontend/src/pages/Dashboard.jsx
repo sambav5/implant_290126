@@ -62,8 +62,18 @@ export default function Dashboard() {
 
   const loadCases = async () => {
     try {
-      const response = await caseApi.getAll();
-      setCases(response.data);
+      const response = await caseApi.getMy();
+      const rawCases = response.data.cases || response.data || [];
+      const normalizedCases = rawCases.map((c) => ({
+        ...c,
+        caseName: c.caseName || c.caseTitle || 'Untitled case',
+        toothNumber: c.toothNumber || 'N/A',
+        status: c.status || c.caseStatus || 'planning',
+        preTreatmentChecklist: c.preTreatmentChecklist || [],
+        treatmentChecklist: c.treatmentChecklist || [],
+        postTreatmentChecklist: c.postTreatmentChecklist || [],
+      }));
+      setCases(normalizedCases);
     } catch (error) {
       toast.error('Failed to load cases');
       console.error(error);
