@@ -35,7 +35,7 @@ class StageAssignmentResponse(BaseModel):
 
 class CreateCaseRequest(BaseModel):
     patientName: str = Field(..., min_length=2, max_length=200, description="Patient name")
-    caseTitle: str = Field(..., min_length=2, max_length=500, description="Case title/description")
+    caseTitle: str = Field(..., min_length=5, max_length=500, description="Case title/description")
     # Backward-compatible fields
     assignedImplantologistId: Optional[str] = Field(None, description="Assigned implantologist ID")
     assignedProsthodontistId: Optional[str] = Field(None, description="Assigned prosthodontist ID")

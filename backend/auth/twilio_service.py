@@ -16,16 +16,14 @@ TWILIO_AUTH_TOKEN = os.environ.get("TWILIO_AUTH_TOKEN")
 TWILIO_WHATSAPP_FROM = os.environ.get("TWILIO_WHATSAPP_FROM", "whatsapp:+14155238886")
 TWILIO_TEMPLATE_SID = os.environ.get("TWILIO_TEMPLATE_SID")
 
-# Make Twilio optional - only fail when actually trying to use it
-TWILIO_ENABLED = bool(TWILIO_ACCOUNT_SID and TWILIO_AUTH_TOKEN and TWILIO_TEMPLATE_SID)
+if not TWILIO_ACCOUNT_SID or not TWILIO_AUTH_TOKEN:
+    raise ValueError("Twilio credentials must be set in environment variables")
 
-if TWILIO_ENABLED:
-    # Initialize Twilio client
-    twilio_client = Client(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN)
-    logger.info("Twilio integration enabled")
-else:
-    twilio_client = None
-    logger.warning("Twilio credentials not configured - WhatsApp OTP features will be disabled")
+if not TWILIO_TEMPLATE_SID:
+    raise ValueError("TWILIO_TEMPLATE_SID must be set in environment variables")
+
+# Initialize Twilio client
+twilio_client = Client(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN)
 
 
 def send_whatsapp_otp(phone_number: str, otp: str) -> bool:
@@ -42,10 +40,6 @@ def send_whatsapp_otp(phone_number: str, otp: str) -> bool:
     Raises:
         Exception: If Twilio API call fails
     """
-    if not TWILIO_ENABLED:
-        logger.error("Twilio not configured - cannot send WhatsApp OTP")
-        raise ValueError("WhatsApp OTP service is not configured. Please contact administrator.")
-    
     try:
         # Ensure phone number is in WhatsApp format
         if not phone_number.startswith("whatsapp:"):

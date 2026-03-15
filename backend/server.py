@@ -1077,46 +1077,45 @@ async def get_user_custom_checklist_items() -> List[str]:
 async def root():
     return {"message": "Dental Implant Planning API", "disclaimer": "Decision support only. Final responsibility lies with the clinician."}
 
-# Case CRUD - OLD ENDPOINT COMMENTED OUT (replaced by routes/case_routes.py)
-# @api_router.post("/cases", response_model=Case)
-# async def create_case(input: CaseCreate, current_user: Optional[dict] = Depends(get_current_user_optional)):
-#     # Get custom checklist items from past learning
-#     custom_items = await get_user_custom_checklist_items()
-#     
-#     # Create default checklists with custom items
-#     pre_checklist = [ChecklistItem(**item) for item in DEFAULT_PRE_TREATMENT_CHECKLIST]
-#     treatment_checklist = [ChecklistItem(**item) for item in DEFAULT_TREATMENT_CHECKLIST]
-#     post_checklist = [ChecklistItem(**item) for item in DEFAULT_POST_TREATMENT_CHECKLIST]
-#     
-#     # Add custom items from learning loop
-#     for suggestion in custom_items:
-#         custom_item = ChecklistItem(
-#             text=suggestion,
-#             isCustom=True
-#         )
-#         pre_checklist.append(custom_item)
-#     
-#     case = Case(
-#         **input.model_dump(),
-#         preTreatmentChecklist=pre_checklist,
-#         treatmentChecklist=treatment_checklist,
-#         postTreatmentChecklist=post_checklist,
-#     )
-#     
-#     case = add_timeline_entry(
-#         case.model_dump(),
-#         "Case created",
-#         f"Tooth #{input.toothNumber}"
-#     )
-#     
-#     await db.cases.insert_one(case)
-#     return Case(**case)
+# Case CRUD
+@api_router.post("/cases", response_model=Case)
+async def create_case(input: CaseCreate, current_user: Optional[dict] = Depends(get_current_user_optional)):
+    # Get custom checklist items from past learning
+    custom_items = await get_user_custom_checklist_items()
+    
+    # Create default checklists with custom items
+    pre_checklist = [ChecklistItem(**item) for item in DEFAULT_PRE_TREATMENT_CHECKLIST]
+    treatment_checklist = [ChecklistItem(**item) for item in DEFAULT_TREATMENT_CHECKLIST]
+    post_checklist = [ChecklistItem(**item) for item in DEFAULT_POST_TREATMENT_CHECKLIST]
+    
+    # Add custom items from learning loop
+    for suggestion in custom_items:
+        custom_item = ChecklistItem(
+            text=suggestion,
+            isCustom=True
+        )
+        pre_checklist.append(custom_item)
+    
+    case = Case(
+        **input.model_dump(),
+        preTreatmentChecklist=pre_checklist,
+        treatmentChecklist=treatment_checklist,
+        postTreatmentChecklist=post_checklist,
+    )
+    
+    case = add_timeline_entry(
+        case.model_dump(),
+        "Case created",
+        f"Tooth #{input.toothNumber}"
+    )
+    
+    await db.cases.insert_one(case)
+    return Case(**case)
 
-# OLD ENDPOINT COMMENTED OUT (replaced by routes/case_routes.py)
-# @api_router.get("/cases", response_model=List[Case])
-# async def get_cases(current_user: Optional[dict] = Depends(get_current_user_optional)):
-#     cases = await db.cases.find({}, {"_id": 0}).to_list(1000)
-#     return [Case(**case) for case in cases]
+@api_router.get("/cases", response_model=List[Case])
+async def get_cases(current_user: Optional[dict] = Depends(get_current_user_optional)):
+    cases = await db.cases.find({}, {"_id": 0}).to_list(1000)
+    return [Case(**case) for case in cases]
 
 @api_router.get("/cases/{case_id}", response_model=Case)
 async def get_case(case_id: str, current_user: Optional[dict] = Depends(get_current_user_optional)):

@@ -76,7 +76,6 @@ class CaseService:
 
         stage_assignments = stage_assignments or []
         seen_stages = set()
-        valid_stage_assignments = []
         for assignment in stage_assignments:
             stage = assignment["stage"]
             user_id = assignment["user_id"]
@@ -84,14 +83,8 @@ class CaseService:
                 raise ValueError(f"Duplicate stage assignment for {stage}")
             seen_stages.add(stage)
 
-            # Validate user exists in clinic - skip invalid assignments with a warning
-            if user_id and not await self.validate_user_in_clinic(user_id, clinic_id):
-                logger.warning(f"Skipping invalid stage assignment for {stage}: user {user_id} not found in clinic {clinic_id}")
-                continue
-            
-            # Only add valid assignments
-            if user_id:
-                valid_stage_assignments.append(assignment)
+            if not await self.validate_user_in_clinic(user_id, clinic_id):
+                raise ValueError(f"Invalid stage assignment user for stage {stage}")
 
         case = {
             "id": str(uuid.uuid4()),
@@ -110,7 +103,7 @@ class CaseService:
 
         await self.cases.insert_one(case)
 
-        if valid_stage_assignments:
+        if stage_assignments:
             now = datetime.utcnow()
             docs = [
                 {
@@ -120,7 +113,7 @@ class CaseService:
                     "user_id": assignment["user_id"],
                     "created_at": now,
                 }
-                for assignment in valid_stage_assignments
+                for assignment in stage_assignments
             ]
             await self.case_stage_assignments.insert_many(docs)
 

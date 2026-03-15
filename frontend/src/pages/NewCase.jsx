@@ -136,9 +136,8 @@ export default function NewCase() {
       toast.success('Case created successfully');
       navigate(`/case/${response.data.id}`);
     } catch (error) {
-      const errorMessage = error.response?.data?.detail || 'Failed to create case';
-      toast.error(errorMessage);
-      console.error('Case creation error:', error);
+      toast.error('Failed to create case');
+      console.error(error);
     } finally {
       setLoading(false);
     }
