@@ -13,6 +13,7 @@ from schemas.case_schema import (
     CaseListResponse,
     TeamMemberInfo,
     StageAssignmentResponse,
+    UpdateStageAssignmentsRequest,
 )
 from services.case_service import CaseService
 from services.user_service import UserService
@@ -216,6 +217,73 @@ async def get_my_cases(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to fetch cases"
+        )
+
+
+@router.put("/{case_id}/stage-assignments", status_code=status.HTTP_200_OK)
+async def update_case_stage_assignments(
+    case_id: str,
+    payload: UpdateStageAssignmentsRequest,
+    request: Request,
+    current_user: Dict[str, Any] = Depends(get_current_user),
+):
+    try:
+        db = get_db(request)
+        case_service = CaseService(db)
+        user_service = UserService(db)
+
+        phone_number = current_user.get("phoneNumber")
+        user_id = current_user.get("userId")
+
+        user = await user_service.get_user_by_mobile(phone_number)
+        if not user:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+
+        clinic_id = user.get("clinic_id") or user["id"]
+
+        if user_id != clinic_id:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Only clinicians can update stage assignments"
+            )
+
+        case = await case_service.get_case_by_id(case_id)
+        if not case or case.get("clinic_id") != clinic_id:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Case not found")
+
+        stage_assignments_payload = [
+            {"stage": assignment.stage.value, "user_id": assignment.userId}
+            for assignment in payload.stageAssignments
+        ]
+
+        updated_stage_assignments = await case_service.update_stage_assignments(
+            case_id=case_id,
+            clinic_id=clinic_id,
+            stage_assignments=stage_assignments_payload,
+        )
+
+        stage_assignment_responses = []
+        for assignment in updated_stage_assignments:
+            assigned_user = await case_service.get_team_member_info(assignment["user_id"])
+            if assigned_user:
+                stage_assignment_responses.append(
+                    StageAssignmentResponse(stage=assignment["stage"], user=TeamMemberInfo(**assigned_user))
+                )
+
+        return {
+            "message": "Team updated successfully",
+            "stageAssignments": stage_assignment_responses,
+        }
+
+    except ValueError as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error updating stage assignments: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to update stage assignments"
         )
 
 

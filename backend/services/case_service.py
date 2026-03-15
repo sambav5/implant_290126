@@ -120,9 +120,48 @@ class CaseService:
         logger.info(f"Created case {case['id']} for clinic {clinic_id}")
         return case
 
+    async def get_case_by_id(self, case_id: str) -> Optional[Dict[str, Any]]:
+        return await self.cases.find_one({"id": case_id}, {"_id": 0})
+
     async def get_case_stage_assignments(self, case_id: str) -> List[Dict[str, Any]]:
         assignments = await self.case_stage_assignments.find({"case_id": case_id}, {"_id": 0}).to_list(length=50)
         return assignments
+
+    async def update_stage_assignments(self, case_id: str, clinic_id: str, stage_assignments: List[Dict[str, str]]) -> List[Dict[str, Any]]:
+        seen_stages = set()
+        for assignment in stage_assignments:
+            stage = assignment["stage"]
+            user_id = assignment["user_id"]
+
+            if stage in seen_stages:
+                raise ValueError(f"Duplicate stage assignment for {stage}")
+            seen_stages.add(stage)
+
+            if not await self.validate_user_in_clinic(user_id, clinic_id):
+                raise ValueError(f"Invalid stage assignment user for stage {stage}")
+
+        await self.case_stage_assignments.delete_many({"case_id": case_id})
+
+        if stage_assignments:
+            now = datetime.utcnow()
+            docs = [
+                {
+                    "id": str(uuid.uuid4()),
+                    "case_id": case_id,
+                    "stage": assignment["stage"],
+                    "user_id": assignment["user_id"],
+                    "created_at": now,
+                }
+                for assignment in stage_assignments
+            ]
+            await self.case_stage_assignments.insert_many(docs)
+
+        await self.cases.update_one(
+            {"id": case_id, "clinic_id": clinic_id},
+            {"$set": {"updated_at": datetime.utcnow()}},
+        )
+
+        return await self.get_case_stage_assignments(case_id)
 
     async def get_user_cases(self, user_id: str, clinic_id: str) -> List[Dict[str, Any]]:
         """Get all cases where user is assigned by role fields or workflow stages."""
