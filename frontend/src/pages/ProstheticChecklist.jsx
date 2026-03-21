@@ -1,6 +1,6 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, CheckCircle2, Circle, FlaskConical, TrendingUp, Home, Lightbulb, Filter, Check, ChevronDown, ChevronRight } from 'lucide-react';
+import { ArrowLeft, CheckCircle2, Circle, FlaskConical, TrendingUp, Home, Lightbulb, Check, Lock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Switch } from '@/components/ui/switch';
@@ -11,7 +11,7 @@ import { trackTreatmentBlueprintCompleted } from '@/lib/analytics';
 import { RoleSwitcher } from '@/components/RoleSwitcher';
 import { RoleBadge } from '@/components/RoleBadge';
 import { useActiveRole } from '@/hooks/useActiveRole';
-import { canEditItem, getRoleName } from '@/utils/rolePermissions';
+import { ROLES, ROLE_LABELS, getRoleName } from '@/utils/rolePermissions';
 import ContentContainer from '@/components/ui/ContentContainer';
 import AppLayout from '@/layout/AppLayout';
 
@@ -30,34 +30,117 @@ const PHASE_CONFIG = [
   { id: 'review', label: 'Follow-up', icon: '👁️' }
 ];
 
-// Phase colors configuration
-const PHASE_COLORS = {
-  pre_surgical_planning: { bg: 'var(--blue-1)', border: 'var(--blue-b)', text: 'var(--blue)', badge: 'var(--blue-2)' },
-  surgical_treatment: { bg: 'var(--red-1)', border: 'var(--red-b)', text: 'var(--red)', badge: 'var(--red-2)' },
-  immediate_post_delivery: { bg: 'var(--orange-1)', border: 'var(--orange-b)', text: 'var(--orange)', badge: 'var(--orange-2)' },
-  prosthetic_rehab: { bg: 'var(--purple-1)', border: 'var(--purple-b)', text: 'var(--purple)', badge: 'var(--purple-2)' },
-  clinical_tryin: { bg: 'var(--purple-1)', border: 'var(--purple-b)', text: 'var(--purple)', badge: 'var(--purple-2)' },
-  delivery: { bg: 'var(--green-1)', border: 'var(--green-b)', text: 'var(--green)', badge: 'var(--green-2)' },
-  follow_up: { bg: 'var(--teal-1)', border: 'var(--teal-b)', text: 'var(--teal)', badge: 'var(--teal-2)' },
-  maintenance: { bg: 'var(--teal-1)', border: 'var(--teal-b)', text: 'var(--teal)', badge: 'var(--teal-2)' }
+const normalizeRole = (value) => (typeof value === 'string' ? value.trim().toLowerCase() : '');
+
+const getUserRoles = (user, activeRole) => {
+  const roles = new Set();
+  const addRole = (role) => {
+    const normalizedRole = normalizeRole(role);
+    if (normalizedRole) {
+      roles.add(normalizedRole);
+    }
+  };
+
+  addRole(user?.role);
+
+  if (Array.isArray(user?.roles)) {
+    user.roles.forEach(addRole);
+  }
+
+  addRole(activeRole);
+
+  return Array.from(roles);
 };
 
-const DEFAULT_PHASE_COLOR = { bg: 'var(--card)', border: 'var(--border)', text: 'var(--t1)', badge: 'var(--border)' };
+const isClinician = (user) => getUserRoles(user).includes(ROLES.CLINICIAN);
+
+const getItemAssignment = (item) => {
+  const assignedTo = item?.assignedTo;
+
+  if (assignedTo && typeof assignedTo === 'object') {
+    return {
+      id: assignedTo.id || assignedTo.userId || null,
+      role: normalizeRole(assignedTo.role || assignedTo.name || assignedTo.value),
+      label: assignedTo.label || assignedTo.name || assignedTo.role || assignedTo.userId || null
+    };
+  }
+
+  const assignedValue = typeof assignedTo === 'string' ? assignedTo.trim() : '';
+  const normalizedAssignedValue = normalizeRole(assignedValue);
+  const assignedRole = normalizeRole(item?.assignedRole);
+  const resolvedRole = normalizedAssignedValue && ROLE_LABELS[normalizedAssignedValue]
+    ? normalizedAssignedValue
+    : assignedRole;
+
+  return {
+    id: assignedValue && !ROLE_LABELS[normalizedAssignedValue] ? assignedValue : null,
+    role: resolvedRole || null,
+    label: assignedValue || item?.assignedRole || null
+  };
+};
+
+const isAssignedToUser = (item, user, activeRole) => {
+  if (!item || !user) return false;
+
+  const assignment = getItemAssignment(item);
+  const userRoles = getUserRoles(user, activeRole);
+
+  if (assignment.id && String(assignment.id) === String(user.id)) {
+    return true;
+  }
+
+  if (assignment.role && userRoles.includes(assignment.role)) {
+    return true;
+  }
+
+  return false;
+};
+
+const canEditItem = (item, user, activeRole) => {
+  if (!item || !user) return false;
+  if (isClinician({ ...user, roles: getUserRoles(user, activeRole) })) {
+    return true;
+  }
+
+  const assignment = getItemAssignment(item);
+  if (!assignment.id && !assignment.role) {
+    return false;
+  }
+
+  return isAssignedToUser(item, user, activeRole);
+};
+
+const getAssignmentLabel = (item, caseTeam) => {
+  const assignment = getItemAssignment(item);
+
+  if (assignment.id && item?.assignedToName) {
+    return item.assignedToName;
+  }
+
+  if (assignment.role) {
+    return getRoleName(caseTeam, assignment.role);
+  }
+
+  if (assignment.id) {
+    return item?.assignedToName || assignment.id;
+  }
+
+  return 'Clinician';
+};
 
 export default function ProstheticChecklist() {
   const { id } = useParams();
   const navigate = useNavigate();
   const [caseData, setCaseData] = useState(null);
+  const [loggedInUser, setLoggedInUser] = useState(null);
   const [checklist, setChecklist] = useState(null);
   const [isDynamic, setIsDynamic] = useState(false);
-  const [planningConditions, setPlanningConditions] = useState(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [showFullProtocol, setShowFullProtocol] = useState(() => {
     const saved = localStorage.getItem(`checklistScope_${id}`);
     return saved === 'full' ? true : false;
   });
-  const [showMasterChecklist, setShowMasterChecklist] = useState(false);
   
   // Tab-based navigation
   const [activePhase, setActivePhase] = useState('preparation');
@@ -67,11 +150,13 @@ export default function ProstheticChecklist() {
   
   // Role-based collaboration state
   const [activeRole] = useActiveRole();
-  const [showMyTasksOnly, setShowMyTasksOnly] = useState(false);
+  const [showAll, setShowAll] = useState(false);
   
-  // Phase and section expansion state
-  const [expandedPhases, setExpandedPhases] = useState({});
-  const [expandedSections, setExpandedSections] = useState({});
+  const currentUser = useMemo(() => ({
+    ...(loggedInUser || {}),
+    role: normalizeRole(loggedInUser?.role) || normalizeRole(activeRole) || ROLES.CLINICIAN,
+    roles: getUserRoles(loggedInUser, activeRole),
+  }), [loggedInUser, activeRole]);
 
   // Persist toggle state to localStorage
   useEffect(() => {
@@ -83,23 +168,32 @@ export default function ProstheticChecklist() {
   useEffect(() => {
     loadData();
   }, [id]);
+
+  useEffect(() => {
+    if (isClinician(currentUser)) {
+      setShowAll(true);
+    }
+  }, [currentUser]);
   
   // Check phase completion whenever checklist changes
   useEffect(() => {
     if (checklist) {
       checkPhaseCompletion();
     }
-  }, [checklist, showFullProtocol, showMyTasksOnly, activeRole]);
+  }, [checklist, showFullProtocol, showAll, currentUser]);
 
   const loadData = async () => {
     try {
-      const caseResponse = await axios.get(`${BACKEND_URL}/api/cases/${id}`);
-      setCaseData(caseResponse.data);
+      const [caseResponse, checklistResponse, userResponse] = await Promise.all([
+        axios.get(`${BACKEND_URL}/api/cases/${id}`),
+        axios.get(`${BACKEND_URL}/api/cases/${id}/prosthetic-checklist`),
+        axios.get(`${BACKEND_URL}/api/user/me`)
+      ]);
 
-      const checklistResponse = await axios.get(`${BACKEND_URL}/api/cases/${id}/prosthetic-checklist`);
+      setCaseData(caseResponse.data);
       setChecklist(checklistResponse.data.prostheticChecklist);
       setIsDynamic(checklistResponse.data.isDynamic || false);
-      setPlanningConditions(checklistResponse.data.planningConditions || null);
+      setLoggedInUser(userResponse.data);
     } catch (error) {
       toast.error('Failed to load checklist');
       navigate('/');
@@ -115,26 +209,28 @@ export default function ProstheticChecklist() {
   
   // Get all visible items for a UI phase
   const getVisibleItemsForPhase = (uiPhase) => {
+    if (!checklist) return [];
+
     const backendPhases = getBackendPhasesForUIPhase(uiPhase);
     const items = [];
-    
-    backendPhases.forEach(backendPhase => {
+    const shouldShowAllItems = isClinician(currentUser) || showAll;
+
+    backendPhases.forEach((backendPhase) => {
       const phase = checklist[backendPhase];
-      if (phase) {
-        phase.sections.forEach(section => {
-          section.items.forEach(item => {
-            const isVisibleByScope = showFullProtocol || item.importance === 'essential';
-            const itemRole = item.assignedRole || 'clinician';
-            const isVisibleByRole = !showMyTasksOnly || itemRole === activeRole;
-            
-            if (isVisibleByScope && isVisibleByRole) {
-              items.push({ ...item, phaseKey: backendPhase, section });
-            }
-          });
+      if (!phase) return;
+
+      phase.sections.forEach((section) => {
+        section.items.forEach((item) => {
+          const isVisibleByScope = showFullProtocol || item.importance === 'essential';
+          const isVisibleByAssignment = shouldShowAllItems || isAssignedToUser(item, currentUser, activeRole);
+
+          if (isVisibleByScope && isVisibleByAssignment) {
+            items.push({ ...item, phaseKey: backendPhase, section });
+          }
         });
-      }
+      });
     });
-    
+
     return items;
   };
   
@@ -169,19 +265,14 @@ export default function ProstheticChecklist() {
     return items.find(item => !item.completed);
   };
 
-  const togglePhase = (phaseKey) => {
-    setExpandedPhases(prev => ({ ...prev, [phaseKey]: !prev[phaseKey] }));
-  };
-
-  const toggleSection = (phaseKey, sectionIndex) => {
-    const key = `${phaseKey}-${sectionIndex}`;
-    setExpandedSections(prev => ({ ...prev, [key]: !prev[key] }));
-  };
-
   const toggleItem = async (phaseKey, sectionIndex, itemIndex) => {
     const updatedChecklist = { ...checklist };
     const item = updatedChecklist[phaseKey].sections[sectionIndex].items[itemIndex];
-    
+
+    if (!canEditItem(item, currentUser, activeRole)) {
+      return;
+    }
+
     // Toggle completion
     item.completed = !item.completed;
     item.completedAt = item.completed ? new Date().toISOString() : null;
@@ -238,52 +329,6 @@ export default function ProstheticChecklist() {
     }
   };
 
-  const toggleSelectAllInSection = async (phaseKey, sectionIndex) => {
-    const updatedChecklist = { ...checklist };
-    const section = updatedChecklist[phaseKey].sections[sectionIndex];
-    
-    // Filter visible items based on showFullProtocol state
-    const visibleItems = section.items.filter(item => showFullProtocol || item.importance === 'essential');
-    
-    // Filter editable items (only items the active role can edit)
-    const editableItems = visibleItems.filter(item => {
-      const itemRole = item.assignedRole || 'clinician';
-      return canEditItem(itemRole, activeRole);
-    });
-    
-    // If no editable items, show warning and return
-    if (editableItems.length === 0) {
-      toast.error('No items in this section are assigned to your role');
-      return;
-    }
-    
-    // Check if all editable items are completed
-    const allCompleted = editableItems.every(item => item.completed);
-    
-    // Toggle only editable items
-    editableItems.forEach(item => {
-      item.completed = !allCompleted;
-      item.completedAt = !allCompleted ? new Date().toISOString() : null;
-      
-      // Track who completed it
-      if (!allCompleted) {
-        item.completedByRole = activeRole;
-        item.completedByName = getRoleName(caseData?.caseTeam, activeRole);
-      } else {
-        item.completedByRole = null;
-        item.completedByName = null;
-      }
-    });
-    
-    setChecklist(updatedChecklist);
-    await saveChecklist(updatedChecklist);
-    
-    const message = allCompleted 
-      ? `Unchecked ${editableItems.length} items` 
-      : `Checked ${editableItems.length} items`;
-    toast.success(message);
-  };
-
   const saveChecklist = async (updatedChecklist) => {
     setSaving(true);
     try {
@@ -306,30 +351,6 @@ export default function ProstheticChecklist() {
     } finally {
       setSaving(false);
     }
-  };
-
-  const calculateProgress = (phase) => {
-    if (!phase) return { completed: 0, total: 0, percentage: 0 };
-    
-    let completed = 0;
-    let total = 0;
-    
-    phase.sections.forEach(section => {
-      section.items.forEach(item => {
-        // Only count visible items based on toggle state
-        const isVisible = showFullProtocol || item.importance === 'essential';
-        if (isVisible) {
-          total++;
-          if (item.completed) completed++;
-        }
-      });
-    });
-    
-    return {
-      completed,
-      total,
-      percentage: total > 0 ? Math.round((completed / total) * 100) : 0
-    };
   };
 
   const calculateOverallProgress = () => {
@@ -360,81 +381,98 @@ export default function ProstheticChecklist() {
 
   const renderPhaseContent = () => {
     const backendPhases = getBackendPhasesForUIPhase(activePhase);
-    
+    const shouldShowAllItems = isClinician(currentUser) || showAll;
+
     return (
       <div className="space-y-4">
-        {backendPhases.map(phaseKey => {
-          const phase = checklist[phaseKey];
-          if (!phase) return null;
-          
+        {backendPhases.map((phaseKey) => {
+          const phase = checklist?.[phaseKey];
+          if (!phase?.sections?.length) return null;
+
           return (
             <div key={phaseKey}>
               {phase.sections.map((section, sectionIndex) => {
-                // Filter visible items
-                const visibleItems = section.items.filter(item => {
+                const visibleItems = (section.items || []).filter((item) => {
                   const isVisibleByScope = showFullProtocol || item.importance === 'essential';
-                  const itemRole = item.assignedRole || 'clinician';
-                  const isVisibleByRole = !showMyTasksOnly || itemRole === activeRole;
-                  return isVisibleByScope && isVisibleByRole;
+                  const isVisibleByAssignment = shouldShowAllItems || isAssignedToUser(item, currentUser, activeRole);
+                  return isVisibleByScope && isVisibleByAssignment;
                 });
-                
+
                 if (visibleItems.length === 0) return null;
-                
+
                 return (
                   <div key={sectionIndex} className="mb-6">
-                    {/* Section Header */}
                     <div className="mb-3">
-                      <h3 className="text-base font-semibold flex items-center gap-2" style={{color: 'var(--t1)'}}>
-                        {section.isLabSection && <FlaskConical className="h-4 w-4" style={{color: 'var(--green)'}} />}
+                      <h3 className="text-base font-semibold flex items-center gap-2" style={{ color: 'var(--t1)' }}>
+                        {section.isLabSection && <FlaskConical className="h-4 w-4" style={{ color: 'var(--green)' }} />}
                         {section.title}
                       </h3>
                     </div>
-                    
-                    {/* Items */}
+
                     <div className="space-y-2">
-                      {visibleItems.map(item => {
-                        const itemRole = item.assignedRole || 'clinician';
-                        const canEdit = canEditItem(itemRole, activeRole);
-                        
+                      {visibleItems.map((item) => {
+                        const itemIndex = section.items.findIndex((sectionItem) => sectionItem.id === item.id);
+                        const editable = canEditItem(item, currentUser, activeRole);
+                        const assignmentLabel = getAssignmentLabel(item, caseData?.caseTeam);
+
                         return (
                           <div
                             key={item.id}
                             id={`item-${item.id}`}
                             className="flex items-start gap-3 p-3 rounded-lg transition-all"
                             style={{
-                              background: item.completed ? 'var(--card)' : 'var(--card)',
+                              background: editable ? 'var(--card)' : 'var(--bg)',
                               border: '1px solid var(--border)',
-                              opacity: item.completed ? 0.6 : 1
+                              opacity: editable ? (item.completed ? 0.7 : 1) : 0.6
                             }}
                           >
                             <button
-                              onClick={() => canEdit && toggleItem(phaseKey, sectionIndex, section.items.indexOf(item))}
+                              onClick={() => toggleItem(phaseKey, sectionIndex, itemIndex)}
                               className="shrink-0 pt-0.5"
-                              disabled={!canEdit}
+                              disabled={!editable}
+                              aria-label={editable ? 'Toggle checklist item' : 'Checklist item is view only'}
+                              title={editable ? 'Toggle checklist item' : 'View only'}
                             >
                               {item.completed ? (
-                                <CheckCircle2 className="h-5 w-5" style={{color: 'var(--green)'}} />
+                                <CheckCircle2 className="h-5 w-5" style={{ color: 'var(--green)' }} />
                               ) : (
-                                <Circle className="h-5 w-5" style={{color: 'var(--border2)'}} />
+                                <Circle className="h-5 w-5" style={{ color: editable ? 'var(--border2)' : 'var(--t3)' }} />
                               )}
                             </button>
-                            
+
                             <div className="flex-1 min-w-0">
-                              <p className={`text-sm ${item.completed ? 'line-through' : ''}`} style={{color: item.completed ? 'var(--t3)' : 'var(--t1)'}}>
+                              <p className={`text-sm ${item.completed ? 'line-through' : ''}`} style={{ color: item.completed ? 'var(--t3)' : 'var(--t1)' }}>
                                 {item.text}
                               </p>
-                              
+
                               <div className="flex items-center gap-2 mt-2 flex-wrap">
-                                <RoleBadge role={itemRole} />
-                                
+                                <RoleBadge role={getItemAssignment(item).role || ROLES.CLINICIAN} />
+
+                                <span
+                                  className="px-2 py-0.5 rounded mono text-[10px]"
+                                  style={{ background: 'var(--border)', color: 'var(--t2)' }}
+                                >
+                                  Assigned to: {assignmentLabel}
+                                </span>
+
                                 {item.importance === 'essential' && (
-                                  <span className="px-2 py-0.5 rounded mono" style={{background: 'var(--green-1)', color: 'var(--green)', fontSize: '9px', textTransform: 'uppercase'}}>
+                                  <span className="px-2 py-0.5 rounded mono" style={{ background: 'var(--green-1)', color: 'var(--green)', fontSize: '9px', textTransform: 'uppercase' }}>
                                     Essential
                                   </span>
                                 )}
-                                
+
+                                {!editable && (
+                                  <span
+                                    className="inline-flex items-center gap-1 px-2 py-0.5 rounded mono text-[10px]"
+                                    style={{ background: 'var(--orange-1)', color: 'var(--orange)' }}
+                                  >
+                                    <Lock className="h-3 w-3" />
+                                    View Only
+                                  </span>
+                                )}
+
                                 {item.completedAt && (
-                                  <span className="text-xs mono" style={{color: 'var(--t3)'}}>
+                                  <span className="text-xs mono" style={{ color: 'var(--t3)' }}>
                                     {item.completedByName && `by ${item.completedByName}`}
                                   </span>
                                 )}
@@ -444,10 +482,9 @@ export default function ProstheticChecklist() {
                         );
                       })}
                     </div>
-                    
-                    {/* Separator between sections */}
+
                     {sectionIndex < phase.sections.length - 1 && (
-                      <div className="h-px my-6" style={{background: 'var(--border)'}} />
+                      <div className="h-px my-6" style={{ background: 'var(--border)' }} />
                     )}
                   </div>
                 );
@@ -457,24 +494,6 @@ export default function ProstheticChecklist() {
         })}
       </div>
     );
-  };
-
-  const getVisibleItemsCount = () => {
-    if (!checklist) return { essential: 0, total: 0 };
-    
-    let essential = 0;
-    let total = 0;
-    
-    Object.values(checklist).forEach(phase => {
-      phase.sections.forEach(section => {
-        section.items.forEach(item => {
-          total++;
-          if (item.importance === 'essential') essential++;
-        });
-      });
-    });
-    
-    return { essential, total };
   };
 
   if (loading) {
@@ -584,16 +603,21 @@ export default function ProstheticChecklist() {
           </div>
         </div>
         
-        {/* My Tasks Filter */}
-        {caseData?.caseTeam && (
-          <div className="mb-4 p-3 rounded-lg flex items-center justify-between" style={{background: 'var(--blue-1)', border: '1px solid var(--blue-b)'}}>
-            <div className="flex items-center gap-2">
-              <Filter className="h-4 w-4" style={{color: 'var(--blue)'}} />
-              <span className="text-sm font-medium" style={{color: 'var(--blue)'}}>My Tasks Only</span>
+        {/* Assignment Visibility Toggle */}
+        {!isClinician(currentUser) && (
+          <div className="mb-4 p-3 rounded-lg flex items-center justify-between gap-3" style={{ background: 'var(--blue-1)', border: '1px solid var(--blue-b)' }}>
+            <div>
+              <Label htmlFor="show-all-items" className="text-sm font-medium" style={{ color: 'var(--blue)' }}>
+                Show All Items
+              </Label>
+              <p className="text-xs mt-1" style={{ color: 'var(--t3)' }}>
+                Off shows only your assigned items. On shows all items, but only your assignments stay editable.
+              </p>
             </div>
             <Switch
-              checked={showMyTasksOnly}
-              onCheckedChange={setShowMyTasksOnly}
+              id="show-all-items"
+              checked={showAll}
+              onCheckedChange={setShowAll}
             />
           </div>
         )}
