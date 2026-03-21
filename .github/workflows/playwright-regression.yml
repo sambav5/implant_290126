@@ -1,0 +1,39 @@
+name: Playwright Regression
+
+on:
+  push:
+    branches:
+      - '**'
+  pull_request:
+
+jobs:
+  regression:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install root dependencies
+        run: npm install
+
+      - name: Install Playwright browser
+        run: npm run test:install
+
+      - name: Run regression suite
+        env:
+          CI: 'true'
+          PLAYWRIGHT_USE_MOCKS: 'true'
+        run: npm run test
+
+      - name: Upload Playwright HTML report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-html-report
+          path: test-results/html-report
+          if-no-files-found: ignore

@@ -1,0 +1,19 @@
+{
+  "name": "implant-regression-suite",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Playwright regression testing framework for the React UI and backend APIs.",
+  "scripts": {
+    "test": "playwright test",
+    "test:ui": "playwright test tests/ui",
+    "test:api": "playwright test tests/api",
+    "test:debug": "playwright test --debug",
+    "test:headed": "playwright test --headed",
+    "test:install": "playwright install --with-deps chromium"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.54.2",
+    "dotenv": "^16.6.1",
+    "typescript": "^5.9.2"
+  }
+}
