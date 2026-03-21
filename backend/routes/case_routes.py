@@ -63,10 +63,11 @@ async def create_case(
                 detail="User not found"
             )
         
-        clinic_id = user["id"]
+        # Use the user's clinic_id, fallback to user["id"] for clinic owners
+        clinic_id = user.get("clinic_id") or user["id"]
         
         # Verify user is Clinician (only clinic owner can create cases)
-        if user_id != clinic_id:
+        if user.get("role") != "Clinician":
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail="Only clinicians can create cases"
@@ -80,7 +81,7 @@ async def create_case(
 
         case = await case_service.create_case(
             clinic_id=clinic_id,
-            clinician_id=clinic_id,
+            clinician_id=user_id,  # Use actual user ID for clinician
             patient_name=case_data.patientName,
             case_title=case_data.caseTitle,
             tooth_number=case_data.toothNumber,  # Add tooth_number parameter
