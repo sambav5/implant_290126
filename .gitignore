@@ -30,19 +30,8 @@ next-env.d.ts
 dist/
 dist
 
-# Environment files - ALL VARIANTS
-.env
-.env.*
-*.env
-*.env.*
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
-backend/.env
-frontend/.env
+# Environment files (comprehensive coverage)
 
-# Credentials and tokens
 *token.json*
 *credentials.json*
 
@@ -59,10 +48,9 @@ dump.rdb
 
 # Python
 __pycache__/
-*.pyc
+*pyc*
 venv/
 .venv/
-*.egg-info/
 
 # Development tools
 chainlit.md
@@ -89,8 +77,16 @@ agenthub/agents/youtube/db
 .cache/
 
 # Mobile development
-android-sdk/
-frontend/node_modules/.cache/
+android-sdk/ frontend/node_modules/.cache/default-development/0.pack
+frontend/node_modules/.cache/default-development/1.pack
+frontend/node_modules/.cache/default-development/1.pack
+frontend/node_modules/.cache/default-development/2.pack
+frontend/node_modules/.cache/default-development/2.pack
+-e 
+# Environment files
+*.env
+*.env.*
+frontend/node_modules/.cache/default-development/3.pack
 -e 
 # Environment files
 *.env
@@ -111,66 +107,7 @@ frontend/node_modules/.cache/
 # Environment files
 *.env
 *.env.*
--e 
-# Environment files
-*.env
-*.env.*
--e 
-# Environment files
-*.env
-*.env.*
--e 
-# Environment files
-*.env
-*.env.*
--e 
-# Environment files
-*.env
-*.env.*
--e 
-# Environment files
-*.env
-*.env.*
--e 
-# Environment files
-*.env
-*.env.*
--e 
-# Environment files
-*.env
-*.env.*
--e 
-# Environment files
-*.env
-*.env.*
--e 
-# Environment files
-*.env
-*.env.*
--e 
-# Environment files
-*.env
-*.env.*
--e 
-# Environment files
-*.env
-*.env.*
--e 
-# Environment files
-*.env
-*.env.*
--e 
-# Environment files
-*.env
-*.env.*
--e 
-# Environment files
-*.env
-*.env.*
--e 
-# Environment files
-*.env
-*.env.*
+frontend/node_modules/.cache/default-development/0.pack
 -e 
 # Environment files
 *.env
