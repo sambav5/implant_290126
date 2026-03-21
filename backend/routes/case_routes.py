@@ -171,8 +171,8 @@ async def get_my_cases(
         
         clinic_id = user.get("clinic_id") or user["id"]
 
-        # Get cases
-        cases = await case_service.get_user_cases(user_id, clinic_id)
+        # Get cases - pass mobile number to find cases where user is assigned as team member
+        cases = await case_service.get_user_cases(user_id, clinic_id, phone_number)
         
         # Build response with team member info
         case_responses = []

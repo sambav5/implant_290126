@@ -168,6 +168,9 @@ async def get_current_user_profile(
                 clinic_name = clinic.get("name")
                 clinic_address = clinic.get("address")
         
+        # Get team memberships for this user (clinics where they're a team member)
+        team_memberships = await user_service.get_all_team_memberships(phone_number)
+        
         return UserProfileResponse(
             id=user["id"],
             mobileNumber=user["mobile_number"],
@@ -175,7 +178,17 @@ async def get_current_user_profile(
             role=user.get("role", "Clinician"),
             clinicName=clinic_name,
             clinicAddress=clinic_address,
-            onboardingStage=user["onboarding_stage"]
+            onboardingStage=user["onboarding_stage"],
+            isTeamMember=user.get("is_team_member", False),
+            teamMemberships=[
+                {
+                    "id": tm.get("id"),
+                    "clinicId": tm.get("clinic_id"),
+                    "name": tm.get("name"),
+                    "role": tm.get("role")
+                }
+                for tm in team_memberships
+            ] if team_memberships else []
         )
         
     except HTTPException:

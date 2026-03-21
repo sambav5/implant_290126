@@ -180,11 +180,47 @@ class CaseService:
 
         return await self.get_case_stage_assignments(case_id)
 
-    async def get_user_cases(self, user_id: str, clinic_id: str) -> List[Dict[str, Any]]:
-        """Get all cases for the clinic."""
-        # Simplified: Just return all cases for the clinic
-        query = {"clinic_id": clinic_id}
-        cursor = self.cases.find(query, {"_id": 0}).sort("created_at", -1)
+    async def get_user_cases(self, user_id: str, clinic_id: str, mobile_number: str = None) -> List[Dict[str, Any]]:
+        """Get all cases for the user - includes:
+        1. Cases from their own clinic (if they're a clinic owner)
+        2. Cases where they're assigned via stage_assignments (as team member)
+        """
+        case_ids = set()
+        
+        # 1. Get cases from user's own clinic (if clinic owner)
+        if clinic_id:
+            clinic_cases = await self.cases.find({"clinic_id": clinic_id}, {"_id": 0}).to_list(length=100)
+            for case in clinic_cases:
+                case_ids.add(case["id"])
+        
+        # 2. Get cases where user is assigned via stage_assignments
+        # First, find all team_member IDs for this user (by mobile number)
+        team_member_ids = []
+        if mobile_number:
+            clean_number = mobile_number.lstrip('+').lstrip('91') if mobile_number.startswith('+91') else mobile_number
+            team_members = await self.team_members.find(
+                {"mobile_number": {"$regex": f"{clean_number}$"}},
+                {"_id": 0, "id": 1}
+            ).to_list(length=100)
+            team_member_ids = [tm["id"] for tm in team_members]
+        
+        # Include user_id in the search
+        all_user_ids = [user_id] + team_member_ids
+        
+        # Find all case assignments for these user IDs
+        assignments = await self.case_stage_assignments.find(
+            {"user_id": {"$in": all_user_ids}},
+            {"_id": 0, "case_id": 1}
+        ).to_list(length=500)
+        
+        assigned_case_ids = [a["case_id"] for a in assignments]
+        case_ids.update(assigned_case_ids)
+        
+        # 3. Fetch all unique cases
+        if not case_ids:
+            return []
+        
+        cursor = self.cases.find({"id": {"$in": list(case_ids)}}, {"_id": 0}).sort("created_at", -1)
         return await cursor.to_list(length=100)
 
     async def get_team_member_info(self, member_id: Optional[str]) -> Optional[Dict[str, Any]]:

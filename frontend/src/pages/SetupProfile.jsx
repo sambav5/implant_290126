@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { User, Building2, MapPin, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
@@ -10,6 +10,9 @@ import { userApi } from '../api/userApi';
 const SetupProfile = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
+  const [initialLoading, setInitialLoading] = useState(true);
+  const [isTeamMember, setIsTeamMember] = useState(false);
+  const [teamMemberships, setTeamMemberships] = useState([]);
   const [formData, setFormData] = useState({
     name: '',
     clinicName: '',
@@ -17,6 +20,30 @@ const SetupProfile = () => {
   });
 
   const [errors, setErrors] = useState({});
+
+  // Fetch user profile to pre-populate name if they're a team member
+  useEffect(() => {
+    const fetchUserProfile = async () => {
+      try {
+        const response = await userApi.getProfile();
+        const profile = response.data;
+        
+        // Pre-populate name if available (from team member record)
+        if (profile.name) {
+          setFormData(prev => ({ ...prev, name: profile.name }));
+        }
+        
+        setIsTeamMember(profile.isTeamMember || false);
+        setTeamMemberships(profile.teamMemberships || []);
+      } catch (error) {
+        console.error('Error fetching profile:', error);
+      } finally {
+        setInitialLoading(false);
+      }
+    };
+    
+    fetchUserProfile();
+  }, []);
 
   const validateForm = () => {
     const newErrors = {};
@@ -71,6 +98,14 @@ const SetupProfile = () => {
     }
   };
 
+  if (initialLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-champagne p-4">
+        <Loader2 className="h-8 w-8 animate-spin text-forest" />
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-champagne p-4">
       <Card className="w-full max-w-[1100px] mx-auto px-6 p-8 space-y-6 ">
@@ -82,8 +117,28 @@ const SetupProfile = () => {
           </div>
           <h1 className="text-3xl font-bold text-charcoal">Setup Your Profile</h1>
           <p className="text-sm text-warmgray">
-            Tell us about yourself and your clinic
+            {isTeamMember 
+              ? "We found your profile! Please complete your clinic setup."
+              : "Tell us about yourself and your clinic"
+            }
           </p>
+          
+          {/* Show team memberships info if user is a team member */}
+          {isTeamMember && teamMemberships.length > 0 && (
+            <div className="mt-4 p-3 bg-blue-50 rounded-lg text-left">
+              <p className="text-sm text-blue-700 font-medium mb-2">
+                You're already part of {teamMemberships.length} clinic(s) as a team member:
+              </p>
+              <ul className="text-xs text-blue-600 space-y-1">
+                {teamMemberships.map((tm, idx) => (
+                  <li key={idx}>• {tm.name} ({tm.role})</li>
+                ))}
+              </ul>
+              <p className="text-xs text-blue-500 mt-2">
+                Setting up your own clinic won't affect your existing team memberships.
+              </p>
+            </div>
+          )}
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
@@ -102,7 +157,7 @@ const SetupProfile = () => {
                 onChange={handleChange('name')}
                 disabled={loading}
                 className={errors.name ? 'border-red-500' : ''}
-                autoFocus
+                autoFocus={!formData.name}
               />
               {errors.name && (
                 <p className="text-xs text-red-600">{errors.name}</p>
@@ -123,6 +178,7 @@ const SetupProfile = () => {
                 onChange={handleChange('clinicName')}
                 disabled={loading}
                 className={errors.clinicName ? 'border-red-500' : ''}
+                autoFocus={!!formData.name}
               />
               {errors.clinicName && (
                 <p className="text-xs text-red-600">{errors.clinicName}</p>

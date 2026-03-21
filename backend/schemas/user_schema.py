@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field
-from typing import Optional, Literal
+from typing import Optional, Literal, List
 
 class ProfileSetupRequest(BaseModel):
     name: str = Field(..., min_length=2, max_length=100, description="Full name")
@@ -25,6 +25,12 @@ class UpdateProfileRequest(BaseModel):
             }
         }
 
+class TeamMembershipInfo(BaseModel):
+    id: str
+    clinicId: str
+    name: str
+    role: str
+
 class UserProfileResponse(BaseModel):
     id: str
     mobileNumber: str
@@ -33,6 +39,8 @@ class UserProfileResponse(BaseModel):
     clinicName: Optional[str] = None
     clinicAddress: Optional[str] = None
     onboardingStage: Literal["PROFILE", "TEAM", "COMPLETED"]
+    isTeamMember: Optional[bool] = False
+    teamMemberships: Optional[List[dict]] = []
     
 class SkipTeamSetupRequest(BaseModel):
     skip: bool = True
