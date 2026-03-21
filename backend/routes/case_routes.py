@@ -83,6 +83,7 @@ async def create_case(
             clinician_id=clinic_id,
             patient_name=case_data.patientName,
             case_title=case_data.caseTitle,
+            tooth_number=case_data.toothNumber,  # Add tooth_number parameter
             assigned_implantologist_id=case_data.assignedImplantologistId,
             assigned_prosthodontist_id=case_data.assignedProsthodontistId,
             assigned_assistant_id=case_data.assignedAssistantId,
@@ -196,6 +197,7 @@ async def get_my_cases(
                     clinicId=case["clinic_id"],
                     patientName=case["patient_name"],
                     caseTitle=case["case_title"],
+                    toothNumber=case.get("tooth_number"),
                     caseStatus=case["case_status"],
                     clinician=TeamMemberInfo(**clinician_info) if clinician_info else None,
                     implantologist=TeamMemberInfo(**implantologist_info) if implantologist_info else None,
@@ -217,6 +219,136 @@ async def get_my_cases(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to fetch cases"
+        )
+
+
+@router.get("/{case_id}", response_model=CaseResponse)
+async def get_case_by_id(
+    case_id: str,
+    request: Request,
+    current_user: Dict[str, Any] = Depends(get_current_user)
+):
+    """Get a specific case by ID"""
+    try:
+        db = get_db(request)
+        case_service = CaseService(db)
+        user_service = UserService(db)
+        
+        phone_number = current_user.get("phoneNumber")
+        user_id = current_user.get("userId")
+        
+        # Get user details
+        user = await user_service.get_user_by_mobile(phone_number)
+        if not user:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="User not found"
+            )
+        
+        # Get case
+        case = await case_service.get_case_by_id(case_id)
+        if not case:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Case not found"
+            )
+        
+        # Build response with team member info
+        clinician_info = await case_service.get_team_member_info(case["created_by_clinician_id"])
+        implantologist_info = await case_service.get_team_member_info(case.get("assigned_implantologist_id"))
+        prosthodontist_info = await case_service.get_team_member_info(case.get("assigned_prosthodontist_id"))
+        assistant_info = await case_service.get_team_member_info(case.get("assigned_assistant_id"))
+        periodontist_info = await case_service.get_team_member_info(case.get("assigned_periodontist_id"))
+        
+        stage_assignments = await case_service.get_case_stage_assignments(case["id"])
+        stage_assignment_responses = []
+        for assignment in stage_assignments:
+            assigned_user = await case_service.get_team_member_info(assignment["user_id"])
+            if assigned_user:
+                stage_assignment_responses.append(
+                    StageAssignmentResponse(stage=assignment["stage"], user=TeamMemberInfo(**assigned_user))
+                )
+        
+        return CaseResponse(
+            id=case["id"],
+            clinicId=case["clinic_id"],
+            patientName=case["patient_name"],
+            caseTitle=case["case_title"],
+            toothNumber=case.get("tooth_number"),  # Add tooth number
+            caseStatus=case["case_status"],
+            clinician=TeamMemberInfo(**clinician_info) if clinician_info else None,
+            implantologist=TeamMemberInfo(**implantologist_info) if implantologist_info else None,
+            prosthodontist=TeamMemberInfo(**prosthodontist_info) if prosthodontist_info else None,
+            assistant=TeamMemberInfo(**assistant_info) if assistant_info else None,
+            periodontist=TeamMemberInfo(**periodontist_info) if periodontist_info else None,
+            stageAssignments=stage_assignment_responses,
+            createdAt=case["created_at"],
+            updatedAt=case["updated_at"]
+        )
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error fetching case {case_id}: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to fetch case"
+        )
+
+
+@router.put("/{case_id}")
+async def update_case(
+    case_id: str,
+    update_data: dict,
+    request: Request,
+    current_user: Dict[str, Any] = Depends(get_current_user)
+):
+    """Update a case with new data (for Planning Wizard, etc.)"""
+    try:
+        db = get_db(request)
+        
+        # Get existing case
+        case = await db.cases.find_one({"id": case_id}, {"_id": 0})
+        if not case:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Case not found"
+            )
+        
+        # Handle planningData merge if present
+        if "planningData" in update_data and update_data["planningData"]:
+            existing_planning = case.get("planningData", {})
+            existing_planning.update(update_data["planningData"])
+            update_data["planningData"] = existing_planning
+        
+        # Update timestamp
+        from datetime import datetime
+        update_data["updated_at"] = datetime.utcnow()
+        
+        # Update case in database
+        result = await db.cases.update_one(
+            {"id": case_id},
+            {"$set": update_data}
+        )
+        
+        if result.modified_count == 0 and result.matched_count == 0:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Case not found"
+            )
+        
+        # Get updated case
+        updated_case = await db.cases.find_one({"id": case_id}, {"_id": 0})
+        
+        return {"success": True, "message": "Case updated successfully", "case": updated_case}
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error updating case {case_id}: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to update case: {str(e)}"
         )
 
 

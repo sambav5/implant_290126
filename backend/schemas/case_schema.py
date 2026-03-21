@@ -35,7 +35,8 @@ class StageAssignmentResponse(BaseModel):
 
 class CreateCaseRequest(BaseModel):
     patientName: str = Field(..., min_length=2, max_length=200, description="Patient name")
-    caseTitle: str = Field(..., min_length=5, max_length=500, description="Case title/description")
+    caseTitle: str = Field(..., min_length=2, max_length=500, description="Case title/description")
+    toothNumber: Optional[str] = Field(None, description="Tooth number(s) for the case")
     # Backward-compatible fields
     assignedImplantologistId: Optional[str] = Field(None, description="Assigned implantologist ID")
     assignedProsthodontistId: Optional[str] = Field(None, description="Assigned prosthodontist ID")
@@ -62,6 +63,7 @@ class CaseResponse(BaseModel):
     clinicId: str
     patientName: str
     caseTitle: str
+    toothNumber: Optional[str] = None
     caseStatus: str
 
     clinician: Optional[TeamMemberInfo] = None
@@ -70,6 +72,11 @@ class CaseResponse(BaseModel):
     assistant: Optional[TeamMemberInfo] = None
     periodontist: Optional[TeamMemberInfo] = None
     stageAssignments: List[StageAssignmentResponse] = Field(default_factory=list)
+    
+    # Checklist fields for backward compatibility with frontend
+    preTreatmentChecklist: List[dict] = Field(default_factory=list, description="Pre-treatment checklist items")
+    treatmentChecklist: List[dict] = Field(default_factory=list, description="Treatment checklist items")
+    postTreatmentChecklist: List[dict] = Field(default_factory=list, description="Post-treatment checklist items")
 
     createdAt: datetime
     updatedAt: datetime
