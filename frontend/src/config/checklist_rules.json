@@ -1,0 +1,75 @@
+{
+  "version": "1.0",
+  "rules": [
+    {
+      "id": "rule_bruxism",
+      "when": {
+        "functional_risk": [
+          "bruxism"
+        ]
+      },
+      "then": {
+        "add": [
+          "nightguard_required"
+        ],
+        "warnings": [
+          {
+            "message": "Bruxism increases implant failure risk",
+            "severity": "medium"
+          }
+        ]
+      }
+    },
+    {
+      "id": "rule_smoker",
+      "when": {
+        "medical": [
+          "smoker"
+        ]
+      },
+      "then": {
+        "warnings": [
+          {
+            "message": "Smoking delays healing and increases failure risk",
+            "severity": "high"
+          }
+        ]
+      }
+    },
+    {
+      "id": "rule_esthetic_case",
+      "when": {
+        "caseType": [
+          "esthetic"
+        ]
+      },
+      "then": {
+        "add": [
+          "papilla_prediction"
+        ],
+        "warnings": [
+          {
+            "message": "Esthetic zone requires precise tissue management",
+            "severity": "medium"
+          }
+        ]
+      }
+    },
+    {
+      "id": "rule_low_torque",
+      "when": {
+        "torque": {
+          "lt": 25
+        }
+      },
+      "then": {
+        "warnings": [
+          {
+            "message": "Low torque — consider delayed loading",
+            "severity": "high"
+          }
+        ]
+      }
+    }
+  ]
+}
