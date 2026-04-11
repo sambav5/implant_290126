@@ -1,0 +1,142 @@
+{
+  "version": "1.0",
+  "description": "Seamless Master Checklist Template",
+  "items": [
+    {
+      "id": "cbct_review",
+      "text": "CBCT scan reviewed",
+      "phase": "planning",
+      "visit": "v1",
+      "section": "pre_op",
+      "assignedRole": "implantologist",
+      "type": "critical",
+      "order": 1,
+      "conditions": {
+        "requiresImaging": true
+      },
+      "ui": {
+        "inputType": "checkbox"
+      },
+      "meta": {
+        "tags": [
+          "diagnostic",
+          "core"
+        ]
+      }
+    },
+    {
+      "id": "implant_specs",
+      "text": "Implant diameter and length finalized",
+      "phase": "planning",
+      "visit": "v1",
+      "section": "pre_op",
+      "assignedRole": "implantologist",
+      "type": "critical",
+      "order": 2,
+      "conditions": {},
+      "ui": {
+        "inputType": "checkbox"
+      }
+    },
+    {
+      "id": "guide_verification",
+      "text": "Surgical guide verified intraorally",
+      "phase": "surgery",
+      "visit": "v1",
+      "section": "pre_op",
+      "assignedRole": "implantologist",
+      "type": "important",
+      "order": 3,
+      "conditions": {
+        "guideRequired": true
+      },
+      "ui": {
+        "inputType": "checkbox"
+      }
+    },
+    {
+      "id": "implant_position",
+      "text": "Implant positioned correctly",
+      "phase": "surgery",
+      "visit": "v1",
+      "section": "intra_op",
+      "assignedRole": "implantologist",
+      "type": "critical",
+      "order": 4,
+      "conditions": {
+        "caseType": [
+          "standard",
+          "esthetic",
+          "sinus"
+        ]
+      },
+      "ui": {
+        "inputType": "checkbox"
+      }
+    },
+    {
+      "id": "torque_recorded",
+      "text": "Insertion torque recorded",
+      "phase": "surgery",
+      "visit": "v1",
+      "section": "intra_op",
+      "assignedRole": "assistant",
+      "type": "critical",
+      "order": 5,
+      "conditions": {},
+      "ui": {
+        "inputType": "number"
+      }
+    },
+    {
+      "id": "primary_stability",
+      "text": "Primary stability assessed",
+      "phase": "surgery",
+      "visit": "v1",
+      "section": "intra_op",
+      "assignedRole": "implantologist",
+      "type": "critical",
+      "order": 6,
+      "conditions": {},
+      "ui": {
+        "inputType": "checkbox"
+      }
+    },
+    {
+      "id": "nightguard_required",
+      "text": "Nightguard planned",
+      "phase": "delivery",
+      "visit": "v3",
+      "section": "pre_op",
+      "assignedRole": "prosthodontist",
+      "type": "important",
+      "order": 7,
+      "conditions": {
+        "functional_risk": [
+          "bruxism"
+        ]
+      },
+      "ui": {
+        "inputType": "checkbox"
+      }
+    },
+    {
+      "id": "papilla_prediction",
+      "text": "Papilla prediction completed",
+      "phase": "planning",
+      "visit": "v1",
+      "section": "pre_op",
+      "assignedRole": "prosthodontist",
+      "type": "critical",
+      "order": 8,
+      "conditions": {
+        "caseType": [
+          "esthetic"
+        ]
+      },
+      "ui": {
+        "inputType": "checkbox"
+      }
+    }
+  ]
+}
