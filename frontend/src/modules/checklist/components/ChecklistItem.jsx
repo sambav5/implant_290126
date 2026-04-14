@@ -1,7 +1,7 @@
 import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
 
-export default function ChecklistItem({ item, value, editable, onChange }) {
+export default function ChecklistItem({ item, value, editable, inlineWarning, onChange }) {
   const isNumber = item.ui?.inputType === 'number';
 
   return (
@@ -9,6 +9,7 @@ export default function ChecklistItem({ item, value, editable, onChange }) {
       <div>
         <p className="text-sm font-medium">{item.text}</p>
         <p className="text-xs text-gray-500">{item.assignedRole} • {item.type}</p>
+        {inlineWarning && <p className="text-xs text-amber-700 mt-1">⚠ {inlineWarning}</p>}
       </div>
       {isNumber ? (
         <Input
