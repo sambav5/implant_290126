@@ -51,7 +51,7 @@ function ChecklistFlowScreen({ caseId, gateData, caseData, onEditGate }) {
   return (
     <div className="space-y-4">
       <div className="flex justify-end">
-        <Button variant="outline" onClick={onEditGate}>Edit Gate</Button>
+        <Button variant="outline" onClick={onEditGate}>Edit Snapshot</Button>
       </div>
       <ChecklistPage state={state} dispatch={dispatch} />
     </div>
