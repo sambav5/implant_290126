@@ -113,7 +113,7 @@ export default function GatePage() {
         },
       });
     } catch {
-      toast.info('Gate saved locally. Backend save can be added later.');
+      toast.info('Snapshot saved locally. Backend save can be added later.');
     } finally {
       setSaving(false);
       navigate(`/case/${id}/checklist`);
@@ -124,16 +124,23 @@ export default function GatePage() {
     <AppLayout>
       <ContentContainer className="py-6 space-y-5">
         <div className="card-clinical space-y-2">
-          <h1 className="text-xl font-semibold">Gate Phase</h1>
-          <p className="text-sm text-gray-600">Quick non-blocking intake before checklist generation.</p>
+          <h1 className="text-xl font-semibold">Case Snapshot</h1>
+          <p className="text-sm text-gray-600">Quick overview before checklist generation.</p>
         </div>
 
         <div className={`rounded-lg border px-3 py-2 text-sm ${riskLevel === 'red' ? 'bg-red-50 border-red-200 text-red-800' : riskLevel === 'amber' ? 'bg-yellow-50 border-yellow-200 text-yellow-800' : 'bg-green-50 border-green-200 text-green-800'}`}>
-          Risk status: {riskLevel.toUpperCase()} — guidance only. You can always continue.
+          <p>
+            {riskLevel === 'red'
+              ? 'Clinical insights: Higher risk factors identified. Careful planning recommended.'
+              : riskLevel === 'amber'
+                ? 'Clinical insights: Some risk factors identified. Review before proceeding.'
+                : 'Clinical insights: No significant risk factors identified.'}
+          </p>
+          <p className="text-xs mt-1">{riskLevel === 'green' ? 'For guidance in planning.' : 'For guidance.'}</p>
         </div>
 
         <div className="card-clinical space-y-4">
-          <h2 className="font-semibold">Gate 1 — Medical Status</h2>
+          <h2 className="font-semibold">Medical Overview</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             {medicalOptions.map((option) => (
               <label key={option} className="flex items-center gap-2 text-sm">
@@ -145,7 +152,7 @@ export default function GatePage() {
         </div>
 
         <div className="card-clinical space-y-4">
-          <h2 className="font-semibold">Gate 2 — Periodontal Status</h2>
+          <h2 className="font-semibold">Periodontal Status</h2>
           <Select value={gateData.periodontal || undefined} onValueChange={(value) => setGateData((prev) => ({ ...prev, periodontal: value }))}>
             <SelectTrigger className="max-w-sm"><SelectValue placeholder="Select periodontal status" /></SelectTrigger>
             <SelectContent>
@@ -160,7 +167,7 @@ export default function GatePage() {
         </div>
 
         <div className="card-clinical space-y-4">
-          <h2 className="font-semibold">Gate 3 — Occlusal / TMJ</h2>
+          <h2 className="font-semibold">Occlusion & Function</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             {functionalOptions.map((option) => (
               <label key={option} className="flex items-center gap-2 text-sm">
@@ -172,7 +179,7 @@ export default function GatePage() {
         </div>
 
         <div className="card-clinical space-y-4">
-          <h2 className="font-semibold">Gate 4 — Patient Expectation</h2>
+          <h2 className="font-semibold">Patient Considerations</h2>
           <Select value={gateData.patient_expectation || undefined} onValueChange={(value) => setGateData((prev) => ({ ...prev, patient_expectation: value }))}>
             <SelectTrigger className="max-w-sm"><SelectValue placeholder="Select expectation alignment" /></SelectTrigger>
             <SelectContent>
@@ -182,7 +189,7 @@ export default function GatePage() {
         </div>
 
         <Button onClick={submitGate} disabled={saving} className="w-full md:w-auto" data-testid="gate-continue-btn">
-          {saving ? 'Saving...' : 'Continue to Checklist'}
+          {saving ? 'Saving...' : 'Generate Checklist'}
         </Button>
       </ContentContainer>
     </AppLayout>

@@ -508,7 +508,7 @@ export default function CaseDetail() {
                 </div>
                 <div className="text-left">
                   <h3 className="font-semibold" style={{color: 'var(--t1)'}}>Case Flow Intake</h3>
-                  <p className="text-sm" style={{color: 'var(--t2)'}}>Gate phase + dynamic checklist</p>
+                  <p className="text-sm" style={{color: 'var(--t2)'}}>Snapshot + dynamic checklist</p>
                 </div>
               </div>
               <ChevronRight className="h-5 w-5" style={{color: 'var(--t3)'}} />
