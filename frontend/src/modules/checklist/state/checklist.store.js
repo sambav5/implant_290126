@@ -5,11 +5,14 @@ const defaultState = {
     caseType: 'standard',
     medical: [],
     functional_risk: [],
+    periodontal: '',
+    patient_expectation: '',
     torque: null,
   },
   checklist: [],
   responses: {},
   warnings: [],
+  inlineWarnings: {},
   role: 'implantologist',
   myTasksOnly: true,
   activePhase: 'planning',
@@ -26,6 +29,8 @@ function reducer(state, action) {
       return { ...state, checklist: action.payload };
     case 'SET_WARNINGS':
       return { ...state, warnings: action.payload };
+    case 'SET_INLINE_WARNINGS':
+      return { ...state, inlineWarnings: action.payload };
     case 'SET_RESPONSES':
       return { ...state, responses: { ...state.responses, ...action.payload } };
     case 'SET_ROLE':
@@ -41,8 +46,15 @@ function reducer(state, action) {
   }
 }
 
-export function ChecklistProvider({ children }) {
-  const [state, dispatch] = useReducer(reducer, defaultState);
+export function ChecklistProvider({ children, initialState = {} }) {
+  const [state, dispatch] = useReducer(reducer, {
+    ...defaultState,
+    ...initialState,
+    patientData: {
+      ...defaultState.patientData,
+      ...(initialState.patientData || {}),
+    },
+  });
   const value = useMemo(() => ({ state, dispatch }), [state]);
   return <ChecklistContext.Provider value={value}>{children}</ChecklistContext.Provider>;
 }

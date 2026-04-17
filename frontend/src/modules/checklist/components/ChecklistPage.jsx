@@ -99,6 +99,7 @@ export default function ChecklistPage({ state, dispatch }) {
               section={entry.section}
               items={entry.items}
               responses={state.responses}
+              inlineWarnings={state.inlineWarnings}
               editableForItem={editableForItem}
               onChange={onResponse}
             />
