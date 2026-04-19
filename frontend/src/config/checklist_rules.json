@@ -1,6 +1,7 @@
 {
   "version": "2.0",
   "rules": [
+
     {
       "id": "rule_bruxism",
       "when": { "functional_risk": ["bruxism"] },
@@ -14,6 +15,7 @@
         ]
       }
     },
+
     {
       "id": "rule_heavy_occlusion",
       "when": { "functional_risk": ["heavy_occlusion"] },
@@ -38,6 +40,7 @@
         ]
       }
     },
+
     {
       "id": "rule_uncontrolled_diabetes",
       "when": { "medical": ["uncontrolled_diabetes"] },
@@ -173,6 +176,76 @@
         ]
       }
     },
+
+    {
+      "id": "rule_sinus_case",
+      "when": { "caseType": ["sinus"] },
+      "then": {
+        "warnings": [
+          {
+            "message": "Sinus case — assess bone height and approach",
+            "severity": "high"
+          }
+        ]
+      }
+    },
+
+    {
+      "id": "rule_full_arch",
+      "when": { "caseType": ["full_arch"] },
+      "then": {
+        "warnings": [
+          {
+            "message": "Full arch case — passive fit and cross-arch stability critical",
+            "severity": "high"
+          }
+        ]
+      }
+    },
+
+    {
+      "id": "rule_immediate",
+      "when": { "caseType": ["immediate"] },
+      "then": {
+        "warnings": [
+          {
+            "message": "Immediate placement — ensure primary stability and socket integrity",
+            "severity": "high"
+          }
+        ]
+      }
+    },
+
+    /* =========================
+       STABILITY / TORQUE
+    ========================= */
+
+    {
+      "id": "rule_high_torque",
+      "when": { "torque": { "gte": 35 } },
+      "then": {
+        "warnings": [
+          {
+            "message": "Good primary stability — immediate loading possible",
+            "severity": "low"
+          }
+        ]
+      }
+    },
+
+    {
+      "id": "rule_mid_torque",
+      "when": { "torque": { "gte": 25, "lt": 35 } },
+      "then": {
+        "warnings": [
+          {
+            "message": "Moderate stability — consider early loading",
+            "severity": "medium"
+          }
+        ]
+      }
+    },
+
     {
       "id": "rule_low_torque",
       "when": { "torque": { "lt": 25 } },
@@ -257,5 +330,6 @@
         ]
       }
     }
+
   ]
 }
