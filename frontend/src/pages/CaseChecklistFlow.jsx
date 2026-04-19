@@ -7,6 +7,7 @@ import ChecklistPage from '@/modules/checklist/components/ChecklistPage';
 import { ChecklistProvider } from '@/modules/checklist/state/checklist.store';
 import { useChecklist } from '@/modules/checklist/hooks/useChecklist';
 import { caseApi } from '@/services/api';
+import { userApi } from '@/api/userApi';
 
 const getStorageKey = (caseId) => `case_gate_data_${caseId}`;
 
@@ -48,10 +49,33 @@ function ChecklistFlowScreen({ caseId, gateData, caseData, onEditGate }) {
     });
   }, [caseData, dispatch, gateData]);
 
+  useEffect(() => {
+    let mounted = true;
+
+    async function loadRole() {
+      try {
+        const response = await userApi.getProfile();
+        const backendRole = String(response?.data?.role || 'clinician').toLowerCase();
+        if (mounted) {
+          dispatch({ type: 'SET_ROLE', payload: backendRole });
+        }
+      } catch {
+        if (mounted) {
+          dispatch({ type: 'SET_ROLE', payload: 'clinician' });
+        }
+      }
+    }
+
+    loadRole();
+    return () => {
+      mounted = false;
+    };
+  }, [dispatch]);
+
   return (
     <div className="space-y-4">
       <div className="flex justify-end">
-        <Button variant="outline" onClick={onEditGate}>Edit Snapshot</Button>
+        <Button variant="outline" onClick={onEditGate}>Edit Case Snapshot</Button>
       </div>
       <ChecklistPage state={state} dispatch={dispatch} />
     </div>
