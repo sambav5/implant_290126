@@ -2,10 +2,6 @@
   "version": "2.0",
   "rules": [
 
-    /* =========================
-       FUNCTIONAL RISK
-    ========================= */
-
     {
       "id": "rule_bruxism",
       "when": { "functional_risk": ["bruxism"] },
@@ -32,11 +28,6 @@
         ]
       }
     },
-
-    /* =========================
-       MEDICAL RISKS
-    ========================= */
-
     {
       "id": "rule_smoker",
       "when": { "medical": ["smoker"] },
@@ -62,7 +53,6 @@
         ]
       }
     },
-
     {
       "id": "rule_anticoagulants",
       "when": { "medical": ["anticoagulants"] },
@@ -75,7 +65,6 @@
         ]
       }
     },
-
     {
       "id": "rule_bisphosphonates",
       "when": { "medical": ["bisphosphonates"] },
@@ -88,7 +77,6 @@
         ]
       }
     },
-
     {
       "id": "rule_recent_mi",
       "when": { "medical": ["recent_mi"] },
@@ -101,11 +89,6 @@
         ]
       }
     },
-
-    /* =========================
-       PERIODONTAL
-    ========================= */
-
     {
       "id": "rule_active_perio",
       "when": { "perio": "active" },
@@ -118,11 +101,6 @@
         ]
       }
     },
-
-    /* =========================
-       CASE TYPE LOGIC
-    ========================= */
-
     {
       "id": "rule_esthetic_case",
       "when": { "caseType": ["esthetic"] },
@@ -133,6 +111,66 @@
         "warnings": [
           {
             "message": "Esthetic zone — tissue and emergence profile critical",
+            "severity": "medium"
+          }
+        ]
+      }
+    },
+    {
+      "id": "rule_sinus_case",
+      "when": { "caseType": ["sinus"] },
+      "then": {
+        "warnings": [
+          {
+            "message": "Sinus case — assess bone height and approach",
+            "severity": "high"
+          }
+        ]
+      }
+    },
+    {
+      "id": "rule_full_arch",
+      "when": { "caseType": ["full_arch"] },
+      "then": {
+        "warnings": [
+          {
+            "message": "Full arch case — passive fit and cross-arch stability critical",
+            "severity": "high"
+          }
+        ]
+      }
+    },
+    {
+      "id": "rule_immediate",
+      "when": { "caseType": ["immediate"] },
+      "then": {
+        "warnings": [
+          {
+            "message": "Immediate placement — ensure primary stability and socket integrity",
+            "severity": "high"
+          }
+        ]
+      }
+    },
+    {
+      "id": "rule_high_torque",
+      "when": { "torque": { "gte": 35 } },
+      "then": {
+        "warnings": [
+          {
+            "message": "Good primary stability — immediate loading possible",
+            "severity": "low"
+          }
+        ]
+      }
+    },
+    {
+      "id": "rule_mid_torque",
+      "when": { "torque": { "gte": 25, "lt": 35 } },
+      "then": {
+        "warnings": [
+          {
+            "message": "Moderate stability — consider early loading",
             "severity": "medium"
           }
         ]
@@ -220,11 +258,6 @@
         ]
       }
     },
-
-    /* =========================
-       IMPRESSION PHASE
-    ========================= */
-
     {
       "id": "rule_full_arch_impression",
       "when": { "caseType": ["full_arch"] },
@@ -237,7 +270,6 @@
         ]
       }
     },
-
     {
       "id": "rule_multi_unit_impression",
       "when": { "multi_unit": true },
@@ -250,11 +282,6 @@
         ]
       }
     },
-
-    /* =========================
-       DELIVERY PHASE
-    ========================= */
-
     {
       "id": "rule_sheffield_failure",
       "when": { "sheffield_fail": true },
@@ -267,7 +294,6 @@
         ]
       }
     },
-
     {
       "id": "rule_occlusion_issue",
       "when": { "occlusion_issue": true },
@@ -280,11 +306,6 @@
         ]
       }
     },
-
-    /* =========================
-       CRITICAL WARNINGS
-    ========================= */
-
     {
       "id": "rule_iaj_gap",
       "when": { "iaj_gap": true },
@@ -297,7 +318,6 @@
         ]
       }
     },
-
     {
       "id": "rule_mobility",
       "when": { "mobility": true },
