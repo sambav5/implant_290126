@@ -1,22 +1,18 @@
 {
-  "version": "2.0",
+  "version": "3.0",
   "rules": [
 
     {
       "id": "rule_bruxism",
-      "when": {
-        "functional_risk": [
-          "bruxism"
-        ]
-      },
+      "when": { "functional_risk": ["bruxism"] },
       "then": {
-        "add": [
-          "nightguard_required"
-        ],
+        "add": ["nightguard_required"],
         "warnings": [
           {
             "message": "Bruxism increases implant failure risk",
-            "severity": "medium"
+            "severity": "medium",
+            "category": "functional",
+            "priority": 2
           }
         ]
       }
@@ -24,32 +20,29 @@
 
     {
       "id": "rule_heavy_occlusion",
-      "when": {
-        "functional_risk": [
-          "heavy_occlusion"
-        ]
-      },
+      "when": { "functional_risk": ["heavy_occlusion"] },
       "then": {
         "warnings": [
           {
-            "message": "Heavy occlusion \u2014 adjust loading and occlusion carefully",
-            "severity": "medium"
+            "message": "Heavy occlusion — adjust loading and occlusion carefully",
+            "severity": "medium",
+            "category": "functional",
+            "priority": 1
           }
         ]
       }
     },
+
     {
       "id": "rule_smoker",
-      "when": {
-        "medical": [
-          "smoker"
-        ]
-      },
+      "when": { "medical": ["smoker"] },
       "then": {
         "warnings": [
           {
             "message": "Smoking delays healing and increases failure risk",
-            "severity": "high"
+            "severity": "high",
+            "category": "medical",
+            "priority": 3
           }
         ]
       }
@@ -57,178 +50,60 @@
 
     {
       "id": "rule_uncontrolled_diabetes",
-      "when": {
-        "medical": [
-          "uncontrolled_diabetes"
-        ]
-      },
+      "when": { "medical": ["uncontrolled_diabetes"] },
       "then": {
         "warnings": [
           {
-            "message": "Uncontrolled diabetes \u2014 high implant failure risk",
-            "severity": "high"
+            "message": "Uncontrolled diabetes — high implant failure risk",
+            "severity": "high",
+            "category": "medical",
+            "priority": 4
           }
         ]
       }
     },
+
     {
       "id": "rule_anticoagulants",
-      "when": {
-        "medical": [
-          "anticoagulants"
-        ]
-      },
+      "when": { "medical": ["anticoagulants"] },
       "then": {
         "warnings": [
           {
-            "message": "Patient on anticoagulants \u2014 bleeding risk management required",
-            "severity": "medium"
+            "message": "Patient on anticoagulants — bleeding risk management required",
+            "severity": "medium",
+            "category": "medical",
+            "priority": 2
           }
         ]
       }
     },
-    {
-      "id": "rule_bisphosphonates",
-      "when": {
-        "medical": [
-          "bisphosphonates"
-        ]
-      },
-      "then": {
-        "warnings": [
-          {
-            "message": "Bisphosphonate therapy \u2014 risk of osteonecrosis",
-            "severity": "high"
-          }
-        ]
-      }
-    },
-    {
-      "id": "rule_recent_mi",
-      "when": {
-        "medical": [
-          "recent_mi"
-        ]
-      },
-      "then": {
-        "warnings": [
-          {
-            "message": "Recent cardiac event \u2014 medical clearance required",
-            "severity": "high"
-          }
-        ]
-      }
-    },
+
     {
       "id": "rule_active_perio",
-      "when": {
-        "perio": "active"
-      },
+      "when": { "perio": "active" },
       "then": {
         "warnings": [
           {
-            "message": "Active periodontal disease \u2014 stabilize before implant",
-            "severity": "high"
+            "message": "Active periodontal disease — stabilize before implant",
+            "severity": "high",
+            "category": "periodontal",
+            "priority": 5
           }
         ]
       }
     },
+
     {
       "id": "rule_esthetic_case",
-      "when": {
-        "caseType": [
-          "esthetic"
-        ]
-      },
+      "when": { "caseType": ["esthetic"] },
       "then": {
-        "add": [
-          "papilla_prediction"
-        ],
+        "add": ["papilla_prediction"],
         "warnings": [
           {
-            "message": "Esthetic zone \u2014 tissue and emergence profile critical",
-            "severity": "medium"
-          }
-        ]
-      }
-    },
-    {
-      "id": "rule_sinus_case",
-      "when": {
-        "caseType": [
-          "sinus"
-        ]
-      },
-      "then": {
-        "warnings": [
-          {
-            "message": "Sinus case \u2014 assess bone height and approach",
-            "severity": "high"
-          }
-        ]
-      }
-    },
-    {
-      "id": "rule_full_arch",
-      "when": {
-        "caseType": [
-          "full_arch"
-        ]
-      },
-      "then": {
-        "warnings": [
-          {
-            "message": "Full arch case \u2014 passive fit and cross-arch stability critical",
-            "severity": "high"
-          }
-        ]
-      }
-    },
-    {
-      "id": "rule_immediate",
-      "when": {
-        "caseType": [
-          "immediate"
-        ]
-      },
-      "then": {
-        "warnings": [
-          {
-            "message": "Immediate placement \u2014 ensure primary stability and socket integrity",
-            "severity": "high"
-          }
-        ]
-      }
-    },
-    {
-      "id": "rule_high_torque",
-      "when": {
-        "torque": {
-          "gte": 35
-        }
-      },
-      "then": {
-        "warnings": [
-          {
-            "message": "Good primary stability \u2014 immediate loading possible",
-            "severity": "low"
-          }
-        ]
-      }
-    },
-    {
-      "id": "rule_mid_torque",
-      "when": {
-        "torque": {
-          "gte": 25,
-          "lt": 35
-        }
-      },
-      "then": {
-        "warnings": [
-          {
-            "message": "Moderate stability \u2014 consider early loading",
-            "severity": "medium"
+            "message": "Esthetic zone — tissue and emergence profile critical",
+            "severity": "medium",
+            "category": "case",
+            "priority": 2
           }
         ]
       }
@@ -241,7 +116,9 @@
         "warnings": [
           {
             "message": "Sinus case — assess bone height and approach",
-            "severity": "high"
+            "severity": "high",
+            "category": "case",
+            "priority": 3
           }
         ]
       }
@@ -254,7 +131,9 @@
         "warnings": [
           {
             "message": "Full arch case — passive fit and cross-arch stability critical",
-            "severity": "high"
+            "severity": "high",
+            "category": "case",
+            "priority": 4
           }
         ]
       }
@@ -267,15 +146,15 @@
         "warnings": [
           {
             "message": "Immediate placement — ensure primary stability and socket integrity",
-            "severity": "high"
+            "severity": "high",
+            "category": "case",
+            "priority": 5
           }
         ]
       }
     },
 
-    /* =========================
-       STABILITY / TORQUE
-    ========================= */
+    /* ===== STABILITY (FIXED CONFLICT) ===== */
 
     {
       "id": "rule_high_torque",
@@ -284,7 +163,9 @@
         "warnings": [
           {
             "message": "Good primary stability — immediate loading possible",
-            "severity": "low"
+            "severity": "low",
+            "category": "stability",
+            "priority": 1
           }
         ]
       }
@@ -297,7 +178,9 @@
         "warnings": [
           {
             "message": "Moderate stability — consider early loading",
-            "severity": "medium"
+            "severity": "medium",
+            "category": "stability",
+            "priority": 2
           }
         ]
       }
@@ -305,102 +188,14 @@
 
     {
       "id": "rule_low_torque",
-      "when": {
-        "torque": {
-          "lt": 25
-        }
-      },
+      "when": { "torque": { "lt": 25 } },
       "then": {
         "warnings": [
           {
-            "message": "Low stability \u2014 delayed loading recommended",
-            "severity": "high"
-          }
-        ]
-      }
-    },
-    {
-      "id": "rule_full_arch_impression",
-      "when": {
-        "caseType": [
-          "full_arch"
-        ]
-      },
-      "then": {
-        "warnings": [
-          {
-            "message": "Full arch impression \u2014 jig verification required",
-            "severity": "high"
-          }
-        ]
-      }
-    },
-    {
-      "id": "rule_multi_unit_impression",
-      "when": {
-        "multi_unit": true
-      },
-      "then": {
-        "warnings": [
-          {
-            "message": "Multiple implants \u2014 open tray impression recommended",
-            "severity": "medium"
-          }
-        ]
-      }
-    },
-    {
-      "id": "rule_sheffield_failure",
-      "when": {
-        "sheffield_fail": true
-      },
-      "then": {
-        "warnings": [
-          {
-            "message": "Passive fit not achieved \u2014 remake recommended",
-            "severity": "high"
-          }
-        ]
-      }
-    },
-    {
-      "id": "rule_occlusion_issue",
-      "when": {
-        "occlusion_issue": true
-      },
-      "then": {
-        "warnings": [
-          {
-            "message": "Occlusion not optimal \u2014 adjust before final delivery",
-            "severity": "high"
-          }
-        ]
-      }
-    },
-    {
-      "id": "rule_iaj_gap",
-      "when": {
-        "iaj_gap": true
-      },
-      "then": {
-        "warnings": [
-          {
-            "message": "IAJ gap detected \u2014 reseating required",
-            "severity": "high"
-          }
-        ]
-      }
-    },
-    {
-      "id": "rule_mobility",
-      "when": {
-        "mobility": true
-      },
-      "then": {
-        "warnings": [
-          {
-            "message": "Implant mobility \u2014 high risk of failure",
-            "severity": "high"
+            "message": "Low stability — delayed loading recommended",
+            "severity": "high",
+            "category": "stability",
+            "priority": 3
           }
         ]
       }
