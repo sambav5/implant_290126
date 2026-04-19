@@ -113,7 +113,9 @@
       "type": "critical",
       "order": 10,
       "conditions": {},
-      "ui": { "inputType": "number" }
+      "ui": {
+        "inputType": "number"
+      }
     },
     {
       "id": "primary_stability",
@@ -257,7 +259,9 @@
       "type": "important",
       "order": 23,
       "conditions": {
-        "functional_risk": ["bruxism"]
+        "functional_risk": [
+          "bruxism"
+        ]
       }
     },
     {
@@ -270,7 +274,9 @@
       "type": "critical",
       "order": 24,
       "conditions": {
-        "caseType": ["esthetic"]
+        "caseType": [
+          "esthetic"
+        ]
       }
     }
   ]
