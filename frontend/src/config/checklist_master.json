@@ -1,12 +1,7 @@
 {
-  "version": "1.0",
-  "description": "Seamless Full Clinical Checklist",
+  "version": "2.0",
   "items": [
 
-    /* =========================
-       PLANNING PHASE
-    ========================= */
-
     {
       "id": "consent_signed",
       "text": "Consent obtained and signed",
@@ -15,19 +10,7 @@
       "section": "pre_op",
       "assignedRole": "assistant",
       "type": "critical",
-      "order": 1,
-      "conditions": {}
-    },
-    {
-      "id": "consent_signed",
-      "text": "Consent obtained and signed",
-      "phase": "planning",
-      "visit": "v1",
-      "section": "pre_op",
-      "assignedRole": "assistant",
-      "type": "critical",
-      "order": 1,
-      "conditions": {}
+      "order": 1
     },
     {
       "id": "cbct_review",
@@ -37,8 +20,7 @@
       "section": "pre_op",
       "assignedRole": "implantologist",
       "type": "critical",
-      "order": 2,
-      "conditions": {}
+      "order": 2
     },
     {
       "id": "implant_specs",
@@ -48,8 +30,7 @@
       "section": "pre_op",
       "assignedRole": "implantologist",
       "type": "critical",
-      "order": 3,
-      "conditions": {}
+      "order": 3
     },
     {
       "id": "loading_protocol",
@@ -59,24 +40,8 @@
       "section": "pre_op",
       "assignedRole": "implantologist",
       "type": "critical",
-      "order": 4,
-      "conditions": {}
+      "order": 4
     },
-    {
-      "id": "loading_protocol",
-      "text": "Loading protocol decided",
-      "phase": "planning",
-      "visit": "v1",
-      "section": "pre_op",
-      "assignedRole": "implantologist",
-      "type": "critical",
-      "order": 4,
-      "conditions": {}
-    },
-
-    /* =========================
-       SURGERY PRE-OP
-    ========================= */
 
     {
       "id": "guide_verification",
@@ -86,10 +51,7 @@
       "section": "pre_op",
       "assignedRole": "implantologist",
       "type": "important",
-      "order": 5,
-      "conditions": {
-        "guideRequired": true
-      }
+      "order": 5
     },
     {
       "id": "backup_implants",
@@ -99,252 +61,8 @@
       "section": "pre_op",
       "assignedRole": "assistant",
       "type": "important",
-      "order": 6,
-      "conditions": {}
+      "order": 6
     },
-    {
-      "id": "site_verification",
-      "text": "Surgical site verified",
-      "phase": "surgery",
-      "visit": "v1",
-      "section": "intra_op",
-      "assignedRole": "implantologist",
-      "type": "critical",
-      "order": 7,
-      "conditions": {}
-    },
-    {
-      "id": "osteotomy_sequence",
-      "text": "Osteotomy sequence followed correctly",
-      "phase": "surgery",
-      "visit": "v1",
-      "section": "intra_op",
-      "assignedRole": "implantologist",
-      "type": "critical",
-      "order": 8,
-      "conditions": {}
-    },
-    {
-      "id": "implant_position",
-      "text": "Implant positioned correctly",
-      "phase": "surgery",
-      "visit": "v1",
-      "section": "intra_op",
-      "assignedRole": "implantologist",
-      "type": "critical",
-      "order": 9,
-      "conditions": {}
-    },
-    {
-      "id": "torque_recorded",
-      "text": "Insertion torque recorded",
-      "phase": "surgery",
-      "visit": "v1",
-      "section": "intra_op",
-      "assignedRole": "assistant",
-      "type": "critical",
-      "order": 10,
-      "conditions": {},
-      "ui": {
-        "inputType": "number"
-      }
-    },
-    {
-      "id": "primary_stability",
-      "text": "Primary stability assessed",
-      "phase": "surgery",
-      "visit": "v1",
-      "section": "intra_op",
-      "assignedRole": "implantologist",
-      "type": "critical",
-      "order": 11,
-      "conditions": {}
-    },
-    {
-      "id": "intra_op_radiograph",
-      "text": "Intra-operative radiograph taken",
-      "phase": "surgery",
-      "visit": "v1",
-      "section": "intra_op",
-      "assignedRole": "assistant",
-      "type": "important",
-      "order": 12,
-      "conditions": {}
-    },
-    {
-      "id": "postop_radiograph_saved",
-      "text": "Post-op radiograph saved",
-      "phase": "surgery",
-      "visit": "v1",
-      "section": "post_op",
-      "assignedRole": "assistant",
-      "type": "important",
-      "order": 13,
-      "conditions": {}
-    },
-    {
-      "id": "medication_prescribed",
-      "text": "Medication prescribed",
-      "phase": "surgery",
-      "visit": "v1",
-      "section": "post_op",
-      "assignedRole": "clinician",
-      "type": "critical",
-      "order": 14,
-      "conditions": {}
-    },
-    {
-      "id": "postop_instructions",
-      "text": "Post-operative instructions given",
-      "phase": "surgery",
-      "visit": "v1",
-      "section": "post_op",
-      "assignedRole": "assistant",
-      "type": "critical",
-      "order": 15,
-      "conditions": {}
-    },
-    {
-      "id": "followup_scheduled",
-      "text": "Follow-up appointment scheduled",
-      "phase": "surgery",
-      "visit": "v1",
-      "section": "post_op",
-      "assignedRole": "assistant",
-      "type": "important",
-      "order": 16,
-      "conditions": {}
-    },
-    {
-      "id": "integration_check",
-      "text": "Implant integration confirmed",
-      "phase": "impression",
-      "visit": "v2",
-      "section": "pre_op",
-      "assignedRole": "implantologist",
-      "type": "critical",
-      "order": 17,
-      "conditions": {}
-    },
-    {
-      "id": "iaj_verification",
-      "text": "IAJ verified (no gap)",
-      "phase": "impression",
-      "visit": "v2",
-      "section": "pre_op",
-      "assignedRole": "prosthodontist",
-      "type": "critical",
-      "order": 18,
-      "conditions": {}
-    },
-    {
-      "id": "impression_method",
-      "text": "Correct impression method selected",
-      "phase": "impression",
-      "visit": "v2",
-      "section": "intra_op",
-      "assignedRole": "prosthodontist",
-      "type": "critical",
-      "order": 19,
-      "conditions": {}
-    },
-    {
-      "id": "torque_protocol",
-      "text": "Final torque protocol followed",
-      "phase": "delivery",
-      "visit": "v3",
-      "section": "intra_op",
-      "assignedRole": "prosthodontist",
-      "type": "critical",
-      "order": 20,
-      "conditions": {}
-    },
-    {
-      "id": "occlusion_check",
-      "text": "Occlusion checked after torque",
-      "phase": "delivery",
-      "visit": "v3",
-      "section": "intra_op",
-      "assignedRole": "prosthodontist",
-      "type": "critical",
-      "order": 21,
-      "conditions": {}
-    },
-    {
-      "id": "passive_fit",
-      "text": "Passive fit verified",
-      "phase": "delivery",
-      "visit": "v3",
-      "section": "intra_op",
-      "assignedRole": "prosthodontist",
-      "type": "critical",
-      "order": 22,
-      "conditions": {}
-    },
-    {
-      "id": "intra_op_radiograph",
-      "text": "Intra-operative radiograph taken",
-      "phase": "surgery",
-      "visit": "v1",
-      "section": "intra_op",
-      "assignedRole": "assistant",
-      "type": "important",
-      "order": 12,
-      "conditions": {}
-    },
-
-    /* =========================
-       SURGERY POST-OP
-    ========================= */
-
-    {
-      "id": "postop_radiograph_saved",
-      "text": "Post-op radiograph saved",
-      "phase": "surgery",
-      "visit": "v1",
-      "section": "post_op",
-      "assignedRole": "assistant",
-      "type": "important",
-      "order": 13,
-      "conditions": {}
-    },
-    {
-      "id": "medication_prescribed",
-      "text": "Medication prescribed",
-      "phase": "surgery",
-      "visit": "v1",
-      "section": "post_op",
-      "assignedRole": "clinician",
-      "type": "critical",
-      "order": 14,
-      "conditions": {}
-    },
-    {
-      "id": "postop_instructions",
-      "text": "Post-operative instructions given",
-      "phase": "surgery",
-      "visit": "v1",
-      "section": "post_op",
-      "assignedRole": "assistant",
-      "type": "critical",
-      "order": 15,
-      "conditions": {}
-    },
-    {
-      "id": "followup_scheduled",
-      "text": "Follow-up appointment scheduled",
-      "phase": "surgery",
-      "visit": "v1",
-      "section": "post_op",
-      "assignedRole": "assistant",
-      "type": "important",
-      "order": 16,
-      "conditions": {}
-    },
-
-    /* =========================
-       IMPRESSION PHASE
-    ========================= */
 
     {
       "id": "integration_check",
@@ -354,8 +72,7 @@
       "section": "pre_op",
       "assignedRole": "implantologist",
       "type": "critical",
-      "order": 17,
-      "conditions": {}
+      "order": 7
     },
     {
       "id": "iaj_verification",
@@ -365,24 +82,8 @@
       "section": "pre_op",
       "assignedRole": "prosthodontist",
       "type": "critical",
-      "order": 18,
-      "conditions": {}
+      "order": 8
     },
-    {
-      "id": "impression_method",
-      "text": "Correct impression method selected",
-      "phase": "impression",
-      "visit": "v2",
-      "section": "intra_op",
-      "assignedRole": "prosthodontist",
-      "type": "critical",
-      "order": 19,
-      "conditions": {}
-    },
-
-    /* =========================
-       DELIVERY PHASE
-    ========================= */
 
     {
       "id": "torque_protocol",
@@ -392,65 +93,8 @@
       "section": "intra_op",
       "assignedRole": "prosthodontist",
       "type": "critical",
-      "order": 20,
-      "conditions": {}
-    },
-    {
-      "id": "occlusion_check",
-      "text": "Occlusion checked after torque",
-      "phase": "delivery",
-      "visit": "v3",
-      "section": "intra_op",
-      "assignedRole": "prosthodontist",
-      "type": "critical",
-      "order": 21,
-      "conditions": {}
-    },
-    {
-      "id": "passive_fit",
-      "text": "Passive fit verified",
-      "phase": "delivery",
-      "visit": "v3",
-      "section": "intra_op",
-      "assignedRole": "prosthodontist",
-      "type": "critical",
-      "order": 22,
-      "conditions": {}
-    },
-
-    /* =========================
-       MODIFIERS
-    ========================= */
-
-    {
-      "id": "nightguard_required",
-      "text": "Nightguard planned",
-      "phase": "delivery",
-      "visit": "v3",
-      "section": "post_op",
-      "assignedRole": "prosthodontist",
-      "type": "important",
-      "order": 23,
-      "conditions": {
-        "functional_risk": [
-          "bruxism"
-        ]
-      }
-    },
-    {
-      "id": "papilla_prediction",
-      "text": "Papilla prediction completed",
-      "phase": "planning",
-      "visit": "v1",
-      "section": "pre_op",
-      "assignedRole": "prosthodontist",
-      "type": "critical",
-      "order": 24,
-      "conditions": {
-        "caseType": [
-          "esthetic"
-        ]
-      }
+      "order": 9
     }
+
   ]
 }
