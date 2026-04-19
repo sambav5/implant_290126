@@ -134,7 +134,7 @@ export default function NewCase() {
       trackCaseCreated(response.data);
 
       toast.success('Case created successfully');
-      navigate(`/case/${response.data.id}`);
+      navigate(`/case/${response.data.id}/gate`);
     } catch (error) {
       const errorMessage = error.response?.data?.detail || 'Failed to create case';
       toast.error(errorMessage);

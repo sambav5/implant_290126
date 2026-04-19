@@ -6,7 +6,7 @@ const labels = {
   post_op: 'Post-op',
 };
 
-export default function ChecklistSection({ section, items, responses, editableForItem, onChange }) {
+export default function ChecklistSection({ section, items, responses, inlineWarnings, editableForItem, onChange }) {
   return (
     <details open className="border rounded-lg px-3 py-2">
       <summary className="font-medium cursor-pointer">{labels[section] || section}</summary>
@@ -17,6 +17,7 @@ export default function ChecklistSection({ section, items, responses, editableFo
             item={item}
             value={responses[item.id]}
             editable={editableForItem(item)}
+            inlineWarning={inlineWarnings?.[item.id]}
             onChange={onChange}
           />
         ))}

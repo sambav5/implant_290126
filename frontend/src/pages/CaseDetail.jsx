@@ -3,8 +3,6 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { 
   ArrowLeft, 
   FileText, 
-  CheckSquare, 
-  Lightbulb, 
   Download, 
   Clock, 
   AlertTriangle,
@@ -498,11 +496,10 @@ export default function CaseDetail() {
         
         {/* Action Cards */}
         <div className="space-y-3">
-          {/* Planning */}
           <button
-            onClick={() => navigate(`/case/${id}/planning`)}
+            onClick={() => navigate(`/case/${id}/gate`)}
             className="card-clinical-interactive w-full animate-slide-up stagger-2"
-            data-testid="planning-btn"
+            data-testid="gate-flow-btn"
           >
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
@@ -510,62 +507,38 @@ export default function CaseDetail() {
                   <FileText className="h-5 w-5" style={{color: 'var(--blue)'}} />
                 </div>
                 <div className="text-left">
-                  <h3 className="font-semibold" style={{color: 'var(--t1)'}}>Planning Engine</h3>
-                  <p className="text-sm" style={{color: 'var(--t2)'}}>
-                    {caseData.riskAssessment ? 'Review and update' : 'Complete assessment'}
-                  </p>
+                  <h3 className="font-semibold" style={{color: 'var(--t1)'}}>Case Flow Intake</h3>
+                  <p className="text-sm" style={{color: 'var(--t2)'}}>Snapshot + dynamic checklist</p>
                 </div>
               </div>
               <ChevronRight className="h-5 w-5" style={{color: 'var(--t3)'}} />
             </div>
           </button>
-          
-          {/* Treatment Blueprint */}
-          <button
+
+          {/* <button
+            onClick={() => navigate(`/case/${id}/planning`)}
+            className="card-clinical-interactive w-full animate-slide-up stagger-2"
+            data-testid="planning-btn"
+          >
+            ...Planning Engine card intentionally hidden in this flow update...
+          </button> */}
+
+          {/* <button
             onClick={() => navigate(`/case/${id}/prosthetic-checklist`)}
             className="card-clinical-interactive w-full animate-slide-up stagger-4"
             data-testid="prosthetic-checklist-btn"
           >
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-lg flex items-center justify-center" style={{background: '#F3F0FF'}}>
-                  <CheckSquare className="h-5 w-5" style={{color: '#6D28D9'}} />
-                </div>
-                <div className="text-left">
-                  <h3 className="font-semibold" style={{color: 'var(--t1)'}}>Treatment Blueprint</h3>
-                  <p className="text-sm" style={{color: 'var(--t2)'}}>
-                    Your comprehensive implant workflow — in one place
-                  </p>
-                </div>
-              </div>
-              <ChevronRight className="h-5 w-5" style={{color: 'var(--t3)'}} />
-            </div>
-          </button>
-          
-          {/* Learning Reflections */}
-          <button
+            ...Treatment Blueprint card intentionally hidden in this flow update...
+          </button> */}
+
+          {/* <button
             onClick={() => navigate(`/case/${id}/learning`)}
             className="card-clinical-interactive w-full animate-slide-up stagger-5"
             data-testid="learning-btn"
           >
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-lg flex items-center justify-center" style={{background: 'var(--amber-1)'}}>
-                  <Lightbulb className="h-5 w-5" style={{color: 'var(--amber)'}} />
-                </div>
-                <div className="text-left">
-                  <h3 className="font-semibold" style={{color: 'var(--t1)'}}>Learning Reflections</h3>
-                  <p className="text-sm" style={{color: 'var(--t2)'}}>
-                    {caseData.feedback?.reflectionCompletedAt 
-                      ? 'View your reflections' 
-                      : 'Capture insights to make every case seamless'}
-                  </p>
-                </div>
-              </div>
-              <ChevronRight className="h-5 w-5" style={{color: 'var(--t3)'}} />
-            </div>
-          </button>
-          
+            ...Learning Reflection card intentionally hidden in this flow update...
+          </button> */}
+
           {/* Recent Activity - Clickable Card */}
           {caseData.timeline?.length > 0 && (
             <button
