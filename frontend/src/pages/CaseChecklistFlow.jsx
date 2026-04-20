@@ -33,6 +33,11 @@ function normalizeGateData(gateData = {}) {
   };
 }
 
+function normalizeVisit(visitValue) {
+  const visit = String(visitValue || '').toLowerCase();
+  return ['v1', 'v2', 'v3'].includes(visit) ? visit : 'v1';
+}
+
 function ChecklistFlowScreen({ caseId, gateData, caseData, onEditGate }) {
   const { state, dispatch } = useChecklist();
 
@@ -48,6 +53,10 @@ function ChecklistFlowScreen({ caseId, gateData, caseData, onEditGate }) {
       },
     });
   }, [caseData, dispatch, gateData]);
+
+  useEffect(() => {
+    dispatch({ type: 'SET_ACTIVE_VISIT', payload: normalizeVisit(caseData?.currentVisit) });
+  }, [caseData?.currentVisit, dispatch]);
 
   useEffect(() => {
     let mounted = true;
@@ -125,7 +134,8 @@ export default function CaseChecklistFlow() {
       patient_expectation: gateData.patient_expectation || '',
       torque: null,
     },
-  }), [gateData]);
+    activeVisit: normalizeVisit(caseData?.currentVisit),
+  }), [caseData?.currentVisit, gateData]);
 
   if (loading) {
     return (

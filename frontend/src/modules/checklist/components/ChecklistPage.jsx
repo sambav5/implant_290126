@@ -1,60 +1,60 @@
 import { useEffect, useMemo } from 'react';
 import WarningBanner from './WarningBanner';
 import PhaseTabs from './PhaseTabs';
-import VisitTabs from './VisitTabs';
 import ChecklistSection from './ChecklistSection';
 import RoleToggle from './RoleToggle';
 import InfoNote from './InfoNote';
 
 const phaseOrder = ['planning', 'surgery', 'delivery'];
+const visitLabels = {
+  v1: 'Visit 1 – Surgery',
+  v2: 'Visit 2 – Impression',
+  v3: 'Visit 3 – Delivery',
+};
+
+function normalizeVisit(visitValue) {
+  const visit = String(visitValue || '').toLowerCase();
+  return ['v1', 'v2', 'v3'].includes(visit) ? visit : 'v1';
+}
 
 export default function ChecklistPage({ state, dispatch }) {
+  const currentVisit = normalizeVisit(state.activeVisit);
+  const filteredChecklist = useMemo(
+    () => state.checklist.filter((item) => item.visit === currentVisit),
+    [currentVisit, state.checklist],
+  );
+
   const phases = useMemo(() => {
-    const dynamicPhases = Array.from(new Set(state.checklist.map((item) => item.phase)));
+    const dynamicPhases = Array.from(new Set(filteredChecklist.map((item) => item.phase)));
     const ordered = phaseOrder.filter((phase) => dynamicPhases.includes(phase));
     const extra = dynamicPhases.filter((phase) => !phaseOrder.includes(phase));
     return [...ordered, ...extra];
-  }, [state.checklist]);
-
-  const visitsForPhase = useMemo(() => {
-    return Array.from(new Set(
-      state.checklist
-        .filter((item) => item.phase === state.activePhase)
-        .map((item) => item.visit),
-    ));
-  }, [state.checklist, state.activePhase]);
+  }, [filteredChecklist]);
 
   useEffect(() => {
-    if (!state.checklist.length) return;
+    if (state.activeVisit !== currentVisit) {
+      dispatch({ type: 'SET_ACTIVE_VISIT', payload: currentVisit });
+      return;
+    }
+
+    if (!filteredChecklist.length) return;
 
     const nextPhase = phases.includes(state.activePhase) ? state.activePhase : phases[0];
     if (nextPhase && nextPhase !== state.activePhase) {
       dispatch({ type: 'SET_ACTIVE_PHASE', payload: nextPhase });
-      return;
     }
-
-    const nextVisitOptions = Array.from(new Set(
-      state.checklist
-        .filter((item) => item.phase === nextPhase)
-        .map((item) => item.visit),
-    ));
-
-    const nextVisit = nextVisitOptions.includes(state.activeVisit) ? state.activeVisit : nextVisitOptions[0];
-    if (nextVisit && nextVisit !== state.activeVisit) {
-      dispatch({ type: 'SET_ACTIVE_VISIT', payload: nextVisit });
-    }
-  }, [dispatch, phases, state.activePhase, state.activeVisit, state.checklist]);
+  }, [currentVisit, dispatch, filteredChecklist.length, phases, state.activePhase, state.activeVisit]);
 
   const sections = useMemo(() => {
     return ['pre_op', 'intra_op', 'post_op']
       .map((section) => ({
         section,
-        items: state.checklist.filter(
-          (item) => item.phase === state.activePhase && item.visit === state.activeVisit && item.section === section,
+        items: filteredChecklist.filter(
+          (item) => item.phase === state.activePhase && item.section === section,
         ),
       }))
       .filter((entry) => entry.items.length > 0);
-  }, [state.checklist, state.activePhase, state.activeVisit]);
+  }, [filteredChecklist, state.activePhase]);
 
   const onResponse = (id, value) => dispatch({ type: 'SET_RESPONSES', payload: { [id]: value } });
   const isClinician = state.role === 'implantologist' || state.role === 'clinician';
@@ -82,21 +82,11 @@ export default function ChecklistPage({ state, dispatch }) {
           myTasksOnly={state.myTasksOnly}
           onScopeChange={(myTasksOnly) => dispatch({ type: 'SET_MY_TASKS_ONLY', payload: myTasksOnly })}
         />
+        <p className="text-sm text-gray-600">{visitLabels[currentVisit] || 'Visit 1 – Surgery'}</p>
         <PhaseTabs
           activePhase={state.activePhase}
           phases={phases}
-          onChange={(phase) => {
-            dispatch({ type: 'SET_ACTIVE_PHASE', payload: phase });
-            const visits = Array.from(new Set(state.checklist.filter((item) => item.phase === phase).map((item) => item.visit)));
-            if (visits.length) {
-              dispatch({ type: 'SET_ACTIVE_VISIT', payload: visits[0] });
-            }
-          }}
-        />
-        <VisitTabs
-          activeVisit={state.activeVisit}
-          visits={visitsForPhase}
-          onChange={(visit) => dispatch({ type: 'SET_ACTIVE_VISIT', payload: visit })}
+          onChange={(phase) => dispatch({ type: 'SET_ACTIVE_PHASE', payload: phase })}
         />
 
         <div className="space-y-3">
@@ -111,7 +101,7 @@ export default function ChecklistPage({ state, dispatch }) {
               onChange={onResponse}
             />
           ))}
-          {!visibleItems.length && <p className="text-sm text-gray-500">No checklist items for current filters.</p>}
+          {!visibleItems.length && <p className="text-sm text-gray-500">No checklist items for this visit.</p>}
         </div>
       </div>
     </div>
