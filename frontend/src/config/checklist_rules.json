@@ -339,7 +339,91 @@
       }
     ]
   }
-}
+},
+    
+  {
+    "id": "rule_buccal_plate_thin",
+    "when": {
+      "clinicalInputs.buccal_plate_thickness": { "lt": 1 }
+    },
+    "then": {
+      "warnings": [
+        {
+          "message": "Thin buccal plate — graft recommended",
+          "severity": "high",
+          "category": "local",
+          "priority": 4
+        }
+      ]
+    }
+  },
+  {
+    "id": "rule_socket_defect",
+    "when": {
+      "socket_wall_loss": true
+    },
+    "then": {
+      "warnings": [
+        {
+          "message": "Socket defect — immediate placement risk",
+          "severity": "high",
+          "category": "case",
+          "priority": 5
+        }
+      ]
+    }
+  },
+  {
+    "id": "rule_soft_tissue_unstable",
+    "when": {
+      "soft_tissue_stable": false
+    },
+    "then": {
+      "warnings": [
+        {
+          "message": "Soft tissue not stable — delay impression",
+          "severity": "high",
+          "category": "impression",
+          "priority": 4
+        }
+      ]
+    }
+  },
+  {
+    "id": "rule_torque_incomplete",
+    "when": {
+      "torque_stage_3_done": false
+    },
+    "then": {
+      "warnings": [
+        {
+          "message": "Final torque incomplete",
+          "severity": "high",
+          "category": "prosthetic",
+          "priority": 5
+        }
+      ]
+    }
+  },
+  {
+    "id": "rule_peri_implantitis",
+    "when": {
+      "bop": true,
+      "bone_loss": true
+    },
+    "then": {
+      "warnings": [
+        {
+          "message": "Peri-implantitis suspected",
+          "severity": "high",
+          "category": "maintenance",
+          "priority": 5
+        }
+      ]
+    }
+  }
+
+    
 
   ]
 }
