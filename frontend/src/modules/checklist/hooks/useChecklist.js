@@ -23,14 +23,22 @@ function buildInlineWarnings(context) {
   return inline;
 }
 
-function dedupeWarnings(warnings = []) {
-  const seen = new Set();
-  return warnings.filter((warning) => {
-    const key = `${warning.ruleId || 'manual'}:${warning.message}`;
-    if (seen.has(key)) return false;
-    seen.add(key);
-    return true;
-  });
+function selectHighestPriorityWarnings(warnings = [], maxWarnings = 3) {
+  const groupedWarnings = warnings.reduce((acc, warning) => {
+    const category = warning?.category || 'general';
+    if (!acc[category]) acc[category] = [];
+    acc[category].push({
+      ...warning,
+      category,
+      priority: Number.isFinite(Number(warning?.priority)) ? Number(warning.priority) : 0,
+    });
+    return acc;
+  }, {});
+
+  return Object.values(groupedWarnings)
+    .map((group) => [...group].sort((a, b) => b.priority - a.priority)[0])
+    .sort((a, b) => b.priority - a.priority)
+    .slice(0, maxWarnings);
 }
 
 export function useChecklist() {
@@ -58,7 +66,7 @@ export function useChecklist() {
     }
 
     dispatch({ type: 'SET_CHECKLIST', payload: output.items });
-    dispatch({ type: 'SET_WARNINGS', payload: dedupeWarnings([...output.warnings, ...manualWarnings]) });
+    dispatch({ type: 'SET_WARNINGS', payload: selectHighestPriorityWarnings([...output.warnings, ...manualWarnings]) });
     dispatch({ type: 'SET_INLINE_WARNINGS', payload: buildInlineWarnings(context) });
   }, [library, libraryById, state.patientData, state.responses, dispatch]);
 
