@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import AppLayout from '@/layout/AppLayout';
 import ContentContainer from '@/components/ui/ContentContainer';
 import { Button } from '@/components/ui/button';
@@ -35,10 +35,10 @@ function normalizeGateData(gateData = {}) {
 
 function normalizeVisit(visitValue) {
   const visit = String(visitValue || '').toLowerCase();
-  return ['v1', 'v2', 'v3'].includes(visit) ? visit : 'v1';
+  return ['v1', 'v2', 'v3'].includes(visit) ? visit : null;
 }
 
-function ChecklistFlowScreen({ caseId, gateData, caseData, onEditGate }) {
+function ChecklistFlowScreen({ gateData, caseData, onEditGate, onChangeVisit }) {
   const { state, dispatch } = useChecklist();
 
   useEffect(() => {
@@ -53,10 +53,6 @@ function ChecklistFlowScreen({ caseId, gateData, caseData, onEditGate }) {
       },
     });
   }, [caseData, dispatch, gateData]);
-
-  useEffect(() => {
-    dispatch({ type: 'SET_ACTIVE_VISIT', payload: normalizeVisit(caseData?.currentVisit) });
-  }, [caseData?.currentVisit, dispatch]);
 
   useEffect(() => {
     let mounted = true;
@@ -83,7 +79,8 @@ function ChecklistFlowScreen({ caseId, gateData, caseData, onEditGate }) {
 
   return (
     <div className="space-y-4">
-      <div className="flex justify-end">
+      <div className="flex justify-end gap-2">
+        <Button variant="outline" onClick={onChangeVisit}>Change Visit</Button>
         <Button variant="outline" onClick={onEditGate}>Edit Case Snapshot</Button>
       </div>
       <ChecklistPage state={state} dispatch={dispatch} />
@@ -94,8 +91,13 @@ function ChecklistFlowScreen({ caseId, gateData, caseData, onEditGate }) {
 export default function CaseChecklistFlow() {
   const { id = '' } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
   const [caseData, setCaseData] = useState(null);
   const [loading, setLoading] = useState(true);
+  const selectedVisit = useMemo(
+    () => normalizeVisit(location.state?.currentVisit),
+    [location.state?.currentVisit],
+  );
 
   useEffect(() => {
     async function loadCase() {
@@ -134,8 +136,15 @@ export default function CaseChecklistFlow() {
       patient_expectation: gateData.patient_expectation || '',
       torque: null,
     },
-    activeVisit: normalizeVisit(caseData?.currentVisit),
-  }), [caseData?.currentVisit, gateData]);
+    activeVisit: selectedVisit,
+  }), [gateData, selectedVisit]);
+
+  useEffect(() => {
+    if (loading) return;
+    if (!selectedVisit) {
+      navigate(`/case/${id}/checklist/visit`, { replace: true });
+    }
+  }, [id, loading, navigate, selectedVisit]);
 
   if (loading) {
     return (
@@ -145,11 +154,20 @@ export default function CaseChecklistFlow() {
     );
   }
 
+  if (!selectedVisit) {
+    return null;
+  }
+
   return (
     <AppLayout>
       <ContentContainer className="py-4">
         <ChecklistProvider initialState={initialState}>
-          <ChecklistFlowScreen caseId={id} gateData={gateData} caseData={caseData} onEditGate={() => navigate(`/case/${id}/gate`)} />
+          <ChecklistFlowScreen
+            gateData={gateData}
+            caseData={caseData}
+            onEditGate={() => navigate(`/case/${id}/gate`)}
+            onChangeVisit={() => navigate(`/case/${id}/checklist/visit`, { state: { currentVisit: selectedVisit } })}
+          />
         </ChecklistProvider>
       </ContentContainer>
     </AppLayout>
