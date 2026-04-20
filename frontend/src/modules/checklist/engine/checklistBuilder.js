@@ -4,6 +4,7 @@ const sectionMap = {
   pre_op: 'pre_op',
   intra_op: 'intra_op',
   post_op: 'post_op',
+  patient_experience: 'patient_experience',
 };
 
 function normalizeInputType(inputType) {
