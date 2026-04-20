@@ -14,13 +14,13 @@ const visitLabels = {
 
 function normalizeVisit(visitValue) {
   const visit = String(visitValue || '').toLowerCase();
-  return ['v1', 'v2', 'v3'].includes(visit) ? visit : 'v1';
+  return ['v1', 'v2', 'v3'].includes(visit) ? visit : null;
 }
 
 export default function ChecklistPage({ state, dispatch }) {
   const currentVisit = normalizeVisit(state.activeVisit);
   const filteredChecklist = useMemo(
-    () => state.checklist.filter((item) => item.visit === currentVisit),
+    () => (currentVisit ? state.checklist.filter((item) => item.visit === currentVisit) : []),
     [currentVisit, state.checklist],
   );
 
@@ -32,6 +32,8 @@ export default function ChecklistPage({ state, dispatch }) {
   }, [filteredChecklist]);
 
   useEffect(() => {
+    if (!currentVisit) return;
+
     if (state.activeVisit !== currentVisit) {
       dispatch({ type: 'SET_ACTIVE_VISIT', payload: currentVisit });
       return;
@@ -82,7 +84,7 @@ export default function ChecklistPage({ state, dispatch }) {
           myTasksOnly={state.myTasksOnly}
           onScopeChange={(myTasksOnly) => dispatch({ type: 'SET_MY_TASKS_ONLY', payload: myTasksOnly })}
         />
-        <p className="text-sm text-gray-600">{visitLabels[currentVisit] || 'Visit 1 – Surgery'}</p>
+        <p className="text-sm text-gray-600">{visitLabels[currentVisit] || 'Visit not selected'}</p>
         <PhaseTabs
           activePhase={state.activePhase}
           phases={phases}
