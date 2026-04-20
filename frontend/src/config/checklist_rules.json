@@ -1,17 +1,16 @@
 {
   "version": "3.0",
   "rules": [
+
+    /* =========================
+       FUNCTIONAL RISK
+    ========================= */
+
     {
       "id": "rule_bruxism",
-      "when": {
-        "functional_risk": [
-          "bruxism"
-        ]
-      },
+      "when": { "functional_risk": ["bruxism"] },
       "then": {
-        "add": [
-          "nightguard_required"
-        ],
+        "add": ["nightguard_required"],
         "warnings": [
           {
             "message": "Bruxism increases implant failure risk",
@@ -22,13 +21,10 @@
         ]
       }
     },
+
     {
       "id": "rule_heavy_occlusion",
-      "when": {
-        "functional_risk": [
-          "heavy_occlusion"
-        ]
-      },
+      "when": { "functional_risk": ["heavy_occlusion"] },
       "then": {
         "warnings": [
           {
@@ -40,13 +36,14 @@
         ]
       }
     },
+
+    /* =========================
+       MEDICAL RISK
+    ========================= */
+
     {
       "id": "rule_smoker",
-      "when": {
-        "medical": [
-          "smoker"
-        ]
-      },
+      "when": { "medical": ["smoker"] },
       "then": {
         "warnings": [
           {
@@ -58,13 +55,10 @@
         ]
       }
     },
+
     {
       "id": "rule_uncontrolled_diabetes",
-      "when": {
-        "medical": [
-          "uncontrolled_diabetes"
-        ]
-      },
+      "when": { "medical": ["uncontrolled_diabetes"] },
       "then": {
         "warnings": [
           {
@@ -76,13 +70,10 @@
         ]
       }
     },
+
     {
       "id": "rule_anticoagulants",
-      "when": {
-        "medical": [
-          "anticoagulants"
-        ]
-      },
+      "when": { "medical": ["anticoagulants"] },
       "then": {
         "warnings": [
           {
@@ -94,13 +85,10 @@
         ]
       }
     },
+
     {
       "id": "rule_bisphosphonates",
-      "when": {
-        "medical": [
-          "bisphosphonates"
-        ]
-      },
+      "when": { "medical": ["bisphosphonates"] },
       "then": {
         "warnings": [
           {
@@ -112,13 +100,10 @@
         ]
       }
     },
+
     {
       "id": "rule_recent_mi",
-      "when": {
-        "medical": [
-          "recent_mi"
-        ]
-      },
+      "when": { "medical": ["recent_mi"] },
       "then": {
         "warnings": [
           {
@@ -130,11 +115,14 @@
         ]
       }
     },
+
+    /* =========================
+       PERIODONTAL
+    ========================= */
+
     {
       "id": "rule_active_perio",
-      "when": {
-        "perio": "active"
-      },
+      "when": { "perio": "active" },
       "then": {
         "warnings": [
           {
@@ -146,15 +134,18 @@
         ]
       }
     },
+
+    /* =========================
+       CASE TYPE
+    ========================= */
+
     {
       "id": "rule_esthetic_case",
       "when": {
         "modifiers.esthetic": true
       },
       "then": {
-        "add": [
-          "papilla_prediction"
-        ],
+        "add": ["papilla_prediction"],
         "warnings": [
           {
             "message": "Esthetic zone \u2014 tissue and emergence profile critical",
@@ -165,6 +156,7 @@
         ]
       }
     },
+
     {
       "id": "rule_sinus_case",
       "when": {
@@ -181,6 +173,7 @@
         ]
       }
     },
+
     {
       "id": "rule_full_arch",
       "when": {
@@ -197,6 +190,7 @@
         ]
       }
     },
+
     {
       "id": "rule_immediate",
       "when": {
@@ -213,13 +207,14 @@
         ]
       }
     },
+
+    /* =========================
+       STABILITY (TORQUE)
+    ========================= */
+
     {
       "id": "rule_high_torque",
-      "when": {
-        "torque": {
-          "gte": 35
-        }
-      },
+      "when": { "torque": { "gte": 35 } },
       "then": {
         "warnings": [
           {
@@ -231,14 +226,10 @@
         ]
       }
     },
+
     {
       "id": "rule_mid_torque",
-      "when": {
-        "torque": {
-          "gte": 25,
-          "lt": 35
-        }
-      },
+      "when": { "torque": { "gte": 25, "lt": 35 } },
       "then": {
         "warnings": [
           {
@@ -250,6 +241,7 @@
         ]
       }
     },
+
     {
       "id": "rule_low_torque",
       "when": {
@@ -364,6 +356,11 @@
         ]
       }
     },
+
+    /* =========================
+       PROSTHETIC / DELIVERY
+    ========================= */
+
     {
       "id": "rule_buccal_plate_thin",
       "when": {
@@ -382,6 +379,7 @@
         ]
       }
     },
+
     {
       "id": "rule_socket_defect",
       "when": {
@@ -398,6 +396,7 @@
         ]
       }
     },
+
     {
       "id": "rule_soft_tissue_unstable",
       "when": {
@@ -414,6 +413,7 @@
         ]
       }
     },
+
     {
       "id": "rule_torque_incomplete",
       "when": {
@@ -446,6 +446,119 @@
           }
         ]
       }
+    },
+    {
+  "id": "rule_full_arch_impression",
+  "when": { "modifiers.full_arch": true },
+  "then": {
+    "warnings": [
+      {
+        "message": "Full arch impression — jig verification required",
+        "severity": "high",
+        "category": "prosthetic",
+        "priority": 4
+      }
+    ]
+  }
+},
+{
+  "id": "rule_multi_unit_impression",
+  "when": { "multi_unit": true },
+  "then": {
+    "warnings": [
+      {
+        "message": "Multiple implants — open tray impression recommended",
+        "severity": "medium",
+        "category": "prosthetic",
+        "priority": 2
+      }
+    ]
+  }
+},
+    
+  {
+    "id": "rule_buccal_plate_thin",
+    "when": {
+      "clinicalInputs.buccal_plate_thickness": { "lt": 1 }
+    },
+    "then": {
+      "warnings": [
+        {
+          "message": "Thin buccal plate — graft recommended",
+          "severity": "high",
+          "category": "local",
+          "priority": 4
+        }
+      ]
     }
+  },
+  {
+    "id": "rule_socket_defect",
+    "when": {
+      "socket_wall_loss": true
+    },
+    "then": {
+      "warnings": [
+        {
+          "message": "Socket defect — immediate placement risk",
+          "severity": "high",
+          "category": "case",
+          "priority": 5
+        }
+      ]
+    }
+  },
+  {
+    "id": "rule_soft_tissue_unstable",
+    "when": {
+      "soft_tissue_stable": false
+    },
+    "then": {
+      "warnings": [
+        {
+          "message": "Soft tissue not stable — delay impression",
+          "severity": "high",
+          "category": "impression",
+          "priority": 4
+        }
+      ]
+    }
+  },
+  {
+    "id": "rule_torque_incomplete",
+    "when": {
+      "torque_stage_3_done": false
+    },
+    "then": {
+      "warnings": [
+        {
+          "message": "Final torque incomplete",
+          "severity": "high",
+          "category": "prosthetic",
+          "priority": 5
+        }
+      ]
+    }
+  },
+  {
+    "id": "rule_peri_implantitis",
+    "when": {
+      "bop": true,
+      "bone_loss": true
+    },
+    "then": {
+      "warnings": [
+        {
+          "message": "Peri-implantitis suspected",
+          "severity": "high",
+          "category": "maintenance",
+          "priority": 5
+        }
+      ]
+    }
+  }
+
+    
+
   ]
 }
