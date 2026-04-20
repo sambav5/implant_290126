@@ -141,7 +141,7 @@
 
     {
       "id": "rule_esthetic_case",
-      "when": { "caseType": ["esthetic"] },
+      "when": { "modifiers.esthetic": true },
       "then": {
         "add": ["papilla_prediction"],
         "warnings": [
@@ -157,7 +157,7 @@
 
     {
       "id": "rule_sinus_case",
-      "when": { "caseType": ["sinus"] },
+      "when": { "modifiers.sinus": true },
       "then": {
         "warnings": [
           {
@@ -172,7 +172,7 @@
 
     {
       "id": "rule_full_arch",
-      "when": { "caseType": ["full_arch"] },
+      "when": { "modifiers.full_arch": true },
       "then": {
         "warnings": [
           {
@@ -187,7 +187,7 @@
 
     {
       "id": "rule_immediate",
-      "when": { "caseType": ["immediate"] },
+      "when": { "modifiers.immediate": true },
       "then": {
         "warnings": [
           {
@@ -314,7 +314,7 @@
     },
     {
   "id": "rule_full_arch_impression",
-  "when": { "caseType": ["full_arch"] },
+  "when": { "modifiers.full_arch": true },
   "then": {
     "warnings": [
       {
