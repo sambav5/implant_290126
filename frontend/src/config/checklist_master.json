@@ -52,7 +52,9 @@
       "assignedRole": "implantologist",
       "type": "important",
       "order": 5,
-      "conditions": { "modifiers.guide": true }
+      "conditions": {
+        "modifiers.guide": true
+      }
     },
 
     {
@@ -252,9 +254,10 @@
       "assignedRole": "prosthodontist",
       "type": "critical",
       "order": 24,
-      "conditions": { "modifiers.esthetic": true }
+      "conditions": {
+        "modifiers.esthetic": true
+      }
     },
-
     {
       "id": "smile_line_assessed",
       "text": "Smile line assessed",
@@ -264,7 +267,9 @@
       "assignedRole": "prosthodontist",
       "type": "important",
       "order": 104,
-      "conditions": { "modifiers.esthetic": true }
+      "conditions": {
+        "modifiers.esthetic": true
+      }
     },
     {
       "id": "biotype_checked",
@@ -275,7 +280,9 @@
       "assignedRole": "prosthodontist",
       "type": "important",
       "order": 105,
-      "conditions": { "modifiers.esthetic": true }
+      "conditions": {
+        "modifiers.esthetic": true
+      }
     },
     {
       "id": "ctg_planned",
@@ -286,9 +293,10 @@
       "assignedRole": "periodontist",
       "type": "important",
       "order": 106,
-      "conditions": { "modifiers.esthetic": true }
+      "conditions": {
+        "modifiers.esthetic": true
+      }
     },
-
     {
       "id": "bone_height_measured",
       "text": "Residual bone height measured",
@@ -298,7 +306,9 @@
       "assignedRole": "implantologist",
       "type": "critical",
       "order": 107,
-      "conditions": { "modifiers.sinus": true }
+      "conditions": {
+        "modifiers.sinus": true
+      }
     },
     {
       "id": "sinus_approach_selected",
@@ -309,9 +319,10 @@
       "assignedRole": "implantologist",
       "type": "critical",
       "order": 108,
-      "conditions": { "modifiers.sinus": true }
+      "conditions": {
+        "modifiers.sinus": true
+      }
     },
-
     {
       "id": "socket_integrity_checked",
       "text": "Socket wall integrity checked",
@@ -321,9 +332,10 @@
       "assignedRole": "implantologist",
       "type": "critical",
       "order": 109,
-      "conditions": { "modifiers.immediate": true }
+      "conditions": {
+        "modifiers.immediate": true
+      }
     },
-
     {
       "id": "cross_arch_stability",
       "text": "Cross-arch stability planned",
@@ -333,9 +345,10 @@
       "assignedRole": "prosthodontist",
       "type": "critical",
       "order": 110,
-      "conditions": { "modifiers.full_arch": true }
+      "conditions": {
+        "modifiers.full_arch": true
+      }
     },
-
     {
       "id": "bop_checked",
       "text": "Bleeding on probing assessed",
