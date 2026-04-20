@@ -1,5 +1,6 @@
 import { Button } from '@/components/ui/button';
 import { CASE_TYPES } from '../engine/routingEngine';
+import { deriveCaseContext, getRoutingVariant } from '@/lib/caseContext';
 
 export default function RoutingFlow({ state, dispatch, onContinue }) {
   return (
@@ -10,14 +11,14 @@ export default function RoutingFlow({ state, dispatch, onContinue }) {
         {CASE_TYPES.map((type) => (
           <Button
             key={type}
-            variant={state.caseType === type ? 'default' : 'outline'}
-            onClick={() => dispatch({ type: 'SET_CASE_TYPE', payload: type })}
+            variant={getRoutingVariant(state.caseContext) === type ? 'default' : 'outline'}
+            onClick={() => dispatch({ type: 'SET_CASE_CONTEXT', payload: deriveCaseContext({}, { legacyCaseType: type }) })}
           >
             {type}
           </Button>
         ))}
       </div>
-      <Button disabled={!state.caseType} onClick={onContinue}>Start Visit Execution</Button>
+      <Button disabled={!state.caseContext} onClick={onContinue}>Start Visit Execution</Button>
     </div>
   );
 }

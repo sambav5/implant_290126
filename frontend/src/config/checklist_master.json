@@ -1,6 +1,6 @@
 {
-  "version": "3.0",
-  "description": "Seamless Clinical Checklist (Cleaned & Structured)",
+  "version": "3.1",
+  "description": "Seamless Clinical Checklist (Final Fixed)",
   "items": [
     {
       "id": "consent_signed",
@@ -52,7 +52,7 @@
       "type": "important",
       "order": 5,
       "conditions": {
-        "guideRequired": true
+        "modifiers.guide": true
       }
     },
     {
@@ -103,10 +103,7 @@
       "section": "intra_op",
       "assignedRole": "assistant",
       "type": "critical",
-      "order": 10,
-      "ui": {
-        "inputType": "number"
-      }
+      "order": 10
     },
     {
       "id": "primary_stability",
@@ -253,10 +250,119 @@
       "type": "critical",
       "order": 24,
       "conditions": {
-        "caseType": [
-          "esthetic"
-        ]
+        "modifiers.esthetic": true
       }
+    },
+    {
+      "id": "smile_line_assessed",
+      "text": "Smile line assessed",
+      "phase": "planning",
+      "visit": "v1",
+      "section": "pre_op",
+      "assignedRole": "prosthodontist",
+      "type": "important",
+      "order": 104,
+      "conditions": {
+        "modifiers.esthetic": true
+      }
+    },
+    {
+      "id": "biotype_checked",
+      "text": "Soft tissue biotype assessed",
+      "phase": "planning",
+      "visit": "v1",
+      "section": "pre_op",
+      "assignedRole": "prosthodontist",
+      "type": "important",
+      "order": 105,
+      "conditions": {
+        "modifiers.esthetic": true
+      }
+    },
+    {
+      "id": "ctg_planned",
+      "text": "Connective tissue graft planned",
+      "phase": "planning",
+      "visit": "v1",
+      "section": "pre_op",
+      "assignedRole": "periodontist",
+      "type": "important",
+      "order": 106,
+      "conditions": {
+        "modifiers.esthetic": true
+      }
+    },
+    {
+      "id": "bone_height_measured",
+      "text": "Residual bone height measured",
+      "phase": "planning",
+      "visit": "v1",
+      "section": "pre_op",
+      "assignedRole": "implantologist",
+      "type": "critical",
+      "order": 107,
+      "conditions": {
+        "modifiers.sinus": true
+      }
+    },
+    {
+      "id": "sinus_approach_selected",
+      "text": "Sinus approach selected",
+      "phase": "planning",
+      "visit": "v1",
+      "section": "pre_op",
+      "assignedRole": "implantologist",
+      "type": "critical",
+      "order": 108,
+      "conditions": {
+        "modifiers.sinus": true
+      }
+    },
+    {
+      "id": "socket_integrity_checked",
+      "text": "Socket wall integrity checked",
+      "phase": "planning",
+      "visit": "v1",
+      "section": "pre_op",
+      "assignedRole": "implantologist",
+      "type": "critical",
+      "order": 109,
+      "conditions": {
+        "modifiers.immediate": true
+      }
+    },
+    {
+      "id": "cross_arch_stability",
+      "text": "Cross-arch stability planned",
+      "phase": "planning",
+      "visit": "v1",
+      "section": "pre_op",
+      "assignedRole": "prosthodontist",
+      "type": "critical",
+      "order": 110,
+      "conditions": {
+        "modifiers.full_arch": true
+      }
+    },
+    {
+      "id": "bop_checked",
+      "text": "Bleeding on probing assessed",
+      "phase": "maintenance",
+      "visit": "v4",
+      "section": "post_op",
+      "assignedRole": "periodontist",
+      "type": "critical",
+      "order": 111
+    },
+    {
+      "id": "bone_loss_checked",
+      "text": "Bone loss assessed radiographically",
+      "phase": "maintenance",
+      "visit": "v4",
+      "section": "post_op",
+      "assignedRole": "periodontist",
+      "type": "critical",
+      "order": 112
     }
   ]
 }

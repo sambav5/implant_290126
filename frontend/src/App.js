@@ -12,6 +12,7 @@ import Checklists from "@/pages/Checklists";
 import ProstheticChecklist from "@/pages/ProstheticChecklist";
 import LearningLoop from "@/pages/LearningLoop";
 import GatePage from "@/modules/clinicalFlow/GatePage.tsx";
+import RoutingPage from "@/modules/clinicalFlow/RoutingPage.tsx";
 import VisitSelectionPage from "@/modules/clinicalFlow/VisitSelectionPage.tsx";
 import CaseChecklistFlow from "@/pages/CaseChecklistFlow";
 import Login from "@/pages/Login";
@@ -65,6 +66,7 @@ function AnalyticsRouterWrapper({ handleAuthenticated }) {
       <Route path="/case/:id" element={<OnboardingRoute><ProtectedRoute><CaseDetail /></ProtectedRoute></OnboardingRoute>} />
       <Route path="/case/:id/planning" element={<OnboardingRoute><ProtectedRoute><PlanningWizard /></ProtectedRoute></OnboardingRoute>} />
       <Route path="/case/:id/gate" element={<OnboardingRoute><ProtectedRoute><GatePage /></ProtectedRoute></OnboardingRoute>} />
+      <Route path="/case/:id/routing" element={<OnboardingRoute><ProtectedRoute><RoutingPage /></ProtectedRoute></OnboardingRoute>} />
       <Route path="/case/:id/checklist/visit" element={<OnboardingRoute><ProtectedRoute><VisitSelectionPage /></ProtectedRoute></OnboardingRoute>} />
       <Route path="/case/:id/checklist" element={<OnboardingRoute><ProtectedRoute><CaseChecklistFlow /></ProtectedRoute></OnboardingRoute>} />
       <Route path="/case/:id/checklists" element={<OnboardingRoute><ProtectedRoute><Checklists /></ProtectedRoute></OnboardingRoute>} />

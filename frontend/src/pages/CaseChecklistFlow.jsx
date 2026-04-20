@@ -8,6 +8,7 @@ import { ChecklistProvider } from '@/modules/checklist/state/checklist.store';
 import { useChecklist } from '@/modules/checklist/hooks/useChecklist';
 import { caseApi } from '@/services/api';
 import { userApi } from '@/api/userApi';
+import { deriveCaseContext, getRoutingVariant } from '@/lib/caseContext';
 
 const getStorageKey = (caseId) => `case_gate_data_${caseId}`;
 
@@ -38,14 +39,24 @@ function normalizeVisit(visitValue) {
   return ['v1', 'v2', 'v3'].includes(visit) ? visit : null;
 }
 
+function normalizeCaseContext(caseContextValue) {
+  if (caseContextValue && typeof caseContextValue === 'object') {
+    return caseContextValue;
+  }
+
+  const legacyVariant = String(caseContextValue || '').toLowerCase();
+  if (!['standard', 'sinus', 'esthetic', 'full_arch', 'immediate'].includes(legacyVariant)) return null;
+  return deriveCaseContext({}, { legacyCaseType: legacyVariant });
+}
+
 function ChecklistFlowScreen({ gateData, caseData, onEditGate, onChangeVisit }) {
   const { state, dispatch } = useChecklist();
 
   useEffect(() => {
     dispatch({
-      type: 'SET_PATIENT_DATA',
-      payload: {
-        caseType: (caseData?.planningData?.restorativeContext || caseData?.riskAssessment?.caseType || 'standard').toLowerCase(),
+        type: 'SET_PATIENT_DATA',
+        payload: {
+        caseContext: caseData?.selectedCaseContext || deriveCaseContext({}),
         medical: gateData.medical || [],
         functional_risk: gateData.functional_risk || [],
         periodontal: gateData.periodontal || '',
@@ -99,6 +110,20 @@ export default function CaseChecklistFlow() {
     [location.state?.currentVisit],
   );
 
+  const selectedCaseContext = useMemo(() => {
+    const fromState = normalizeCaseContext(location.state?.caseContext);
+    if (fromState) return fromState;
+
+    try {
+      const fromLocal = normalizeCaseContext(JSON.parse(localStorage.getItem(`case_routing_context_${id}`) || 'null'));
+      if (fromLocal) return fromLocal;
+    } catch {
+      // Ignore malformed local storage and fall back to case data
+    }
+
+    return caseData?.planningData?.caseContext || deriveCaseContext(caseData?.planningData || {}, { legacyCaseType: caseData?.riskAssessment?.['case' + 'Type'] });
+  }, [caseData?.planningData, caseData?.riskAssessment, id, location.state?.caseContext]);
+
   useEffect(() => {
     async function loadCase() {
       try {
@@ -128,8 +153,8 @@ export default function CaseChecklistFlow() {
   }, [caseData, id]);
 
   const initialState = useMemo(() => ({
-    patientData: {
-      caseType: 'standard',
+      patientData: {
+      caseContext: selectedCaseContext,
       medical: gateData.medical || [],
       functional_risk: gateData.functional_risk || [],
       periodontal: gateData.periodontal || '',
@@ -137,7 +162,7 @@ export default function CaseChecklistFlow() {
       torque: null,
     },
     activeVisit: selectedVisit,
-  }), [gateData, selectedVisit]);
+  }), [gateData, selectedCaseContext, selectedVisit]);
 
   useEffect(() => {
     if (loading) return;
@@ -164,9 +189,13 @@ export default function CaseChecklistFlow() {
         <ChecklistProvider initialState={initialState}>
           <ChecklistFlowScreen
             gateData={gateData}
-            caseData={caseData}
+            caseData={{ ...caseData, selectedCaseContext }}
             onEditGate={() => navigate(`/case/${id}/gate`)}
-            onChangeVisit={() => navigate(`/case/${id}/checklist/visit`, { state: { currentVisit: selectedVisit } })}
+            onChangeVisit={() =>
+              navigate(`/case/${id}/checklist/visit`, {
+                state: { currentVisit: selectedVisit, caseContext: selectedCaseContext, routingVariant: getRoutingVariant(selectedCaseContext) },
+              })
+            }
           />
         </ChecklistProvider>
       </ContentContainer>

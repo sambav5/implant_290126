@@ -2,7 +2,7 @@ import { createContext, useContext, useMemo, useReducer } from 'react';
 
 const defaultState = {
   gate: { gateStatus: 'GO', blockers: [], warnings: [] },
-  caseType: '',
+  caseContext: null,
   currentVisit: 'v1',
   patientData: {
     medicalRisk: 'low',
@@ -26,8 +26,8 @@ function reducer(state, action) {
   switch (action.type) {
     case 'SET_GATE':
       return { ...state, gate: action.payload };
-    case 'SET_CASE_TYPE':
-      return { ...state, caseType: action.payload };
+    case 'SET_CASE_CONTEXT':
+      return { ...state, caseContext: action.payload };
     case 'SET_CURRENT_VISIT':
       return { ...state, currentVisit: action.payload };
     case 'SET_PATIENT_DATA':

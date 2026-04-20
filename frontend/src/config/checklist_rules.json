@@ -149,9 +149,7 @@
     {
       "id": "rule_esthetic_case",
       "when": {
-        "caseType": [
-          "esthetic"
-        ]
+        "modifiers.esthetic": true
       },
       "then": {
         "add": [
@@ -170,9 +168,7 @@
     {
       "id": "rule_sinus_case",
       "when": {
-        "caseType": [
-          "sinus"
-        ]
+        "modifiers.sinus": true
       },
       "then": {
         "warnings": [
@@ -188,9 +184,7 @@
     {
       "id": "rule_full_arch",
       "when": {
-        "caseType": [
-          "full_arch"
-        ]
+        "modifiers.full_arch": true
       },
       "then": {
         "warnings": [
@@ -206,9 +200,7 @@
     {
       "id": "rule_immediate",
       "when": {
-        "caseType": [
-          "immediate"
-        ]
+        "modifiers.immediate": true
       },
       "then": {
         "warnings": [
@@ -343,9 +335,7 @@
     {
       "id": "rule_full_arch_impression",
       "when": {
-        "caseType": [
-          "full_arch"
-        ]
+        "modifiers.full_arch": true
       },
       "then": {
         "warnings": [
@@ -370,6 +360,89 @@
             "severity": "medium",
             "category": "prosthetic",
             "priority": 2
+          }
+        ]
+      }
+    },
+    {
+      "id": "rule_buccal_plate_thin",
+      "when": {
+        "clinicalInputs.buccal_plate_thickness": {
+          "lt": 1
+        }
+      },
+      "then": {
+        "warnings": [
+          {
+            "message": "Thin buccal plate \u2014 graft recommended",
+            "severity": "high",
+            "category": "local",
+            "priority": 4
+          }
+        ]
+      }
+    },
+    {
+      "id": "rule_socket_defect",
+      "when": {
+        "socket_wall_loss": true
+      },
+      "then": {
+        "warnings": [
+          {
+            "message": "Socket defect \u2014 immediate placement risk",
+            "severity": "high",
+            "category": "case",
+            "priority": 5
+          }
+        ]
+      }
+    },
+    {
+      "id": "rule_soft_tissue_unstable",
+      "when": {
+        "soft_tissue_stable": false
+      },
+      "then": {
+        "warnings": [
+          {
+            "message": "Soft tissue not stable \u2014 delay impression",
+            "severity": "high",
+            "category": "impression",
+            "priority": 4
+          }
+        ]
+      }
+    },
+    {
+      "id": "rule_torque_incomplete",
+      "when": {
+        "torque_stage_3_done": false
+      },
+      "then": {
+        "warnings": [
+          {
+            "message": "Final torque incomplete",
+            "severity": "high",
+            "category": "prosthetic",
+            "priority": 5
+          }
+        ]
+      }
+    },
+    {
+      "id": "rule_peri_implantitis",
+      "when": {
+        "bop": true,
+        "bone_loss": true
+      },
+      "then": {
+        "warnings": [
+          {
+            "message": "Peri-implantitis suspected",
+            "severity": "high",
+            "category": "maintenance",
+            "priority": 5
           }
         ]
       }
