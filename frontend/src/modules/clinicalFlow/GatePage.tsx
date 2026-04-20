@@ -116,7 +116,7 @@ export default function GatePage() {
       toast.info('Snapshot saved locally. Backend save can be added later.');
     } finally {
       setSaving(false);
-      navigate(`/case/${id}/checklist/visit`);
+      navigate(`/case/${id}/routing`);
     }
   };
 
@@ -189,7 +189,7 @@ export default function GatePage() {
         </div>
 
         <Button onClick={submitGate} disabled={saving} className="w-full md:w-auto" data-testid="gate-continue-btn">
-          {saving ? 'Saving...' : 'Generate Checklist'}
+          {saving ? 'Saving...' : 'Continue to Case Type'}
         </Button>
       </ContentContainer>
     </AppLayout>

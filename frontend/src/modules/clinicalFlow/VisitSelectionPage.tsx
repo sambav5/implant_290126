@@ -10,6 +10,10 @@ type VisitOption = {
   subtitle: string;
 };
 
+type CaseType = 'standard' | 'sinus' | 'esthetic' | 'full_arch' | 'immediate';
+
+const storageKeyForCaseType = (caseId: string) => `case_routing_type_${caseId}`;
+
 const visitOptions: VisitOption[] = [
   { id: 'v1', title: 'Visit 1', subtitle: 'Surgery' },
   { id: 'v2', title: 'Visit 2', subtitle: 'Impression' },
@@ -19,6 +23,11 @@ const visitOptions: VisitOption[] = [
 function normalizeVisit(visitValue: unknown): VisitOption['id'] | null {
   const visit = String(visitValue || '').toLowerCase();
   return visit === 'v1' || visit === 'v2' || visit === 'v3' ? visit : null;
+}
+
+function normalizeCaseType(caseTypeValue: unknown): CaseType | null {
+  const value = String(caseTypeValue || '').toLowerCase();
+  return ['standard', 'sinus', 'esthetic', 'full_arch', 'immediate'].includes(value) ? (value as CaseType) : null;
 }
 
 export default function VisitSelectionPage() {
@@ -31,8 +40,14 @@ export default function VisitSelectionPage() {
     [location.state],
   );
 
+  const caseType = useMemo(() => {
+    const stateCaseType = normalizeCaseType((location.state as { caseType?: string } | null)?.caseType);
+    if (stateCaseType) return stateCaseType;
+    return normalizeCaseType(localStorage.getItem(storageKeyForCaseType(id))) || 'standard';
+  }, [id, location.state]);
+
   const onSelectVisit = (visit: VisitOption['id']) => {
-    navigate(`/case/${id}/checklist`, { state: { currentVisit: visit } });
+    navigate(`/case/${id}/checklist`, { state: { currentVisit: visit, caseType } });
   };
 
   return (
@@ -41,6 +56,9 @@ export default function VisitSelectionPage() {
         <div className="card-clinical space-y-2">
           <h1 className="text-xl font-semibold">Select Visit</h1>
           <p className="text-sm text-gray-600">Choose a visit to generate and view its checklist.</p>
+          <p className="text-sm text-gray-700">
+            Case Type: <span className="font-semibold capitalize">{caseType.replace('_', ' ')}</span>
+          </p>
         </div>
 
         <div className="space-y-3">
@@ -62,6 +80,10 @@ export default function VisitSelectionPage() {
             );
           })}
         </div>
+
+        <Button variant="outline" onClick={() => navigate(`/case/${id}/routing`, { state: { caseType } })}>
+          Back to Case Type
+        </Button>
       </ContentContainer>
     </AppLayout>
   );

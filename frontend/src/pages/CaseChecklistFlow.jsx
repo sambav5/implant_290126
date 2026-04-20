@@ -38,6 +38,11 @@ function normalizeVisit(visitValue) {
   return ['v1', 'v2', 'v3'].includes(visit) ? visit : null;
 }
 
+function normalizeCaseType(caseTypeValue) {
+  const caseType = String(caseTypeValue || '').toLowerCase();
+  return ['standard', 'sinus', 'esthetic', 'full_arch', 'immediate'].includes(caseType) ? caseType : null;
+}
+
 function ChecklistFlowScreen({ gateData, caseData, onEditGate, onChangeVisit }) {
   const { state, dispatch } = useChecklist();
 
@@ -45,7 +50,7 @@ function ChecklistFlowScreen({ gateData, caseData, onEditGate, onChangeVisit }) 
     dispatch({
       type: 'SET_PATIENT_DATA',
       payload: {
-        caseType: (caseData?.planningData?.restorativeContext || caseData?.riskAssessment?.caseType || 'standard').toLowerCase(),
+        caseType: caseData?.selectedCaseType || 'standard',
         medical: gateData.medical || [],
         functional_risk: gateData.functional_risk || [],
         periodontal: gateData.periodontal || '',
@@ -99,6 +104,16 @@ export default function CaseChecklistFlow() {
     [location.state?.currentVisit],
   );
 
+  const selectedCaseType = useMemo(() => {
+    const fromState = normalizeCaseType(location.state?.caseType);
+    if (fromState) return fromState;
+
+    const fromLocal = normalizeCaseType(localStorage.getItem(`case_routing_type_${id}`));
+    if (fromLocal) return fromLocal;
+
+    return normalizeCaseType(caseData?.planningData?.restorativeContext || caseData?.riskAssessment?.caseType) || 'standard';
+  }, [caseData?.planningData?.restorativeContext, caseData?.riskAssessment?.caseType, id, location.state?.caseType]);
+
   useEffect(() => {
     async function loadCase() {
       try {
@@ -129,7 +144,7 @@ export default function CaseChecklistFlow() {
 
   const initialState = useMemo(() => ({
     patientData: {
-      caseType: 'standard',
+      caseType: selectedCaseType,
       medical: gateData.medical || [],
       functional_risk: gateData.functional_risk || [],
       periodontal: gateData.periodontal || '',
@@ -137,7 +152,7 @@ export default function CaseChecklistFlow() {
       torque: null,
     },
     activeVisit: selectedVisit,
-  }), [gateData, selectedVisit]);
+  }), [gateData, selectedCaseType, selectedVisit]);
 
   useEffect(() => {
     if (loading) return;
@@ -164,9 +179,9 @@ export default function CaseChecklistFlow() {
         <ChecklistProvider initialState={initialState}>
           <ChecklistFlowScreen
             gateData={gateData}
-            caseData={caseData}
+            caseData={{ ...caseData, selectedCaseType }}
             onEditGate={() => navigate(`/case/${id}/gate`)}
-            onChangeVisit={() => navigate(`/case/${id}/checklist/visit`, { state: { currentVisit: selectedVisit } })}
+            onChangeVisit={() => navigate(`/case/${id}/checklist/visit`, { state: { currentVisit: selectedVisit, caseType: selectedCaseType } })}
           />
         </ChecklistProvider>
       </ContentContainer>
