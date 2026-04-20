@@ -1,12 +1,7 @@
 {
-  "version": "3.0",
-  "description": "Seamless Clinical Checklist (Cleaned & Structured)",
+  "version": "3.1",
+  "description": "Seamless Clinical Checklist (Final Fixed)",
   "items": [
-
-    /* =========================
-       PLANNING (V1)
-    ========================= */
-
     {
       "id": "consent_signed",
       "text": "Consent obtained and signed",
@@ -48,10 +43,6 @@
       "order": 4
     },
 
-    /* =========================
-       SURGERY (V1)
-    ========================= */
-
     {
       "id": "guide_verification",
       "text": "Surgical guide verified intraorally",
@@ -61,10 +52,9 @@
       "assignedRole": "implantologist",
       "type": "important",
       "order": 5,
-      "conditions": {
-        "guideRequired": true
-      }
+      "conditions": { "modifiers.guide": true }
     },
+
     {
       "id": "backup_implants",
       "text": "Backup implants available",
@@ -75,6 +65,7 @@
       "type": "important",
       "order": 6
     },
+
     {
       "id": "site_verification",
       "text": "Surgical site verified",
@@ -113,10 +104,7 @@
       "section": "intra_op",
       "assignedRole": "assistant",
       "type": "critical",
-      "order": 10,
-      "ui": {
-        "inputType": "number"
-      }
+      "order": 10
     },
     {
       "id": "primary_stability",
@@ -128,6 +116,7 @@
       "type": "critical",
       "order": 11
     },
+
     {
       "id": "intra_op_radiograph",
       "text": "Intra-operative radiograph taken",
@@ -180,10 +169,6 @@
       "order": 16
     },
 
-    /* =========================
-       IMPRESSION (V2)
-    ========================= */
-
     {
       "id": "integration_check",
       "text": "Implant integration confirmed",
@@ -214,10 +199,6 @@
       "type": "critical",
       "order": 19
     },
-
-    /* =========================
-       DELIVERY (V3)
-    ========================= */
 
     {
       "id": "torque_protocol",
@@ -250,10 +231,6 @@
       "order": 22
     },
 
-    /* =========================
-       CONDITIONAL ITEMS
-    ========================= */
-
     {
       "id": "nightguard_required",
       "text": "Nightguard planned",
@@ -263,10 +240,9 @@
       "assignedRole": "prosthodontist",
       "type": "important",
       "order": 23,
-      "conditions": {
-        "functional_risk": ["bruxism"]
-      }
+      "conditions": { "functional_risk": ["bruxism"] }
     },
+
     {
       "id": "papilla_prediction",
       "text": "Papilla prediction completed",
@@ -276,176 +252,109 @@
       "assignedRole": "prosthodontist",
       "type": "critical",
       "order": 24,
-      "conditions": {
-        "caseType": ["esthetic"]
-      }
+      "conditions": { "modifiers.esthetic": true }
     },
 
-  /* =========================
-     SYSTEMIC RISK (NEW)
-  ========================= */
+    {
+      "id": "smile_line_assessed",
+      "text": "Smile line assessed",
+      "phase": "planning",
+      "visit": "v1",
+      "section": "pre_op",
+      "assignedRole": "prosthodontist",
+      "type": "important",
+      "order": 104,
+      "conditions": { "modifiers.esthetic": true }
+    },
+    {
+      "id": "biotype_checked",
+      "text": "Soft tissue biotype assessed",
+      "phase": "planning",
+      "visit": "v1",
+      "section": "pre_op",
+      "assignedRole": "prosthodontist",
+      "type": "important",
+      "order": 105,
+      "conditions": { "modifiers.esthetic": true }
+    },
+    {
+      "id": "ctg_planned",
+      "text": "Connective tissue graft planned",
+      "phase": "planning",
+      "visit": "v1",
+      "section": "pre_op",
+      "assignedRole": "periodontist",
+      "type": "important",
+      "order": 106,
+      "conditions": { "modifiers.esthetic": true }
+    },
 
-  {
-    "id": "medical_history_reviewed",
-    "text": "Medical history reviewed",
-    "phase": "planning",
-    "visit": "v1",
-    "section": "pre_op",
-    "assignedRole": "clinician",
-    "type": "critical",
-    "order": 100
-  },
-  {
-    "id": "medical_clearance_required",
-    "text": "Medical clearance required",
-    "phase": "planning",
-    "visit": "v1",
-    "section": "pre_op",
-    "assignedRole": "clinician",
-    "type": "important",
-    "order": 101
-  },
+    {
+      "id": "bone_height_measured",
+      "text": "Residual bone height measured",
+      "phase": "planning",
+      "visit": "v1",
+      "section": "pre_op",
+      "assignedRole": "implantologist",
+      "type": "critical",
+      "order": 107,
+      "conditions": { "modifiers.sinus": true }
+    },
+    {
+      "id": "sinus_approach_selected",
+      "text": "Sinus approach selected",
+      "phase": "planning",
+      "visit": "v1",
+      "section": "pre_op",
+      "assignedRole": "implantologist",
+      "type": "critical",
+      "order": 108,
+      "conditions": { "modifiers.sinus": true }
+    },
 
-  /* =========================
-     LOCAL RISK (NEW)
-  ========================= */
+    {
+      "id": "socket_integrity_checked",
+      "text": "Socket wall integrity checked",
+      "phase": "planning",
+      "visit": "v1",
+      "section": "pre_op",
+      "assignedRole": "implantologist",
+      "type": "critical",
+      "order": 109,
+      "conditions": { "modifiers.immediate": true }
+    },
 
-  {
-    "id": "infection_checked",
-    "text": "Active infection assessed",
-    "phase": "planning",
-    "visit": "v1",
-    "section": "pre_op",
-    "assignedRole": "implantologist",
-    "type": "critical",
-    "order": 102
-  },
-  {
-    "id": "infection_resolved",
-    "text": "Infection resolved before implant",
-    "phase": "planning",
-    "visit": "v1",
-    "section": "pre_op",
-    "assignedRole": "implantologist",
-    "type": "critical",
-    "order": 103
-  },
+    {
+      "id": "cross_arch_stability",
+      "text": "Cross-arch stability planned",
+      "phase": "planning",
+      "visit": "v1",
+      "section": "pre_op",
+      "assignedRole": "prosthodontist",
+      "type": "critical",
+      "order": 110,
+      "conditions": { "modifiers.full_arch": true }
+    },
 
-  /* =========================
-     ESTHETIC EXPANSION (NEW)
-  ========================= */
-
-  {
-    "id": "smile_line_assessed",
-    "text": "Smile line assessed",
-    "phase": "planning",
-    "visit": "v1",
-    "section": "pre_op",
-    "assignedRole": "prosthodontist",
-    "type": "important",
-    "order": 104
-  },
-  {
-    "id": "biotype_checked",
-    "text": "Soft tissue biotype assessed",
-    "phase": "planning",
-    "visit": "v1",
-    "section": "pre_op",
-    "assignedRole": "prosthodontist",
-    "type": "important",
-    "order": 105
-  },
-  {
-    "id": "ctg_planned",
-    "text": "Connective tissue graft planned",
-    "phase": "planning",
-    "visit": "v1",
-    "section": "pre_op",
-    "assignedRole": "periodontist",
-    "type": "important",
-    "order": 106
-  },
-
-  /* =========================
-     SINUS MODULE (NEW)
-  ========================= */
-
-  {
-    "id": "bone_height_measured",
-    "text": "Residual bone height measured",
-    "phase": "planning",
-    "visit": "v1",
-    "section": "pre_op",
-    "assignedRole": "implantologist",
-    "type": "critical",
-    "order": 107
-  },
-  {
-    "id": "sinus_approach_selected",
-    "text": "Sinus approach selected",
-    "phase": "planning",
-    "visit": "v1",
-    "section": "pre_op",
-    "assignedRole": "implantologist",
-    "type": "critical",
-    "order": 108
-  },
-
-  /* =========================
-     IMMEDIATE MODULE (NEW)
-  ========================= */
-
-  {
-    "id": "socket_integrity_checked",
-    "text": "Socket wall integrity checked",
-    "phase": "planning",
-    "visit": "v1",
-    "section": "pre_op",
-    "assignedRole": "implantologist",
-    "type": "critical",
-    "order": 109
-  },
-
-  /* =========================
-     FULL ARCH MODULE (NEW)
-  ========================= */
-
-  {
-    "id": "cross_arch_stability",
-    "text": "Cross-arch stability planned",
-    "phase": "planning",
-    "visit": "v1",
-    "section": "pre_op",
-    "assignedRole": "prosthodontist",
-    "type": "critical",
-    "order": 110
-  },
-
-  /* =========================
-     MAINTENANCE (NEW)
-  ========================= */
-
-  {
-    "id": "bop_checked",
-    "text": "Bleeding on probing assessed",
-    "phase": "maintenance",
-    "visit": "v4",
-    "section": "post_op",
-    "assignedRole": "periodontist",
-    "type": "critical",
-    "order": 111
-  },
-  {
-    "id": "bone_loss_checked",
-    "text": "Bone loss assessed radiographically",
-    "phase": "maintenance",
-    "visit": "v4",
-    "section": "post_op",
-    "assignedRole": "periodontist",
-    "type": "critical",
-    "order": 112
-  }
-
-
+    {
+      "id": "bop_checked",
+      "text": "Bleeding on probing assessed",
+      "phase": "maintenance",
+      "visit": "v4",
+      "section": "post_op",
+      "assignedRole": "periodontist",
+      "type": "critical",
+      "order": 111
+    },
+    {
+      "id": "bone_loss_checked",
+      "text": "Bone loss assessed radiographically",
+      "phase": "maintenance",
+      "visit": "v4",
+      "section": "post_op",
+      "assignedRole": "periodontist",
+      "type": "critical",
+      "order": 112
+    }
   ]
 }
