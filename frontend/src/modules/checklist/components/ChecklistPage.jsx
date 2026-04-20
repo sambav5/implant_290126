@@ -4,6 +4,7 @@ import PhaseTabs from './PhaseTabs';
 import ChecklistSection from './ChecklistSection';
 import RoleToggle from './RoleToggle';
 import InfoNote from './InfoNote';
+import CEOExperienceSection from './CEOExperienceSection';
 
 const phaseOrder = ['planning', 'surgery', 'delivery'];
 const visitLabels = {
@@ -105,6 +106,15 @@ export default function ChecklistPage({ state, dispatch }) {
           ))}
           {!visibleItems.length && <p className="text-sm text-gray-500">No checklist items for this visit.</p>}
         </div>
+
+        <CEOExperienceSection
+          items={filteredChecklist}
+          responses={state.responses}
+          inlineWarnings={state.inlineWarnings}
+          editableForItem={editableForItem}
+          onChange={onResponse}
+          myTasksOnly={state.myTasksOnly}
+        />
       </div>
     </div>
   );
