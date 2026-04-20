@@ -116,7 +116,7 @@ export default function GatePage() {
       toast.info('Snapshot saved locally. Backend save can be added later.');
     } finally {
       setSaving(false);
-      navigate(`/case/${id}/checklist`);
+      navigate(`/case/${id}/checklist/visit`);
     }
   };
 
