@@ -429,7 +429,115 @@
     "assignedRole": "assistant",
     "type": "important",
     "order": 118
-  }
+  },
+      
+{
+  "id": "component_system_match",
+  "text": "Verify all components belong to same implant system",
+  "phase": "planning",
+  "visit": "v1",
+  "section": "pre_op",
+  "assignedRole": "assistant",
+  "type": "critical",
+  "severity": "critical",
+  "uiType": "alert",
+  "order": 119
+},
+{
+  "id": "motor_calibration",
+  "text": "Check implant motor calibration and settings",
+  "phase": "surgery",
+  "visit": "v1",
+  "section": "pre_op",
+  "assignedRole": "assistant",
+  "type": "critical",
+  "severity": "warning",
+  "uiType": "alert",
+  "order": 120
+},
+{
+  "id": "irrigation_check",
+  "text": "Ensure irrigation flow adequate during drilling",
+  "phase": "surgery",
+  "visit": "v1",
+  "section": "intra_op",
+  "assignedRole": "assistant",
+  "type": "important",
+  "severity": "warning",
+  "uiType": "alert",
+  "order": 121
+},
+{
+  "id": "isq_recorded",
+  "text": "ISQ value recorded",
+  "phase": "surgery",
+  "visit": "v1",
+  "section": "intra_op",
+  "assignedRole": "implantologist",
+  "type": "critical",
+  "severity": "normal",
+  "uiType": "action",
+  "order": 122
+},
+{
+  "id": "stability_decision_matrix",
+  "text": "Use torque + ISQ to decide loading protocol",
+  "phase": "surgery",
+  "visit": "v1",
+  "section": "intra_op",
+  "assignedRole": "implantologist",
+  "type": "critical",
+  "severity": "critical",
+  "uiType": "alert",
+  "order": 123
+},
+{
+  "id": "immediate_4_gate_check",
+  "text": "Verify 4 gates (socket walls, apical bone, stability, infection)",
+  "phase": "planning",
+  "visit": "v1",
+  "assignedRole": "implantologist",
+  "type": "critical",
+  "severity": "critical",
+  "uiType": "alert",
+  "order": 124,
+  "conditions": { "modifiers.immediate": true }
+},
+{
+  "id": "sinus_height_classification",
+  "text": "Classify bone height (6–9mm, 4–5mm, <4mm)",
+  "phase": "planning",
+  "visit": "v1",
+  "assignedRole": "implantologist",
+  "type": "critical",
+  "severity": "warning",
+  "uiType": "alert",
+  "order": 125,
+  "conditions": { "modifiers.sinus": true }
+},
+{
+  "id": "verification_jig",
+  "text": "Verification jig checked for passive fit",
+  "phase": "impression",
+  "visit": "v2",
+  "assignedRole": "prosthodontist",
+  "type": "critical",
+  "severity": "critical",
+  "uiType": "alert",
+  "order": 126,
+  "conditions": { "modifiers.full_arch": true }
+},
+{
+  "id": "torque_3_stage",
+  "text": "3-stage torque protocol with 10 min re-torque",
+  "phase": "delivery",
+  "visit": "v3",
+  "assignedRole": "prosthodontist",
+  "type": "critical",
+  "severity": "critical",
+  "uiType": "alert",
+  "order": 127
+}
 ]
   ]
 }
