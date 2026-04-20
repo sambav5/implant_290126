@@ -368,6 +368,68 @@
       "assignedRole": "periodontist",
       "type": "critical",
       "order": 112
-    }
+    },
+    [
+  {
+    "id": "use_patient_name",
+    "text": "Use patient name at first interaction",
+    "phase": "experience",
+    "visit": "v1",
+    "section": "patient_experience",
+    "assignedRole": "assistant",
+    "type": "important",
+    "order": 113
+  },
+  {
+    "id": "offer_water",
+    "text": "Offer water proactively",
+    "phase": "experience",
+    "visit": "v1",
+    "section": "patient_experience",
+    "assignedRole": "assistant",
+    "type": "important",
+    "order": 114
+  },
+  {
+    "id": "pre_surgery_call",
+    "text": "Call patient before surgery",
+    "phase": "experience",
+    "visit": "v0",
+    "section": "patient_experience",
+    "assignedRole": "assistant",
+    "type": "critical",
+    "order": 115
+  },
+  {
+    "id": "stop_signal_explained",
+    "text": "Provide stop signal during surgery",
+    "phase": "surgery",
+    "visit": "v1",
+    "section": "patient_experience",
+    "assignedRole": "clinician",
+    "type": "critical",
+    "order": 116
+  },
+  {
+    "id": "mirror_before_delivery",
+    "text": "Show mirror before explaining final result",
+    "phase": "delivery",
+    "visit": "v3",
+    "section": "patient_experience",
+    "assignedRole": "clinician",
+    "type": "important",
+    "order": 117
+  },
+  {
+    "id": "feedback_collected",
+    "text": "Ask for patient feedback at end",
+    "phase": "delivery",
+    "visit": "v3",
+    "section": "patient_experience",
+    "assignedRole": "assistant",
+    "type": "important",
+    "order": 118
+  }
+]
   ]
 }
