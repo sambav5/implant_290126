@@ -2,9 +2,7 @@
   "version": "3.0",
   "rules": [
 
-    /* =========================
-       FUNCTIONAL RISK
-    ========================= */
+    
 
     {
       "id": "rule_bruxism",
@@ -556,7 +554,64 @@
         }
       ]
     }
+  },
+   
+{
+  "id": "rule_implant_mobility_critical",
+  "when": { "mobility": true },
+  "then": {
+    "warnings": [
+      {
+        "message": "Implant mobility detected — high failure risk",
+        "severity": "critical",
+        "category": "prosthetic",
+        "priority": 5
+      }
+    ]
   }
+},
+{
+  "id": "rule_osteotomy_overprep",
+  "when": { "osteotomy_overprep": true },
+  "then": {
+    "warnings": [
+      {
+        "message": "Osteotomy wider than implant — risk of poor stability",
+        "severity": "warning",
+        "category": "surgical",
+        "priority": 3
+      }
+    ]
+  }
+},
+{
+  "id": "rule_isq_low",
+  "when": { "isq": { "lt": 60 } },
+  "then": {
+    "warnings": [
+      {
+        "message": "Low ISQ — consider delayed loading",
+        "severity": "critical",
+        "category": "stability",
+        "priority": 5
+      }
+    ]
+  }
+},
+{
+  "id": "rule_patient_education",
+  "when": { "phase": "delivery" },
+  "then": {
+    "warnings": [
+      {
+        "message": "Educate patient on hygiene and recall",
+        "severity": "normal",
+        "category": "experience",
+        "priority": 1
+      }
+    ]
+  }
+}
 
     
 
