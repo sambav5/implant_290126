@@ -13,6 +13,8 @@ function normalizeInputType(inputType) {
 
 export function buildChecklistLibrary(masterChecklist) {
   return (masterChecklist?.items || [])
+    .flatMap((item) => (Array.isArray(item) ? item : [item]))
+    .filter((item) => item && !Array.isArray(item))
     .slice()
     .sort((a, b) => (a.order || 0) - (b.order || 0))
     .map((item) => ({
