@@ -3,6 +3,7 @@ import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import AppLayout from '@/layout/AppLayout';
 import ContentContainer from '@/components/ui/ContentContainer';
 import { Button } from '@/components/ui/button';
+import { deriveCaseContext, getRoutingVariant } from '@/lib/caseContext';
 
 type VisitOption = {
   id: 'v1' | 'v2' | 'v3';
@@ -10,9 +11,9 @@ type VisitOption = {
   subtitle: string;
 };
 
-type CaseType = 'standard' | 'sinus' | 'esthetic' | 'full_arch' | 'immediate';
+type RoutingVariant = 'standard' | 'sinus' | 'esthetic' | 'full_arch' | 'immediate';
 
-const storageKeyForCaseType = (caseId: string) => `case_routing_type_${caseId}`;
+const storageKeyForCaseContext = (caseId: string) => `case_routing_context_${caseId}`;
 
 const visitOptions: VisitOption[] = [
   { id: 'v1', title: 'Visit 1', subtitle: 'Surgery' },
@@ -25,9 +26,9 @@ function normalizeVisit(visitValue: unknown): VisitOption['id'] | null {
   return visit === 'v1' || visit === 'v2' || visit === 'v3' ? visit : null;
 }
 
-function normalizeCaseType(caseTypeValue: unknown): CaseType | null {
-  const value = String(caseTypeValue || '').toLowerCase();
-  return ['standard', 'sinus', 'esthetic', 'full_arch', 'immediate'].includes(value) ? (value as CaseType) : null;
+function normalizeRoutingVariant(value: unknown): RoutingVariant | null {
+  const normalizedValue = String(value || '').toLowerCase();
+  return ['standard', 'sinus', 'esthetic', 'full_arch', 'immediate'].includes(normalizedValue) ? (normalizedValue as RoutingVariant) : null;
 }
 
 export default function VisitSelectionPage() {
@@ -40,14 +41,25 @@ export default function VisitSelectionPage() {
     [location.state],
   );
 
-  const caseType = useMemo(() => {
-    const stateCaseType = normalizeCaseType((location.state as { caseType?: string } | null)?.caseType);
-    if (stateCaseType) return stateCaseType;
-    return normalizeCaseType(localStorage.getItem(storageKeyForCaseType(id))) || 'standard';
+  const caseContext = useMemo(() => {
+    const fromState = (location.state as { caseContext?: unknown } | null)?.caseContext;
+    if (fromState && typeof fromState === 'object') return fromState as ReturnType<typeof deriveCaseContext>;
+
+    try {
+      const localContext = JSON.parse(localStorage.getItem(storageKeyForCaseContext(id)) || 'null');
+      if (localContext?.baseCase && localContext?.modifiers) return localContext;
+    } catch {
+      // Ignore malformed local storage
+    }
+
+    const legacyLocal = normalizeRoutingVariant(localStorage.getItem(`case_routing_type_${id}`));
+    return deriveCaseContext({}, { legacyCaseType: legacyLocal || 'standard' });
   }, [id, location.state]);
 
+  const routingVariant = getRoutingVariant(caseContext);
+
   const onSelectVisit = (visit: VisitOption['id']) => {
-    navigate(`/case/${id}/checklist`, { state: { currentVisit: visit, caseType } });
+    navigate(`/case/${id}/checklist`, { state: { currentVisit: visit, caseContext, routingVariant } });
   };
 
   return (
@@ -57,7 +69,7 @@ export default function VisitSelectionPage() {
           <h1 className="text-xl font-semibold">Select Visit</h1>
           <p className="text-sm text-gray-600">Choose a visit to generate and view its checklist.</p>
           <p className="text-sm text-gray-700">
-            Case Type: <span className="font-semibold capitalize">{caseType.replace('_', ' ')}</span>
+            Route: <span className="font-semibold capitalize">{routingVariant.replace('_', ' ')}</span>
           </p>
         </div>
 
@@ -81,8 +93,8 @@ export default function VisitSelectionPage() {
           })}
         </div>
 
-        <Button variant="outline" onClick={() => navigate(`/case/${id}/routing`, { state: { caseType } })}>
-          Back to Case Type
+        <Button variant="outline" onClick={() => navigate(`/case/${id}/routing`, { state: { caseContext, routingVariant } })}>
+          Back to Routing
         </Button>
       </ContentContainer>
     </AppLayout>

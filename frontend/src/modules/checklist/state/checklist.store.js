@@ -2,7 +2,7 @@ import { createContext, useContext, useMemo, useReducer } from 'react';
 
 const defaultState = {
   patientData: {
-    caseType: 'standard',
+    caseContext: { baseCase: 'single_tooth', modifiers: { esthetic: false, sinus: false, immediate: false, full_arch: false, gbr: false, guide: true } },
     medical: [],
     functional_risk: [],
     periodontal: '',

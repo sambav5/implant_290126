@@ -12,6 +12,7 @@ import { Switch } from '@/components/ui/switch';
 import { caseApi } from '@/services/api';
 import { toast } from 'sonner';
 import { trackPlanningCompleted, trackRiskAnalysisRun } from '@/lib/analytics';
+import { deriveCaseContext, migrateLegacyCaseContext } from '@/lib/caseContext';
 import ContentContainer from '@/components/ui/ContentContainer';
 import AppLayout from '@/layout/AppLayout';
 
@@ -196,13 +197,23 @@ export default function PlanningWizard() {
       setCaseData(response.data);
       
       const savedPlanningData = response.data.planningData || {};
-      setPlanningData(savedPlanningData);
+      const { caseContext, migrated } = migrateLegacyCaseContext(savedPlanningData);
+      const normalizedPlanningData = {
+        ...savedPlanningData,
+        caseContext,
+      };
+      delete normalizedPlanningData['case' + 'Type'];
+      delete normalizedPlanningData['case_' + 'type'];
+      setPlanningData(normalizedPlanningData);
+      if (migrated) {
+        await caseApi.update(id, { planningData: normalizedPlanningData });
+      }
       
       // Check which steps are complete
       if (savedPlanningData && Object.keys(savedPlanningData).length > 0) {
         const completed = {};
         PLANNING_STEPS.forEach((_, index) => {
-          completed[index] = isStepComplete(index, savedPlanningData);
+          completed[index] = isStepComplete(index, normalizedPlanningData);
         });
         setCompletedSteps(completed);
       }
@@ -263,7 +274,14 @@ export default function PlanningWizard() {
   
   // Handle field change with auto-progression
   const handleFieldChange = async (fieldKey, value) => {
-    const newData = { ...planningData, [fieldKey]: value };
+    const updatedPlanningData = { ...planningData, [fieldKey]: value };
+    const caseContext = deriveCaseContext(updatedPlanningData);
+    const newData = {
+      ...updatedPlanningData,
+      caseContext,
+    };
+    delete newData['case' + 'Type'];
+    delete newData['case_' + 'type'];
     setPlanningData(newData);
     
     // Auto-save
@@ -337,8 +355,15 @@ export default function PlanningWizard() {
     
     setAnalyzing(true);
     try {
-      await caseApi.update(id, { planningData });
-      trackPlanningCompleted(id, planningData);
+      const nextPlanningData = {
+        ...planningData,
+        caseContext: deriveCaseContext(planningData),
+      };
+      delete nextPlanningData['case' + 'Type'];
+      delete nextPlanningData['case_' + 'type'];
+      await caseApi.update(id, { planningData: nextPlanningData });
+      setPlanningData(nextPlanningData);
+      trackPlanningCompleted(id, nextPlanningData);
       
       const response = await caseApi.analyze(id);
       setCaseData(prev => ({ ...prev, riskAssessment: response.data }));

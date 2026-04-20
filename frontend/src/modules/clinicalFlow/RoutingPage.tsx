@@ -4,18 +4,19 @@ import AppLayout from '@/layout/AppLayout';
 import ContentContainer from '@/components/ui/ContentContainer';
 import { Button } from '@/components/ui/button';
 import { caseApi } from '@/services/api';
+import { deriveCaseContext } from '@/lib/caseContext';
 
-const storageKeyForCaseType = (caseId: string) => `case_routing_type_${caseId}`;
+const storageKeyForCaseContext = (caseId: string) => `case_routing_context_${caseId}`;
 
-type CaseType = 'standard' | 'sinus' | 'esthetic' | 'full_arch' | 'immediate';
+type RoutingVariant = 'standard' | 'sinus' | 'esthetic' | 'full_arch' | 'immediate';
 
-type CaseTypeOption = {
-  id: CaseType;
+type RoutingVariantOption = {
+  id: RoutingVariant;
   title: string;
   subtitle: string;
 };
 
-const caseTypeOptions: CaseTypeOption[] = [
+const routingVariantOptions: RoutingVariantOption[] = [
   { id: 'standard', title: 'Standard', subtitle: 'posterior single unit' },
   { id: 'sinus', title: 'Sinus', subtitle: 'posterior maxilla, ≤9mm bone' },
   { id: 'esthetic', title: 'Esthetic', subtitle: 'anterior zone' },
@@ -23,9 +24,9 @@ const caseTypeOptions: CaseTypeOption[] = [
   { id: 'immediate', title: 'Immediate', subtitle: 'placement at extraction' },
 ];
 
-function normalizeCaseType(value: unknown): CaseType | null {
+function normalizeRoutingVariant(value: unknown): RoutingVariant | null {
   const normalized = String(value || '').toLowerCase();
-  return caseTypeOptions.some((option) => option.id === normalized) ? (normalized as CaseType) : null;
+  return routingVariantOptions.some((option) => option.id === normalized) ? (normalized as RoutingVariant) : null;
 }
 
 function getSuggestedCaseType(gateData: { functional_risk?: string[]; patient_expectation?: string; medical?: string[] }) {
@@ -52,19 +53,37 @@ export default function RoutingPage() {
   const { id = '' } = useParams();
   const navigate = useNavigate();
   const location = useLocation();
-  const [selectedCaseType, setSelectedCaseType] = useState<CaseType | null>(null);
+  const [selectedVariant, setSelectedVariant] = useState<RoutingVariant | null>(null);
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    const fromState = normalizeCaseType((location.state as { caseType?: string } | null)?.caseType);
+    const fromState = normalizeRoutingVariant((location.state as { routingVariant?: string } | null)?.routingVariant);
     if (fromState) {
-      setSelectedCaseType(fromState);
+      setSelectedVariant(fromState);
       return;
     }
 
-    const localValue = normalizeCaseType(localStorage.getItem(storageKeyForCaseType(id)));
-    if (localValue) {
-      setSelectedCaseType(localValue);
+    try {
+      const localContext = localStorage.getItem(storageKeyForCaseContext(id));
+      const parsedContext = localContext ? JSON.parse(localContext) : null;
+      const selectedFromContext = normalizeRoutingVariant(
+        (parsedContext?.modifiers?.full_arch && 'full_arch') ||
+        (parsedContext?.modifiers?.sinus && 'sinus') ||
+        (parsedContext?.modifiers?.esthetic && 'esthetic') ||
+        (parsedContext?.modifiers?.immediate && 'immediate') ||
+        'standard',
+      );
+      if (selectedFromContext) {
+        setSelectedVariant(selectedFromContext);
+        return;
+      }
+    } catch {
+      // Ignore malformed local storage and try legacy key
+    }
+
+    const legacyLocalValue = normalizeRoutingVariant(localStorage.getItem(`case_routing_type_${id}`));
+    if (legacyLocalValue) {
+      setSelectedVariant(legacyLocalValue);
     }
   }, [id, location.state]);
 
@@ -78,22 +97,21 @@ export default function RoutingPage() {
   }, [id]);
 
   const onContinue = async () => {
-    if (!selectedCaseType) return;
+    if (!selectedVariant) return;
 
-    localStorage.setItem(storageKeyForCaseType(id), selectedCaseType);
+    const caseContext = deriveCaseContext({}, { legacyCaseType: selectedVariant });
+    localStorage.setItem(storageKeyForCaseContext(id), JSON.stringify(caseContext));
 
     setSaving(true);
     try {
       await caseApi.update(id, {
-        riskAssessment: {
-          caseType: selectedCaseType,
-        },
+        planningData: { caseContext },
       });
     } catch {
       // Non-blocking: local state is sufficient to continue flow
     } finally {
       setSaving(false);
-      navigate(`/case/${id}/checklist/visit`, { state: { caseType: selectedCaseType } });
+      navigate(`/case/${id}/checklist/visit`, { state: { caseContext, routingVariant: selectedVariant } });
     }
   };
 
@@ -101,8 +119,8 @@ export default function RoutingPage() {
     <AppLayout>
       <ContentContainer className="py-6 space-y-5">
         <div className="card-clinical space-y-2">
-          <h1 className="text-xl font-semibold">Routing (Case Type)</h1>
-          <p className="text-sm text-gray-600">Choose a case type before selecting the visit.</p>
+          <h1 className="text-xl font-semibold">Routing (Case Context)</h1>
+          <p className="text-sm text-gray-600">Choose a base route before selecting the visit.</p>
         </div>
 
         {suggestion && (
@@ -112,13 +130,13 @@ export default function RoutingPage() {
         )}
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          {caseTypeOptions.map((option) => {
-            const isSelected = selectedCaseType === option.id;
+          {routingVariantOptions.map((option) => {
+            const isSelected = selectedVariant === option.id;
             return (
               <button
                 key={option.id}
                 type="button"
-                onClick={() => setSelectedCaseType(option.id)}
+                onClick={() => setSelectedVariant(option.id)}
                 className={`text-left rounded-lg border px-4 py-4 transition min-h-24 ${
                   isSelected ? 'border-forest bg-green-50 ring-1 ring-forest' : 'border-gray-200 bg-white hover:border-gray-300'
                 }`}
@@ -134,7 +152,7 @@ export default function RoutingPage() {
           <Button variant="outline" onClick={() => navigate(`/case/${id}/gate`)}>
             Back to Case Snapshot
           </Button>
-          <Button onClick={onContinue} disabled={!selectedCaseType || saving}>
+          <Button onClick={onContinue} disabled={!selectedVariant || saving}>
             {saving ? 'Saving...' : 'Continue to Visit Selection'}
           </Button>
         </div>
