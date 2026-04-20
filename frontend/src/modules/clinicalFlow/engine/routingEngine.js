@@ -8,10 +8,10 @@ const branchTemplates = {
   immediate: ['v1', 'v2', 'v3'],
 };
 
-export function getBranchDefinition(caseType = 'standard') {
-  const visits = branchTemplates[caseType] || branchTemplates.standard;
+export function getBranchDefinition(routingVariant = 'standard') {
+  const visits = branchTemplates[routingVariant] || branchTemplates.standard;
   return {
-    caseType,
+    routingVariant,
     visits: visits.map((visitId) => ({
       id: visitId,
       phases: ['preOp', 'intraOp', 'postOp'],

@@ -1,3 +1,5 @@
+import { matchesCondition } from './conditionEvaluator';
+
 const phaseMap = {
   pre_op: 'preOp',
   intra_op: 'intraOp',
@@ -39,13 +41,6 @@ export function buildExecutionTasks(masterChecklist, branchDefinition) {
 export function applyTaskConditions(tasks = [], context = {}) {
   return tasks.filter((task) => {
     const conditions = task.conditions || {};
-    return Object.entries(conditions).every(([key, expected]) => {
-      const current = context[key];
-      if (Array.isArray(expected)) {
-        const values = Array.isArray(current) ? current : [current];
-        return expected.some((item) => values.includes(item));
-      }
-      return current === expected;
-    });
+    return matchesCondition(conditions, context);
   });
 }
