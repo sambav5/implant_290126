@@ -127,7 +127,7 @@ const Login = ({ onAuthenticated }) => {
           </div>
           <h1 className="text-3xl font-bold text-charcoal">Seamless</h1>
           <p className="text-sm text-warmgray">
-            Secure clinician access via WhatsApp OTP
+            Your practice's clinical memory starts here.
           </p>
         </div>
 
@@ -173,7 +173,7 @@ const Login = ({ onAuthenticated }) => {
               ) : (
                 <>
                   <MessageCircle className="mr-2 h-4 w-4" />
-                  Send OTP
+                  SEND MY CODE
                 </>
               )}
             </Button>
@@ -260,7 +260,7 @@ const Login = ({ onAuthenticated }) => {
 
         <div className="pt-4 border-t border-divider">
           <p className="text-xs text-center text-warmgray">
-            Protected by WhatsApp OTP verification
+            Clinician access only. Secured via WhatsApp.
           </p>
         </div>
       </Card>

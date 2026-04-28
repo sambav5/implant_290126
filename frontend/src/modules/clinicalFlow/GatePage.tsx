@@ -124,8 +124,8 @@ export default function GatePage() {
     <AppLayout>
       <ContentContainer className="py-6 space-y-5">
         <div className="card-clinical space-y-2">
-          <h1 className="text-xl font-semibold">Case Snapshot</h1>
-          <p className="text-sm text-gray-600">Quick overview before checklist generation.</p>
+          <h1 className="text-xl font-semibold">Know Your Patient</h1>
+          <p className="text-sm text-gray-600">Your inputs shape everything that follows. The more Seamless knows, the sharper your checklist.</p>
         </div>
 
         <div className={`rounded-lg border px-3 py-2 text-sm ${riskLevel === 'red' ? 'bg-red-50 border-red-200 text-red-800' : riskLevel === 'amber' ? 'bg-yellow-50 border-yellow-200 text-yellow-800' : 'bg-green-50 border-green-200 text-green-800'}`}>
@@ -133,10 +133,10 @@ export default function GatePage() {
             {riskLevel === 'red'
               ? 'Clinical insights: Higher risk factors identified. Careful planning recommended.'
               : riskLevel === 'amber'
-                ? 'Clinical insights: Some risk factors identified. Review before proceeding.'
+                ? 'Risk flags detected. Seamless has adapted your checklist — review before continuing.'
                 : 'Clinical insights: No significant risk factors identified.'}
           </p>
-          <p className="text-xs mt-1">{riskLevel === 'green' ? 'For guidance in planning.' : 'For guidance.'}</p>
+          <p className="text-xs mt-1">{riskLevel === 'green' ? 'For guidance in planning.' : ''}</p>
         </div>
 
         <div className="card-clinical space-y-4">
