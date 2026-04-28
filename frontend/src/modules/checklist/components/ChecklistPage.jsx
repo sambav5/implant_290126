@@ -19,7 +19,7 @@ function normalizeVisit(visitValue) {
   return ['v1', 'v2', 'v3'].includes(visit) ? visit : null;
 }
 
-export default function ChecklistPage({ state, dispatch, totalVisits = 3, onVisitNavigate, onCompleteCase, caseId, onOpenReflection }) {
+export default function ChecklistPage({ state, dispatch, totalVisits = 3, onVisitNavigate, onCompleteCase }) {
   const currentVisit = normalizeVisit(state.activeVisit);
   const currentVisitNumber = Number(currentVisit?.replace('v', '')) || 0;
   const filteredChecklist = useMemo(
@@ -74,20 +74,6 @@ export default function ChecklistPage({ state, dispatch, totalVisits = 3, onVisi
   useEffect(() => {
     window.scrollTo(0, 0);
   }, [currentVisitNumber]);
-
-
-  const isItemCompleted = (item) => {
-    const value = state.responses[item.id];
-    if (item.ui?.inputType === 'number') {
-      return value !== undefined && value !== null && String(value).trim() !== '';
-    }
-    return Boolean(value);
-  };
-
-  const isLastVisit = currentVisitNumber === totalVisits;
-  const isLastVisitChecklistComplete = filteredChecklist.length > 0 && filteredChecklist.every(isItemCompleted);
-  const areAllVisitsCompleted = state.checklist.length > 0 && state.checklist.every(isItemCompleted);
-  const canAddReflection = isLastVisit && (areAllVisitsCompleted || isLastVisitChecklistComplete);
 
   const goToVisit = (visitNumber) => {
     if (!onVisitNavigate) return;
@@ -161,14 +147,6 @@ export default function ChecklistPage({ state, dispatch, totalVisits = 3, onVisi
           )}
         </div>
 
-        {canAddReflection && (
-          <button
-            onClick={() => (onOpenReflection ? onOpenReflection() : window.location.assign(`/case-reflection/${caseId}`))}
-            className="btn-primary mt-6"
-          >
-            Add Reflection
-          </button>
-        )}
       </div>
     </div>
   );
