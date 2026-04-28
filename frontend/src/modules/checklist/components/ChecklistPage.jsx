@@ -8,9 +8,9 @@ import CEOExperienceSection from './CEOExperienceSection';
 
 const phaseOrder = ['planning', 'surgery', 'delivery'];
 const visitLabels = {
-  v1: 'Visit 1 – Surgery',
-  v2: 'Visit 2 – Impression',
-  v3: 'Visit 3 – Delivery',
+  v1: 'Visit 1 — Surgery',
+  v2: 'Visit 2 — Impression',
+  v3: 'Visit 3 — Delivery',
 };
 
 function normalizeVisit(visitValue) {

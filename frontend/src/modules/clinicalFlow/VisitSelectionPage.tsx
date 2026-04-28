@@ -66,8 +66,8 @@ export default function VisitSelectionPage() {
     <AppLayout>
       <ContentContainer className="py-6 space-y-5">
         <div className="card-clinical space-y-2">
-          <h1 className="text-xl font-semibold">Select Visit</h1>
-          <p className="text-sm text-gray-600">Choose a visit to generate and view its checklist.</p>
+          <h1 className="text-xl font-semibold">Select Your Visit</h1>
+          <p className="text-sm text-gray-600">Pick the visit you're running. Your checklist is ready.</p>
           <p className="text-sm text-gray-700">
             Route: <span className="font-semibold capitalize">{routingVariant.replace('_', ' ')}</span>
           </p>
@@ -85,8 +85,8 @@ export default function VisitSelectionPage() {
                 onClick={() => onSelectVisit(visit.id)}
               >
                 <div>
-                  <p className="font-semibold">{visit.title} – {visit.subtitle}</p>
-                  <p className="text-xs text-gray-600">Tap to continue</p>
+                  <p className="font-semibold">{visit.title} — {visit.subtitle}</p>
+                  <p className="text-xs text-gray-600">Open checklist →</p>
                 </div>
               </Button>
             );
@@ -94,7 +94,7 @@ export default function VisitSelectionPage() {
         </div>
 
         <Button variant="outline" onClick={() => navigate(`/case/${id}/routing`, { state: { caseContext, routingVariant } })}>
-          Back to Routing
+          ← CHANGE PROTOCOL
         </Button>
       </ContentContainer>
     </AppLayout>

@@ -18,27 +18,27 @@ const WORKFLOW_STAGES = [
   {
     key: 'DIAGNOSIS',
     title: 'Diagnosis Review',
-    helper: 'Choose the dentist responsible for initial diagnosis confirmation and treatment readiness.'
+    helper: 'Who confirms this patient is ready to proceed?'
   },
   {
     key: 'IMPLANT_PLANNING',
     title: 'Implant Planning',
-    helper: 'Choose the dentist responsible for planning implant position and size.'
+    helper: "Who's designing this placement?"
   },
   {
     key: 'SURGERY',
     title: 'Surgery',
-    helper: 'Choose the operator responsible for implant placement surgery.'
+    helper: "Who's operating?"
   },
   {
     key: 'PROSTHETIC_DESIGN',
     title: 'Prosthetic Design',
-    helper: 'Choose the dentist responsible for restoration design and prosthetic decisions.'
+    helper: 'Who owns the final restoration?'
   },
   {
     key: 'ASSISTANT_SUPPORT',
     title: 'Assistant Support',
-    helper: 'Choose the team member coordinating assistance and chairside support.'
+    helper: "Who's running chairside?"
   }
 ];
 
@@ -179,7 +179,7 @@ export default function NewCase() {
             <div>
               <h1 className="text-xl font-semibold" style={{ fontFamily: "'Lora', serif", color: 'var(--t1)' }}>New Case</h1>
               <p className="text-sm" style={{ color: 'var(--t2)' }}>
-                {showSummary ? 'Step 3 of 4 • Case Summary' : 'Step 1-2 of 4 • Case Details & Workflow'}
+                {showSummary ? 'Step 3 of 4 • Case Summary' : 'Case Setup · Step 1 of 4'}
               </p>
             </div>
           </div>
@@ -201,7 +201,7 @@ export default function NewCase() {
           <div className="card-clinical flex items-start gap-3">
             <Zap className="h-5 w-5 shrink-0 mt-0.5" style={{ color: 'var(--blue)' }} />
             <p className="text-sm" style={{ color: 'var(--t2)' }}>
-              Create a case in seconds. Assign responsibility by treatment stage for clear workflow ownership.
+              Set the stage before the patient sits down. Name it, map the teeth, build the team.
             </p>
           </div>
 
@@ -268,8 +268,8 @@ export default function NewCase() {
 
           <div className="card-clinical space-y-4" data-testid="case-workflow-assignment">
             <div>
-              <h2 className="text-lg font-semibold" style={{ fontFamily: "'Lora', serif", color: 'var(--t1)' }}>Case Workflow</h2>
-              <p className="text-sm" style={{ color: 'var(--t3)' }}>Assign one responsible team member per stage.</p>
+              <h2 className="text-lg font-semibold" style={{ fontFamily: "'Lora', serif", color: 'var(--t1)' }}>Build Your Team</h2>
+              <p className="text-sm" style={{ color: 'var(--t3)' }}>One owner per stage. No ambiguity when the patient is in the chair.</p>
             </div>
 
             {WORKFLOW_STAGES.map((stage) => (
@@ -308,7 +308,7 @@ export default function NewCase() {
           </div>
 
           <Button type="submit" disabled={!isValid || loading} className="w-full" data-testid="create-case-btn">
-            Review Summary
+            CONFIRM & CONTINUE
           </Button>
         </form>
         )}
