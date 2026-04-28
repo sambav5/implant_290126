@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Plus, Search, FileText, ChevronRight } from 'lucide-react';
+import { Plus, Search, FileText, ChevronRight, Lightbulb } from 'lucide-react';
 import { Input } from '@/components/ui/input';
-import { caseApi } from '@/services/api';
+import { caseApi, caseReflectionApi } from '@/services/api';
 import { toast } from 'sonner';
 import ProfileMenu from '@/components/ProfileMenu';
 import Panel from '@/components/ui/Panel';
@@ -57,6 +57,7 @@ export default function Dashboard() {
   const [searchQuery, setSearchQuery] = useState('');
   const [isMobile, setIsMobile] = useState(() => window.innerWidth < 768);
   const [sidebarOpen, setSidebarOpen] = useState(() => window.innerWidth >= 768);
+  const [reflectionByCase, setReflectionByCase] = useState({});
 
   useEffect(() => {
     loadCases();
@@ -90,6 +91,17 @@ export default function Dashboard() {
         postTreatmentChecklist: c.postTreatmentChecklist || [],
       }));
       setCases(normalizedCases);
+
+      const completed = normalizedCases.filter((c) => c.status === 'completed');
+      const entries = await Promise.all(completed.map(async (c) => {
+        try {
+          const r = await caseReflectionApi.getByCase(c.id);
+          return [c.id, Boolean(r?.data?.reflection)];
+        } catch {
+          return [c.id, false];
+        }
+      }));
+      setReflectionByCase(Object.fromEntries(entries));
     } catch (error) {
       toast.error('Failed to load cases');
       console.error(error);
@@ -100,6 +112,7 @@ export default function Dashboard() {
 
   const filteredCases = cases.filter(c => c.caseName.toLowerCase().includes(searchQuery.toLowerCase()) || c.toothNumber.includes(searchQuery));
   const activeCases = filteredCases.filter(c => c.status !== 'completed');
+  const completedCases = filteredCases.filter(c => c.status === 'completed');
   const closeSidebar = () => setSidebarOpen(false);
   const handleSidebarNavigation = () => {
     if (isMobile) {
@@ -161,6 +174,37 @@ export default function Dashboard() {
               </div>
             </section>
           )}
+
+          {completedCases.length > 0 && (
+            <section className="space-y-4">
+              <Divider />
+              <p className="type-caption uppercase text-warmgray">Completed Cases</p>
+              <div className="space-y-3">
+                {completedCases.map((c) => (
+                  <Panel key={c.id} className="space-y-3">
+                    <div className="flex items-start justify-between gap-4">
+                      <div>
+                        <h3 className="font-serif text-[20px] leading-[1.5] truncate">{c.caseName}</h3>
+                        <p className="text-warmgray">Tooth #{c.toothNumber}</p>
+                      </div>
+                    </div>
+                    <div className="rounded-lg border border-divider p-3 flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <Lightbulb className="h-4 w-4 text-forest" />
+                        <div>
+                          <p className="text-sm font-medium">Learning Reflection</p>
+                        </div>
+                      </div>
+                      <PrimaryButton onClick={() => navigate(`/case-reflection/${c.id}`)}>
+                        {reflectionByCase[c.id] ? 'View Reflection' : 'Add Reflection'}
+                      </PrimaryButton>
+                    </div>
+                  </Panel>
+                ))}
+              </div>
+            </section>
+          )}
+
         </ContentContainer>
       </main>
 

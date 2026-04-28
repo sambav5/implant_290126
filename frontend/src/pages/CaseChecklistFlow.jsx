@@ -50,8 +50,9 @@ function normalizeCaseContext(caseContextValue) {
   return deriveCaseContext({}, { legacyCaseType: legacyVariant });
 }
 
-function ChecklistFlowScreen({ gateData, caseData, onEditGate, onChangeVisit, onCompleteCase }) {
+function ChecklistFlowScreen({ gateData, caseData, onEditGate, onChangeVisit, onCompleteCase, navigate, id }) {
   const { state, dispatch } = useChecklist();
+  const reflectionExists = Boolean(caseData?.feedback?.reflectionCompletedAt || caseData?.caseReflection?.createdAt);
 
   useEffect(() => {
     dispatch({
@@ -62,9 +63,10 @@ function ChecklistFlowScreen({ gateData, caseData, onEditGate, onChangeVisit, on
         functional_risk: gateData.functional_risk || [],
         periodontal: gateData.periodontal || '',
         patient_expectation: gateData.patient_expectation || '',
+        reflection_exists: reflectionExists,
       },
     });
-  }, [caseData, dispatch, gateData]);
+  }, [caseData, dispatch, gateData, reflectionExists]);
 
   useEffect(() => {
     let mounted = true;
@@ -99,8 +101,10 @@ function ChecklistFlowScreen({ gateData, caseData, onEditGate, onChangeVisit, on
         state={state}
         dispatch={dispatch}
         totalVisits={3}
+        caseId={caseData?.id || caseData?.caseId || ""}
         onVisitNavigate={(visitNumber) => onChangeVisit(visitNumber, state)}
         onCompleteCase={() => onCompleteCase(state)}
+        onOpenReflection={() => navigate(`/case-reflection/${id}`)}
       />
     </div>
   );
@@ -166,6 +170,8 @@ export default function CaseChecklistFlow() {
     }
   }, [caseData, id]);
 
+  const reflectionExists = useMemo(() => Boolean(caseData?.feedback?.reflectionCompletedAt || caseData?.caseReflection?.createdAt), [caseData?.feedback?.reflectionCompletedAt, caseData?.caseReflection?.createdAt]);
+
   const initialState = useMemo(() => ({
       patientData: {
       caseContext: selectedCaseContext,
@@ -173,11 +179,12 @@ export default function CaseChecklistFlow() {
       functional_risk: gateData.functional_risk || [],
       periodontal: gateData.periodontal || '',
       patient_expectation: gateData.patient_expectation || '',
+      reflection_exists: reflectionExists,
       torque: null,
     },
     responses: persistedChecklistState.responses || {},
     activeVisit: selectedVisit,
-  }), [gateData, persistedChecklistState.responses, selectedCaseContext, selectedVisit]);
+  }), [gateData, persistedChecklistState.responses, reflectionExists, selectedCaseContext, selectedVisit]);
 
   const saveChecklist = useCallback((checklistState, nextVisit) => {
     const snapshot = {
@@ -239,6 +246,8 @@ export default function CaseChecklistFlow() {
               });
             }}
             onCompleteCase={handleCompleteCase}
+            navigate={navigate}
+            id={id}
           />
         </ChecklistProvider>
       </ContentContainer>
