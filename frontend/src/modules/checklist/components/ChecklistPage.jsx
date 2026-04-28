@@ -1,4 +1,5 @@
 import { useEffect, useMemo } from 'react';
+import { Button } from '@/components/ui/button';
 import WarningBanner from './WarningBanner';
 import PhaseTabs from './PhaseTabs';
 import ChecklistSection from './ChecklistSection';
@@ -18,8 +19,9 @@ function normalizeVisit(visitValue) {
   return ['v1', 'v2', 'v3'].includes(visit) ? visit : null;
 }
 
-export default function ChecklistPage({ state, dispatch }) {
+export default function ChecklistPage({ state, dispatch, totalVisits = 3, onVisitNavigate, onCompleteCase }) {
   const currentVisit = normalizeVisit(state.activeVisit);
+  const currentVisitNumber = Number(currentVisit?.replace('v', '')) || 0;
   const filteredChecklist = useMemo(
     () => (currentVisit ? state.checklist.filter((item) => item.visit === currentVisit) : []),
     [currentVisit, state.checklist],
@@ -69,6 +71,15 @@ export default function ChecklistPage({ state, dispatch }) {
       .filter((entry) => entry.items.length)
     : sections;
 
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [currentVisitNumber]);
+
+  const goToVisit = (visitNumber) => {
+    if (!onVisitNavigate) return;
+    onVisitNavigate(visitNumber);
+  };
+
   return (
     <div className="space-y-4">
       <div className="card-clinical space-y-4">
@@ -115,6 +126,26 @@ export default function ChecklistPage({ state, dispatch }) {
           onChange={onResponse}
           myTasksOnly={state.myTasksOnly}
         />
+
+        <div className="mt-8 flex flex-col items-stretch gap-3 border-t border-divider pt-6 sm:flex-row sm:items-center sm:justify-between">
+          {currentVisitNumber > 1 ? (
+            <Button className="w-full sm:w-auto" variant="outline" onClick={() => goToVisit(currentVisitNumber - 1)}>
+              ← Previous Visit
+            </Button>
+          ) : (
+            <div />
+          )}
+
+          {currentVisitNumber < totalVisits ? (
+            <Button className="w-full sm:w-auto" onClick={() => goToVisit(currentVisitNumber + 1)}>
+              Next Visit →
+            </Button>
+          ) : (
+            <Button className="w-full sm:w-auto" onClick={onCompleteCase}>
+              Complete Treatment
+            </Button>
+          )}
+        </div>
       </div>
     </div>
   );

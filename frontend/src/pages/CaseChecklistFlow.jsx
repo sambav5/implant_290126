@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import AppLayout from '@/layout/AppLayout';
 import ContentContainer from '@/components/ui/ContentContainer';
@@ -11,6 +11,7 @@ import { userApi } from '@/api/userApi';
 import { deriveCaseContext, getRoutingVariant } from '@/lib/caseContext';
 
 const getStorageKey = (caseId) => `case_gate_data_${caseId}`;
+const getChecklistStorageKey = (caseId) => `case_checklist_progress_${caseId}`;
 
 function normalizeGateData(gateData = {}) {
   const medicalRaw = gateData.medical || [];
@@ -49,7 +50,7 @@ function normalizeCaseContext(caseContextValue) {
   return deriveCaseContext({}, { legacyCaseType: legacyVariant });
 }
 
-function ChecklistFlowScreen({ gateData, caseData, onEditGate, onChangeVisit }) {
+function ChecklistFlowScreen({ gateData, caseData, onEditGate, onChangeVisit, onCompleteCase }) {
   const { state, dispatch } = useChecklist();
 
   useEffect(() => {
@@ -91,10 +92,16 @@ function ChecklistFlowScreen({ gateData, caseData, onEditGate, onChangeVisit }) 
   return (
     <div className="space-y-4">
       <div className="flex justify-end gap-2">
-        <Button variant="outline" onClick={onChangeVisit}>Change Visit</Button>
+        <Button variant="outline" onClick={() => onChangeVisit(undefined, state)}>Change Visit</Button>
         <Button variant="outline" onClick={onEditGate}>Edit Case Snapshot</Button>
       </div>
-      <ChecklistPage state={state} dispatch={dispatch} />
+      <ChecklistPage
+        state={state}
+        dispatch={dispatch}
+        totalVisits={3}
+        onVisitNavigate={(visitNumber) => onChangeVisit(visitNumber, state)}
+        onCompleteCase={() => onCompleteCase(state)}
+      />
     </div>
   );
 }
@@ -105,6 +112,13 @@ export default function CaseChecklistFlow() {
   const location = useLocation();
   const [caseData, setCaseData] = useState(null);
   const [loading, setLoading] = useState(true);
+  const persistedChecklistState = useMemo(() => {
+    try {
+      return JSON.parse(localStorage.getItem(getChecklistStorageKey(id)) || 'null') || {};
+    } catch {
+      return {};
+    }
+  }, [id]);
   const selectedVisit = useMemo(
     () => normalizeVisit(location.state?.currentVisit),
     [location.state?.currentVisit],
@@ -161,8 +175,31 @@ export default function CaseChecklistFlow() {
       patient_expectation: gateData.patient_expectation || '',
       torque: null,
     },
+    responses: persistedChecklistState.responses || {},
     activeVisit: selectedVisit,
-  }), [gateData, selectedCaseContext, selectedVisit]);
+  }), [gateData, persistedChecklistState.responses, selectedCaseContext, selectedVisit]);
+
+  const saveChecklist = useCallback((checklistState, nextVisit) => {
+    const snapshot = {
+      responses: checklistState?.responses || {},
+      lastVisit: nextVisit || selectedVisit,
+      updatedAt: new Date().toISOString(),
+    };
+    localStorage.setItem(getChecklistStorageKey(id), JSON.stringify(snapshot));
+  }, [id, selectedVisit]);
+
+  const goToVisit = useCallback((visitNumber, checklistState) => {
+    const nextVisit = `v${visitNumber}`;
+    saveChecklist(checklistState, nextVisit);
+    navigate(`/case/${id}/checklist`, {
+      state: { currentVisit: nextVisit, caseContext: selectedCaseContext, routingVariant: getRoutingVariant(selectedCaseContext) },
+    });
+  }, [id, navigate, saveChecklist, selectedCaseContext]);
+
+  const handleCompleteCase = useCallback((checklistState) => {
+    saveChecklist(checklistState, selectedVisit);
+    navigate(`/case/${id}`);
+  }, [id, navigate, saveChecklist, selectedVisit]);
 
   useEffect(() => {
     if (loading) return;
@@ -191,11 +228,17 @@ export default function CaseChecklistFlow() {
             gateData={gateData}
             caseData={{ ...caseData, selectedCaseContext }}
             onEditGate={() => navigate(`/case/${id}/gate`)}
-            onChangeVisit={() =>
+            onChangeVisit={(visitNumber, checklistState) => {
+              if (typeof visitNumber === 'number') {
+                goToVisit(visitNumber, checklistState);
+                return;
+              }
+              saveChecklist(checklistState, selectedVisit);
               navigate(`/case/${id}/checklist/visit`, {
                 state: { currentVisit: selectedVisit, caseContext: selectedCaseContext, routingVariant: getRoutingVariant(selectedCaseContext) },
-              })
-            }
+              });
+            }}
+            onCompleteCase={handleCompleteCase}
           />
         </ChecklistProvider>
       </ContentContainer>
