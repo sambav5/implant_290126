@@ -2,7 +2,7 @@
 "version": "3.1",
 "rules": [
 
-```
+
 {
   "id": "rule_bruxism",
   "when": { "functional_risk": ["bruxism"] },
