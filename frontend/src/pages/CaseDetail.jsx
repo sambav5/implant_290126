@@ -41,6 +41,7 @@ import { ROLES } from '@/utils/rolePermissions';
 import CaseFilesTab from '@/components/CaseFilesTab';
 import SocialPostGenerator from '@/components/social-post/SocialPostGenerator';
 import DiscussionTab from '@/components/discussion/DiscussionTab';
+import CaseReflection from '@/components/CaseReflection';
 import { toast } from 'sonner';
 import axios from 'axios';
 import ContentContainer from '@/components/ui/ContentContainer';
@@ -289,9 +290,9 @@ export default function CaseDetail() {
     >
       <ContentContainer className="py-6 space-y-6">
         <div className="flex gap-2 overflow-x-auto pb-1">
-          {['Overview', 'Notes', 'Files', 'Social Media Post', 'Discussion'].map((tab) => {
+          {['Overview', 'Notes', 'Files', 'Social Media Post', 'Discussion', 'Reflection'].map((tab) => {
             const key = tab.toLowerCase().replace(/\s+/g, '-');
-            const isActive = (activeTab === 'overview' && key === 'overview') || (activeTab === 'files' && key === 'files') || (activeTab === 'social-media-post' && key === 'social-media-post') || (activeTab === 'discussion' && key === 'discussion');
+            const isActive = (activeTab === 'overview' && key === 'overview') || (activeTab === 'files' && key === 'files') || (activeTab === 'social-media-post' && key === 'social-media-post') || (activeTab === 'discussion' && key === 'discussion') || (activeTab === 'reflection' && key === 'reflection');
             if (key === 'social-media-post' && activeRole === ROLES.ASSISTANT) return null;
             return (
               <Button
@@ -299,7 +300,7 @@ export default function CaseDetail() {
                 variant={isActive ? 'default' : 'outline'}
                 size="sm"
                 onClick={() => {
-                  if (key === 'overview' || key === 'files' || key === 'social-media-post' || key === 'discussion') setActiveTab(key);
+                  if (key === 'overview' || key === 'files' || key === 'social-media-post' || key === 'discussion' || key === 'reflection') setActiveTab(key);
                   else toast.info(`${tab} tab is unchanged in this release.`);
                 }}
               >
@@ -315,6 +316,8 @@ export default function CaseDetail() {
           <SocialPostGenerator caseId={id} caseData={caseData} activeRole={activeRole} />
         ) : activeTab === 'discussion' ? (
           <DiscussionTab caseId={id} caseData={caseData} activeRole={activeRole} />
+        ) : activeTab === 'reflection' ? (
+          <CaseReflection caseId={id} />
         ) : (
           <>
         {/* Status & Risk Banner */}
