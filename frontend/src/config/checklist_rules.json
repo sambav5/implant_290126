@@ -1,5 +1,5 @@
 {
-  "version": "3.0",
+  "version": "3.1",
   "rules": [
     {
       "id": "rule_bruxism",
@@ -15,7 +15,7 @@
         "warnings": [
           {
             "message": "Bruxism increases implant failure risk",
-            "severity": "medium",
+            "severity": "warning",
             "category": "functional",
             "priority": 2
           }
@@ -33,7 +33,7 @@
         "warnings": [
           {
             "message": "Heavy occlusion \u2014 adjust loading and occlusion carefully",
-            "severity": "medium",
+            "severity": "warning",
             "category": "functional",
             "priority": 1
           }
@@ -51,7 +51,7 @@
         "warnings": [
           {
             "message": "Smoking delays healing and increases failure risk",
-            "severity": "high",
+            "severity": "critical",
             "category": "medical",
             "priority": 3
           }
@@ -69,7 +69,7 @@
         "warnings": [
           {
             "message": "Uncontrolled diabetes \u2014 high implant failure risk",
-            "severity": "high",
+            "severity": "critical",
             "category": "medical",
             "priority": 4
           }
@@ -87,7 +87,7 @@
         "warnings": [
           {
             "message": "Patient on anticoagulants \u2014 bleeding risk management required",
-            "severity": "medium",
+            "severity": "warning",
             "category": "medical",
             "priority": 2
           }
@@ -105,7 +105,7 @@
         "warnings": [
           {
             "message": "Bisphosphonate therapy \u2014 risk of osteonecrosis",
-            "severity": "high",
+            "severity": "critical",
             "category": "medical",
             "priority": 5
           }
@@ -123,7 +123,7 @@
         "warnings": [
           {
             "message": "Recent cardiac event \u2014 medical clearance required",
-            "severity": "high",
+            "severity": "critical",
             "category": "medical",
             "priority": 5
           }
@@ -139,7 +139,7 @@
         "warnings": [
           {
             "message": "Active periodontal disease \u2014 stabilize before implant",
-            "severity": "high",
+            "severity": "critical",
             "category": "periodontal",
             "priority": 5
           }
@@ -158,7 +158,7 @@
         "warnings": [
           {
             "message": "Esthetic zone \u2014 tissue and emergence profile critical",
-            "severity": "medium",
+            "severity": "warning",
             "category": "case",
             "priority": 2
           }
@@ -174,7 +174,7 @@
         "warnings": [
           {
             "message": "Sinus case \u2014 assess bone height and approach",
-            "severity": "high",
+            "severity": "critical",
             "category": "case",
             "priority": 3
           }
@@ -190,7 +190,7 @@
         "warnings": [
           {
             "message": "Full arch case \u2014 passive fit and cross-arch stability critical",
-            "severity": "high",
+            "severity": "critical",
             "category": "case",
             "priority": 4
           }
@@ -206,7 +206,7 @@
         "warnings": [
           {
             "message": "Immediate placement \u2014 ensure primary stability and socket integrity",
-            "severity": "high",
+            "severity": "critical",
             "category": "case",
             "priority": 5
           }
@@ -224,7 +224,7 @@
         "warnings": [
           {
             "message": "Good primary stability \u2014 immediate loading possible",
-            "severity": "low",
+            "severity": "normal",
             "category": "stability",
             "priority": 1
           }
@@ -243,7 +243,7 @@
         "warnings": [
           {
             "message": "Moderate stability \u2014 consider early loading",
-            "severity": "medium",
+            "severity": "warning",
             "category": "stability",
             "priority": 2
           }
@@ -261,7 +261,7 @@
         "warnings": [
           {
             "message": "Low stability \u2014 delayed loading recommended",
-            "severity": "high",
+            "severity": "critical",
             "category": "stability",
             "priority": 3
           }
@@ -277,7 +277,7 @@
         "warnings": [
           {
             "message": "Passive fit not achieved \u2014 remake recommended",
-            "severity": "high",
+            "severity": "critical",
             "category": "prosthetic",
             "priority": 5
           }
@@ -293,7 +293,7 @@
         "warnings": [
           {
             "message": "Occlusion not optimal \u2014 adjust before final delivery",
-            "severity": "high",
+            "severity": "critical",
             "category": "prosthetic",
             "priority": 4
           }
@@ -309,7 +309,7 @@
         "warnings": [
           {
             "message": "IAJ gap detected \u2014 reseating required",
-            "severity": "high",
+            "severity": "critical",
             "category": "prosthetic",
             "priority": 5
           }
@@ -325,7 +325,7 @@
         "warnings": [
           {
             "message": "Implant mobility \u2014 high risk of failure",
-            "severity": "high",
+            "severity": "critical",
             "category": "prosthetic",
             "priority": 5
           }
@@ -341,7 +341,7 @@
         "warnings": [
           {
             "message": "Full arch impression \u2014 jig verification required",
-            "severity": "high",
+            "severity": "critical",
             "category": "prosthetic",
             "priority": 4
           }
@@ -357,7 +357,7 @@
         "warnings": [
           {
             "message": "Multiple implants \u2014 open tray impression recommended",
-            "severity": "medium",
+            "severity": "warning",
             "category": "prosthetic",
             "priority": 2
           }
@@ -375,7 +375,7 @@
         "warnings": [
           {
             "message": "Thin buccal plate \u2014 graft recommended",
-            "severity": "high",
+            "severity": "critical",
             "category": "local",
             "priority": 4
           }
@@ -391,7 +391,7 @@
         "warnings": [
           {
             "message": "Socket defect \u2014 immediate placement risk",
-            "severity": "high",
+            "severity": "critical",
             "category": "case",
             "priority": 5
           }
@@ -407,7 +407,7 @@
         "warnings": [
           {
             "message": "Soft tissue not stable \u2014 delay impression",
-            "severity": "high",
+            "severity": "critical",
             "category": "impression",
             "priority": 4
           }
@@ -423,7 +423,7 @@
         "warnings": [
           {
             "message": "Final torque incomplete",
-            "severity": "high",
+            "severity": "critical",
             "category": "prosthetic",
             "priority": 5
           }
@@ -440,7 +440,7 @@
         "warnings": [
           {
             "message": "Peri-implantitis suspected",
-            "severity": "high",
+            "severity": "critical",
             "category": "maintenance",
             "priority": 5
           }
