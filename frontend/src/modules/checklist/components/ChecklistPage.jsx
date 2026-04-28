@@ -91,7 +91,7 @@ export default function ChecklistPage({ state, dispatch, totalVisits = 3, onVisi
 
   const goToVisit = (visitNumber) => {
     if (!onVisitNavigate) return;
-    onVisitNavigate(visitNumber);
+    onVisitNavigate(visitNumber, state);
   };
 
   return (
