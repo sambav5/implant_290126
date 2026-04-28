@@ -85,6 +85,11 @@ export const checklistApi = {
     axios.post(`${API}/cases/${caseId}/checklists/${phase}/item`, item),
 };
 
+export const caseReflectionApi = {
+  create: (data) => axios.post(`${API}/case-reflection`, data),
+  getByCase: (caseId) => axios.get(`${API}/case-reflection/${caseId}`),
+};
+
 // Feedback API
 export const feedbackApi = {
   update: (caseId, data) => axios.put(`${API}/cases/${caseId}/feedback`, data),
@@ -107,4 +112,5 @@ export default {
   attachment: attachmentApi,
   caseFiles: caseFilesApi,
   discussion: discussionApi,
+  caseReflection: caseReflectionApi,
 };

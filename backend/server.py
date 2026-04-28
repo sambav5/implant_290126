@@ -504,6 +504,19 @@ class FeedbackUpdate(BaseModel):
     whatToDoubleCheckNextTime: Optional[str] = None
     customChecklistSuggestions: List[str] = []
 
+class CaseReflectionPayload(BaseModel):
+    wentWell: Optional[str] = None
+    issues: Optional[str] = None
+    improvements: Optional[str] = None
+    keyLearning: Optional[str] = None
+    repeatChange: Optional[str] = None
+
+class CaseReflectionInput(BaseModel):
+    caseId: str
+    clinicianId: Optional[str] = None
+    reflections: CaseReflectionPayload
+    createdAt: Optional[str] = None
+
 class AttachmentAdd(BaseModel):
     type: str  # "images", "cbctLinks", "stlLinks"
     url: str
@@ -1362,6 +1375,41 @@ async def update_prosthetic_checklist(case_id: str, checklist: dict):
     
     await db.cases.update_one({"id": case_id}, {"$set": case})
     return {"message": "Checklist updated successfully", "progress": f"{completed_items}/{total_items}"}
+
+
+@api_router.post("/case-reflection")
+async def save_case_reflection(input: CaseReflectionInput, current_user: dict = Depends(get_current_user)):
+    case = await db.cases.find_one({"id": input.caseId}, {"_id": 0})
+    if not case:
+        raise HTTPException(status_code=404, detail="Case not found")
+
+    role = str(current_user.get("role") or "").lower()
+    if role != "clinician":
+        raise HTTPException(status_code=403, detail="Only clinicians can edit reflections")
+
+    reflection_data = {
+        "caseId": input.caseId,
+        "clinicianId": input.clinicianId or current_user.get("userId"),
+        "reflections": input.reflections.model_dump(),
+        "createdAt": input.createdAt or datetime.now(timezone.utc).isoformat(),
+    }
+
+    case["caseReflection"] = reflection_data
+    case_feedback = case.get("feedback") or {}
+    case_feedback["reflectionCompletedAt"] = reflection_data["createdAt"]
+    case["feedback"] = case_feedback
+    case["updatedAt"] = datetime.now(timezone.utc).isoformat()
+    case = add_timeline_entry(case, "Learning reflection completed", "Structured case reflection documented")
+
+    await db.cases.update_one({"id": input.caseId}, {"$set": case})
+    return {"success": True, "reflection": reflection_data}
+
+@api_router.get("/case-reflection/{case_id}")
+async def get_case_reflection(case_id: str, current_user: dict = Depends(get_current_user_optional)):
+    case = await db.cases.find_one({"id": case_id}, {"_id": 0})
+    if not case:
+        raise HTTPException(status_code=404, detail="Case not found")
+    return {"reflection": case.get("caseReflection")}
 
 # Learning Loop / Feedback
 @api_router.put("/cases/{case_id}/feedback")

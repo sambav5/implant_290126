@@ -614,6 +614,21 @@
       "severity": "critical",
       "uiType": "alert",
       "order": 127
+    },
+    {
+      "id": "reflection_added",
+      "text": "Case reflection documented",
+      "phase": "delivery",
+      "visit": "v3",
+      "section": "patient_experience",
+      "assignedRole": "clinician",
+      "type": "important",
+      "order": 999,
+      "conditions": {
+        "reflection_exists": true
+      },
+      "severity": "normal",
+      "uiType": "action"
     }
   ]
 }
