@@ -400,7 +400,7 @@ export default function CaseDetail() {
 
         <div className="card-clinical animate-slide-up stagger-1" data-testid="case-workflow-timeline">
           <div className="flex items-center justify-between mb-3">
-            <h3 className="font-semibold" style={{ color: 'var(--t1)', fontFamily: "'Lora', serif" }}>Case Workflow</h3>
+            <h3 className="font-semibold" style={{ color: 'var(--t1)', fontFamily: "'Lora', serif" }}>Your Team</h3>
             {activeRole === ROLES.CLINICIAN && !workflowEditMode && (
               <Button type="button" variant="outline" size="sm" onClick={handleStartWorkflowEdit}>
                 Edit Team
@@ -507,8 +507,8 @@ export default function CaseDetail() {
                   <FileText className="h-5 w-5" style={{color: 'var(--blue)'}} />
                 </div>
                 <div className="text-left">
-                  <h3 className="font-semibold" style={{color: 'var(--t1)'}}>Case Flow Intake</h3>
-                  <p className="text-sm" style={{color: 'var(--t2)'}}>Snapshot + dynamic checklist</p>
+                  <h3 className="font-semibold" style={{color: 'var(--t1)'}}>Case Intelligence</h3>
+                  <p className="text-sm" style={{color: 'var(--t2)'}}>Patient brief + adaptive checklist</p>
                 </div>
               </div>
               <ChevronRight className="h-5 w-5" style={{color: 'var(--t3)'}} />
@@ -569,7 +569,7 @@ export default function CaseDetail() {
           <div className="flex items-start gap-2">
             <AlertTriangle className="h-4 w-4 shrink-0 mt-0.5" style={{color: 'var(--t3)'}} />
             <p className="disclaimer-text">
-              Decision support only. Final responsibility lies with the clinician.
+              Seamless amplifies your judgment. You're always the operator.
             </p>
           </div>
         </div>
