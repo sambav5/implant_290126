@@ -111,7 +111,7 @@ export default function Dashboard() {
     <div className="app-shell">
       <aside className={`app-sidebar ${sidebarOpen ? 'open' : ''}`}>
         <Link to="/" className="wordmark" onClick={handleSidebarNavigation}>SEAMLESS</Link>
-        <p className="mt-6 type-caption text-champagne/80">Infrastructure workflows for implant teams.</p>
+        <p className="mt-6 type-caption text-champagne/80">Seamless learns your practice as you work.</p>
       </aside>
 
       {isMobile && sidebarOpen && <div className="sidebar-overlay" onClick={closeSidebar} />}
@@ -120,8 +120,8 @@ export default function Dashboard() {
         <ContentContainer className="space-y-10">
           <div className="flex items-start justify-between gap-6">
             <div className="text-stack-24">
-              <h1 className="type-hero text-forest">Case Operations</h1>
-              <p className="type-body text-warmgray">Track planning progress and move through high-confidence clinical execution.</p>
+              <h1 className="type-hero text-forest">Your Cases</h1>
+              <p className="type-body text-warmgray">Every implant. Every stage. Every team member — live.</p>
             </div>
             <div className="flex items-start gap-3">
               {isMobile && (

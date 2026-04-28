@@ -5,12 +5,13 @@ import ChecklistSection from './ChecklistSection';
 import RoleToggle from './RoleToggle';
 import InfoNote from './InfoNote';
 import CEOExperienceSection from './CEOExperienceSection';
+import { Button } from '@/components/ui/button';
 
 const phaseOrder = ['planning', 'surgery', 'delivery'];
 const visitLabels = {
-  v1: 'Visit 1 – Surgery',
-  v2: 'Visit 2 – Impression',
-  v3: 'Visit 3 – Delivery',
+  v1: 'Visit 1 — Surgery',
+  v2: 'Visit 2 — Impression',
+  v3: 'Visit 3 — Delivery',
 };
 
 function normalizeVisit(visitValue) {
@@ -18,7 +19,15 @@ function normalizeVisit(visitValue) {
   return ['v1', 'v2', 'v3'].includes(visit) ? visit : null;
 }
 
-export default function ChecklistPage({ state, dispatch }) {
+export default function ChecklistPage({
+  state,
+  dispatch,
+  canGoPreviousVisit = false,
+  canGoNextVisit = false,
+  onPreviousVisit = null,
+  onNextVisit = null,
+  onCompleteTreatment = null,
+}) {
   const currentVisit = normalizeVisit(state.activeVisit);
   const filteredChecklist = useMemo(
     () => (currentVisit ? state.checklist.filter((item) => item.visit === currentVisit) : []),
@@ -115,6 +124,34 @@ export default function ChecklistPage({ state, dispatch }) {
           onChange={onResponse}
           myTasksOnly={state.myTasksOnly}
         />
+
+        <div className="flex flex-col-reverse sm:flex-row gap-2 sm:justify-between pt-2">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={onPreviousVisit}
+            disabled={!canGoPreviousVisit || !onPreviousVisit}
+          >
+            ← Previous Visit
+          </Button>
+          <div className="flex gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={onNextVisit}
+              disabled={!canGoNextVisit || !onNextVisit}
+            >
+              Next Visit →
+            </Button>
+            <Button
+              type="button"
+              onClick={onCompleteTreatment}
+              disabled={canGoNextVisit || !onCompleteTreatment}
+            >
+              Complete Treatment
+            </Button>
+          </div>
+        </div>
       </div>
     </div>
   );

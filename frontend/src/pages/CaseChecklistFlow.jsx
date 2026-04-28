@@ -49,7 +49,19 @@ function normalizeCaseContext(caseContextValue) {
   return deriveCaseContext({}, { legacyCaseType: legacyVariant });
 }
 
-function ChecklistFlowScreen({ gateData, caseData, onEditGate, onChangeVisit }) {
+const CHECKLIST_FLOW_VISITS = ['v1', 'v2', 'v3'];
+
+function ChecklistFlowScreen({
+  caseId,
+  gateData,
+  caseData,
+  activeVisit,
+  onEditGate,
+  onChangeVisit,
+  onPreviousVisit,
+  onNextVisit,
+  onCompleteTreatment,
+}) {
   const { state, dispatch } = useChecklist();
 
   useEffect(() => {
@@ -88,13 +100,41 @@ function ChecklistFlowScreen({ gateData, caseData, onEditGate, onChangeVisit }) 
     };
   }, [dispatch]);
 
+  useEffect(() => {
+    if (state.activeVisit !== activeVisit) {
+      dispatch({ type: 'SET_ACTIVE_VISIT', payload: activeVisit });
+    }
+  }, [activeVisit, dispatch, state.activeVisit]);
+
+  useEffect(() => {
+    localStorage.setItem(
+      `case_checklist_flow_state_${caseId}`,
+      JSON.stringify({
+        responses: state.responses,
+        activeVisit: state.activeVisit,
+      }),
+    );
+  }, [caseId, state.activeVisit, state.responses]);
+
+  const activeVisitIndex = CHECKLIST_FLOW_VISITS.indexOf(state.activeVisit);
+  const canGoPreviousVisit = activeVisitIndex > 0;
+  const canGoNextVisit = activeVisitIndex >= 0 && activeVisitIndex < CHECKLIST_FLOW_VISITS.length - 1;
+
   return (
     <div className="space-y-4">
       <div className="flex justify-end gap-2">
         <Button variant="outline" onClick={onChangeVisit}>Change Visit</Button>
         <Button variant="outline" onClick={onEditGate}>Edit Case Snapshot</Button>
       </div>
-      <ChecklistPage state={state} dispatch={dispatch} />
+      <ChecklistPage
+        state={state}
+        dispatch={dispatch}
+        canGoPreviousVisit={canGoPreviousVisit}
+        canGoNextVisit={canGoNextVisit}
+        onPreviousVisit={onPreviousVisit}
+        onNextVisit={onNextVisit}
+        onCompleteTreatment={onCompleteTreatment}
+      />
     </div>
   );
 }
@@ -103,12 +143,13 @@ export default function CaseChecklistFlow() {
   const { id = '' } = useParams();
   const navigate = useNavigate();
   const location = useLocation();
-  const [caseData, setCaseData] = useState(null);
-  const [loading, setLoading] = useState(true);
   const selectedVisit = useMemo(
     () => normalizeVisit(location.state?.currentVisit),
     [location.state?.currentVisit],
   );
+  const [caseData, setCaseData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [activeVisit, setActiveVisit] = useState(selectedVisit || 'v1');
 
   const selectedCaseContext = useMemo(() => {
     const fromState = normalizeCaseContext(location.state?.caseContext);
@@ -153,7 +194,7 @@ export default function CaseChecklistFlow() {
   }, [caseData, id]);
 
   const initialState = useMemo(() => ({
-      patientData: {
+    patientData: {
       caseContext: selectedCaseContext,
       medical: gateData.medical || [],
       functional_risk: gateData.functional_risk || [],
@@ -161,15 +202,62 @@ export default function CaseChecklistFlow() {
       patient_expectation: gateData.patient_expectation || '',
       torque: null,
     },
-    activeVisit: selectedVisit,
-  }), [gateData, selectedCaseContext, selectedVisit]);
+    activeVisit,
+    responses: (() => {
+      try {
+        const savedState = JSON.parse(localStorage.getItem(`case_checklist_flow_state_${id}`) || '{}');
+        return savedState.responses || {};
+      } catch {
+        return {};
+      }
+    })(),
+  }), [activeVisit, gateData, id, selectedCaseContext]);
 
   useEffect(() => {
     if (loading) return;
-    if (!selectedVisit) {
+    if (!selectedVisit && !activeVisit) {
       navigate(`/case/${id}/checklist/visit`, { replace: true });
     }
-  }, [id, loading, navigate, selectedVisit]);
+  }, [activeVisit, id, loading, navigate, selectedVisit]);
+
+  useEffect(() => {
+    if (selectedVisit) {
+      setActiveVisit(selectedVisit);
+      return;
+    }
+
+    try {
+      const savedState = JSON.parse(localStorage.getItem(`case_checklist_flow_state_${id}`) || '{}');
+      const savedVisit = normalizeVisit(savedState.activeVisit);
+      if (savedVisit) {
+        setActiveVisit(savedVisit);
+      }
+    } catch {
+      // Ignore malformed local storage
+    }
+  }, [id, selectedVisit]);
+
+  const goToVisit = (direction) => {
+    const currentIndex = CHECKLIST_FLOW_VISITS.indexOf(activeVisit);
+    if (currentIndex === -1) return;
+
+    const nextIndex = direction === 'next' ? currentIndex + 1 : currentIndex - 1;
+    if (nextIndex < 0 || nextIndex >= CHECKLIST_FLOW_VISITS.length) return;
+
+    const nextVisit = CHECKLIST_FLOW_VISITS[nextIndex];
+    setActiveVisit(nextVisit);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleCompleteCase = () => {
+    navigate(`/case/${id}/learning`, {
+      state: {
+        fromChecklist: true,
+        caseContext: selectedCaseContext,
+        currentVisit: activeVisit,
+      },
+    });
+  };
 
   if (loading) {
     return (
@@ -179,7 +267,7 @@ export default function CaseChecklistFlow() {
     );
   }
 
-  if (!selectedVisit) {
+  if (!activeVisit) {
     return null;
   }
 
@@ -188,14 +276,19 @@ export default function CaseChecklistFlow() {
       <ContentContainer className="py-4">
         <ChecklistProvider initialState={initialState}>
           <ChecklistFlowScreen
+            caseId={id}
             gateData={gateData}
             caseData={{ ...caseData, selectedCaseContext }}
+            activeVisit={activeVisit}
             onEditGate={() => navigate(`/case/${id}/gate`)}
             onChangeVisit={() =>
               navigate(`/case/${id}/checklist/visit`, {
-                state: { currentVisit: selectedVisit, caseContext: selectedCaseContext, routingVariant: getRoutingVariant(selectedCaseContext) },
+                state: { currentVisit: activeVisit, caseContext: selectedCaseContext, routingVariant: getRoutingVariant(selectedCaseContext) },
               })
             }
+            onPreviousVisit={() => goToVisit('previous')}
+            onNextVisit={() => goToVisit('next')}
+            onCompleteTreatment={handleCompleteCase}
           />
         </ChecklistProvider>
       </ContentContainer>

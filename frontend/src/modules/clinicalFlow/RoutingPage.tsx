@@ -119,13 +119,13 @@ export default function RoutingPage() {
     <AppLayout>
       <ContentContainer className="py-6 space-y-5">
         <div className="card-clinical space-y-2">
-          <h1 className="text-xl font-semibold">Routing (Case Context)</h1>
-          <p className="text-sm text-gray-600">Choose a base route before selecting the visit.</p>
+          <h1 className="text-xl font-semibold">Choose Your Protocol</h1>
+          <p className="text-sm text-gray-600">Pick the case type. Seamless builds your checklist from here.</p>
         </div>
 
         {suggestion && (
           <div className="rounded-lg border border-blue-200 bg-blue-50 px-3 py-2 text-sm text-blue-900">
-            Suggested: <span className="font-semibold capitalize">{suggestion.replace('_', ' ')}</span> case based on inputs.
+            Seamless recommends: <span className="font-semibold capitalize">{suggestion.replace('_', ' ')}</span> — based on what you've told it.
           </div>
         )}
 
@@ -150,10 +150,10 @@ export default function RoutingPage() {
 
         <div className="flex flex-col-reverse sm:flex-row gap-2 sm:justify-between">
           <Button variant="outline" onClick={() => navigate(`/case/${id}/gate`)}>
-            Back to Case Snapshot
+            ← BACK
           </Button>
           <Button onClick={onContinue} disabled={!selectedVariant || saving}>
-            {saving ? 'Saving...' : 'Continue to Visit Selection'}
+            {saving ? 'Saving...' : 'LOCK PROTOCOL'}
           </Button>
         </div>
       </ContentContainer>
