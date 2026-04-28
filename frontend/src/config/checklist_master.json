@@ -1,6 +1,6 @@
 {
-  "version": "3.1",
-  "description": "Seamless Clinical Checklist (Final Fixed)",
+  "version": "3.2",
+  "description": "Seamless Clinical Checklist (Full + Severity Injected)",
   "items": [
     {
       "id": "consent_signed",
@@ -10,7 +10,9 @@
       "section": "pre_op",
       "assignedRole": "assistant",
       "type": "critical",
-      "order": 1
+      "order": 1,
+      "severity": "normal",
+      "uiType": "action"
     },
     {
       "id": "cbct_review",
@@ -20,7 +22,9 @@
       "section": "pre_op",
       "assignedRole": "implantologist",
       "type": "critical",
-      "order": 2
+      "order": 2,
+      "severity": "normal",
+      "uiType": "action"
     },
     {
       "id": "implant_specs",
@@ -30,7 +34,9 @@
       "section": "pre_op",
       "assignedRole": "implantologist",
       "type": "critical",
-      "order": 3
+      "order": 3,
+      "severity": "normal",
+      "uiType": "action"
     },
     {
       "id": "loading_protocol",
@@ -40,7 +46,9 @@
       "section": "pre_op",
       "assignedRole": "implantologist",
       "type": "critical",
-      "order": 4
+      "order": 4,
+      "severity": "normal",
+      "uiType": "action"
     },
     {
       "id": "guide_verification",
@@ -53,7 +61,9 @@
       "order": 5,
       "conditions": {
         "modifiers.guide": true
-      }
+      },
+      "severity": "warning",
+      "uiType": "alert"
     },
     {
       "id": "backup_implants",
@@ -63,7 +73,9 @@
       "section": "pre_op",
       "assignedRole": "assistant",
       "type": "important",
-      "order": 6
+      "order": 6,
+      "severity": "warning",
+      "uiType": "alert"
     },
     {
       "id": "site_verification",
@@ -73,7 +85,9 @@
       "section": "intra_op",
       "assignedRole": "implantologist",
       "type": "critical",
-      "order": 7
+      "order": 7,
+      "severity": "critical",
+      "uiType": "alert"
     },
     {
       "id": "osteotomy_sequence",
@@ -83,7 +97,9 @@
       "section": "intra_op",
       "assignedRole": "implantologist",
       "type": "critical",
-      "order": 8
+      "order": 8,
+      "severity": "critical",
+      "uiType": "alert"
     },
     {
       "id": "implant_position",
@@ -93,7 +109,9 @@
       "section": "intra_op",
       "assignedRole": "implantologist",
       "type": "critical",
-      "order": 9
+      "order": 9,
+      "severity": "critical",
+      "uiType": "alert"
     },
     {
       "id": "torque_recorded",
@@ -103,7 +121,9 @@
       "section": "intra_op",
       "assignedRole": "assistant",
       "type": "critical",
-      "order": 10
+      "order": 10,
+      "severity": "critical",
+      "uiType": "alert"
     },
     {
       "id": "primary_stability",
@@ -113,7 +133,9 @@
       "section": "intra_op",
       "assignedRole": "implantologist",
       "type": "critical",
-      "order": 11
+      "order": 11,
+      "severity": "critical",
+      "uiType": "alert"
     },
     {
       "id": "intra_op_radiograph",
@@ -123,7 +145,9 @@
       "section": "intra_op",
       "assignedRole": "assistant",
       "type": "important",
-      "order": 12
+      "order": 12,
+      "severity": "warning",
+      "uiType": "alert"
     },
     {
       "id": "postop_radiograph_saved",
@@ -133,7 +157,9 @@
       "section": "post_op",
       "assignedRole": "assistant",
       "type": "important",
-      "order": 13
+      "order": 13,
+      "severity": "warning",
+      "uiType": "alert"
     },
     {
       "id": "medication_prescribed",
@@ -143,7 +169,9 @@
       "section": "post_op",
       "assignedRole": "clinician",
       "type": "critical",
-      "order": 14
+      "order": 14,
+      "severity": "critical",
+      "uiType": "alert"
     },
     {
       "id": "postop_instructions",
@@ -153,7 +181,9 @@
       "section": "post_op",
       "assignedRole": "assistant",
       "type": "critical",
-      "order": 15
+      "order": 15,
+      "severity": "critical",
+      "uiType": "alert"
     },
     {
       "id": "followup_scheduled",
@@ -163,7 +193,9 @@
       "section": "post_op",
       "assignedRole": "assistant",
       "type": "important",
-      "order": 16
+      "order": 16,
+      "severity": "normal",
+      "uiType": "action"
     },
     {
       "id": "integration_check",
@@ -173,7 +205,9 @@
       "section": "pre_op",
       "assignedRole": "implantologist",
       "type": "critical",
-      "order": 17
+      "order": 17,
+      "severity": "critical",
+      "uiType": "alert"
     },
     {
       "id": "iaj_verification",
@@ -183,7 +217,9 @@
       "section": "pre_op",
       "assignedRole": "prosthodontist",
       "type": "critical",
-      "order": 18
+      "order": 18,
+      "severity": "critical",
+      "uiType": "alert"
     },
     {
       "id": "impression_method",
@@ -193,7 +229,9 @@
       "section": "intra_op",
       "assignedRole": "prosthodontist",
       "type": "critical",
-      "order": 19
+      "order": 19,
+      "severity": "critical",
+      "uiType": "alert"
     },
     {
       "id": "torque_protocol",
@@ -203,7 +241,9 @@
       "section": "intra_op",
       "assignedRole": "prosthodontist",
       "type": "critical",
-      "order": 20
+      "order": 20,
+      "severity": "critical",
+      "uiType": "alert"
     },
     {
       "id": "occlusion_check",
@@ -213,7 +253,9 @@
       "section": "intra_op",
       "assignedRole": "prosthodontist",
       "type": "critical",
-      "order": 21
+      "order": 21,
+      "severity": "critical",
+      "uiType": "alert"
     },
     {
       "id": "passive_fit",
@@ -223,7 +265,9 @@
       "section": "intra_op",
       "assignedRole": "prosthodontist",
       "type": "critical",
-      "order": 22
+      "order": 22,
+      "severity": "critical",
+      "uiType": "alert"
     },
     {
       "id": "nightguard_required",
@@ -238,7 +282,9 @@
         "functional_risk": [
           "bruxism"
         ]
-      }
+      },
+      "severity": "warning",
+      "uiType": "alert"
     },
     {
       "id": "papilla_prediction",
@@ -251,7 +297,9 @@
       "order": 24,
       "conditions": {
         "modifiers.esthetic": true
-      }
+      },
+      "severity": "critical",
+      "uiType": "alert"
     },
     {
       "id": "smile_line_assessed",
@@ -264,7 +312,9 @@
       "order": 104,
       "conditions": {
         "modifiers.esthetic": true
-      }
+      },
+      "severity": "warning",
+      "uiType": "alert"
     },
     {
       "id": "biotype_checked",
@@ -277,7 +327,9 @@
       "order": 105,
       "conditions": {
         "modifiers.esthetic": true
-      }
+      },
+      "severity": "warning",
+      "uiType": "alert"
     },
     {
       "id": "ctg_planned",
@@ -290,7 +342,9 @@
       "order": 106,
       "conditions": {
         "modifiers.esthetic": true
-      }
+      },
+      "severity": "warning",
+      "uiType": "alert"
     },
     {
       "id": "bone_height_measured",
@@ -303,7 +357,9 @@
       "order": 107,
       "conditions": {
         "modifiers.sinus": true
-      }
+      },
+      "severity": "critical",
+      "uiType": "alert"
     },
     {
       "id": "sinus_approach_selected",
@@ -316,7 +372,9 @@
       "order": 108,
       "conditions": {
         "modifiers.sinus": true
-      }
+      },
+      "severity": "critical",
+      "uiType": "alert"
     },
     {
       "id": "socket_integrity_checked",
@@ -329,7 +387,9 @@
       "order": 109,
       "conditions": {
         "modifiers.immediate": true
-      }
+      },
+      "severity": "critical",
+      "uiType": "alert"
     },
     {
       "id": "cross_arch_stability",
@@ -342,7 +402,9 @@
       "order": 110,
       "conditions": {
         "modifiers.full_arch": true
-      }
+      },
+      "severity": "critical",
+      "uiType": "alert"
     },
     {
       "id": "bop_checked",
@@ -352,7 +414,9 @@
       "section": "post_op",
       "assignedRole": "periodontist",
       "type": "critical",
-      "order": 111
+      "order": 111,
+      "severity": "critical",
+      "uiType": "alert"
     },
     {
       "id": "bone_loss_checked",
@@ -362,7 +426,194 @@
       "section": "post_op",
       "assignedRole": "periodontist",
       "type": "critical",
-      "order": 112
+      "order": 112,
+      "severity": "critical",
+      "uiType": "alert"
+    },
+    {
+      "id": "use_patient_name",
+      "text": "Use patient name at first interaction",
+      "phase": "experience",
+      "visit": "v1",
+      "section": "patient_experience",
+      "assignedRole": "assistant",
+      "type": "important",
+      "order": 113,
+      "severity": "normal",
+      "uiType": "guidance"
+    },
+    {
+      "id": "offer_water",
+      "text": "Offer water proactively",
+      "phase": "experience",
+      "visit": "v1",
+      "section": "patient_experience",
+      "assignedRole": "assistant",
+      "type": "important",
+      "order": 114,
+      "severity": "normal",
+      "uiType": "guidance"
+    },
+    {
+      "id": "pre_surgery_call",
+      "text": "Call patient before surgery",
+      "phase": "experience",
+      "visit": "v0",
+      "section": "patient_experience",
+      "assignedRole": "assistant",
+      "type": "critical",
+      "order": 115,
+      "severity": "warning",
+      "uiType": "alert"
+    },
+    {
+      "id": "stop_signal_explained",
+      "text": "Provide stop signal during surgery",
+      "phase": "surgery",
+      "visit": "v1",
+      "section": "patient_experience",
+      "assignedRole": "clinician",
+      "type": "critical",
+      "order": 116,
+      "severity": "critical",
+      "uiType": "alert"
+    },
+    {
+      "id": "mirror_before_delivery",
+      "text": "Show mirror before explaining final result",
+      "phase": "delivery",
+      "visit": "v3",
+      "section": "patient_experience",
+      "assignedRole": "clinician",
+      "type": "important",
+      "order": 117,
+      "severity": "normal",
+      "uiType": "guidance"
+    },
+    {
+      "id": "feedback_collected",
+      "text": "Ask for patient feedback at end",
+      "phase": "delivery",
+      "visit": "v3",
+      "section": "patient_experience",
+      "assignedRole": "assistant",
+      "type": "important",
+      "order": 118,
+      "severity": "normal",
+      "uiType": "guidance"
+    },
+    {
+      "id": "component_system_match",
+      "text": "Verify all components belong to same implant system",
+      "phase": "planning",
+      "visit": "v1",
+      "section": "pre_op",
+      "assignedRole": "assistant",
+      "type": "critical",
+      "severity": "critical",
+      "uiType": "alert",
+      "order": 119
+    },
+    {
+      "id": "motor_calibration",
+      "text": "Check implant motor calibration and settings",
+      "phase": "surgery",
+      "visit": "v1",
+      "section": "pre_op",
+      "assignedRole": "assistant",
+      "type": "critical",
+      "severity": "warning",
+      "uiType": "alert",
+      "order": 120
+    },
+    {
+      "id": "irrigation_check",
+      "text": "Ensure irrigation flow adequate during drilling",
+      "phase": "surgery",
+      "visit": "v1",
+      "section": "intra_op",
+      "assignedRole": "assistant",
+      "type": "important",
+      "severity": "warning",
+      "uiType": "alert",
+      "order": 121
+    },
+    {
+      "id": "isq_recorded",
+      "text": "ISQ value recorded",
+      "phase": "surgery",
+      "visit": "v1",
+      "section": "intra_op",
+      "assignedRole": "implantologist",
+      "type": "critical",
+      "severity": "normal",
+      "uiType": "action",
+      "order": 122
+    },
+    {
+      "id": "stability_decision_matrix",
+      "text": "Use torque + ISQ to decide loading protocol",
+      "phase": "surgery",
+      "visit": "v1",
+      "section": "intra_op",
+      "assignedRole": "implantologist",
+      "type": "critical",
+      "severity": "critical",
+      "uiType": "alert",
+      "order": 123
+    },
+    {
+      "id": "immediate_4_gate_check",
+      "text": "Verify 4 gates (socket walls, apical bone, stability, infection)",
+      "phase": "planning",
+      "visit": "v1",
+      "assignedRole": "implantologist",
+      "type": "critical",
+      "severity": "critical",
+      "uiType": "alert",
+      "order": 124,
+      "conditions": {
+        "modifiers.immediate": true
+      }
+    },
+    {
+      "id": "sinus_height_classification",
+      "text": "Classify bone height (6\u20139mm, 4\u20135mm, <4mm)",
+      "phase": "planning",
+      "visit": "v1",
+      "assignedRole": "implantologist",
+      "type": "critical",
+      "severity": "warning",
+      "uiType": "alert",
+      "order": 125,
+      "conditions": {
+        "modifiers.sinus": true
+      }
+    },
+    {
+      "id": "verification_jig",
+      "text": "Verification jig checked for passive fit",
+      "phase": "impression",
+      "visit": "v2",
+      "assignedRole": "prosthodontist",
+      "type": "critical",
+      "severity": "critical",
+      "uiType": "alert",
+      "order": 126,
+      "conditions": {
+        "modifiers.full_arch": true
+      }
+    },
+    {
+      "id": "torque_3_stage",
+      "text": "3-stage torque protocol with 10 min re-torque",
+      "phase": "delivery",
+      "visit": "v3",
+      "assignedRole": "prosthodontist",
+      "type": "critical",
+      "severity": "critical",
+      "uiType": "alert",
+      "order": 127
     }
   ]
 }
