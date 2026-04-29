@@ -3,433 +3,1599 @@
   "description": "Seamless Clinical Checklist (Full + Severity Injected)",
   "items": [
     {
-      "id": "consent_signed",
-      "text": "Consent obtained and signed",
-      "phase": "planning",
-      "visit": "v1",
-      "section": "pre_op",
-      "assignedRole": "assistant",
-      "type": "critical",
-      "order": 1,
-      "severity": "normal",
-      "uiType": "action"
-    },
+  "id": "consent_signed",
+  "text": "Consent obtained and signed",
+  "phase": "planning",
+  "visit": "v1",
+  "section": "pre_op",
+  "assignedRole": "assistant",
+  "type": "critical",
+  "order": 1,
+  "severity": "normal",
+  "uiType": "action",
+  "subItems": [
+    { "text": "Patient identity verified (name, age, case)" },
+    { "text": "Procedure explained in simple language" },
+    { "text": "Alternative treatment options discussed" },
+    { "text": "Risks explained clearly (failure, infection, nerve injury, sinus risk)" },
+    { "text": "Esthetic limitations explained" },
+    { "text": "Additional procedures explained (GBR, sinus lift, CTG)" },
+    { "text": "Loading protocol explained" },
+    { "text": "Post-operative expectations explained" },
+    { "text": "Medical risks reviewed" },
+    { "text": "Cost and treatment phases explained" },
+    { "text": "Patient questions answered" },
+    { "text": "Consent form signed by patient" },
+    { "text": "Doctor signature completed" },
+    { "text": "Date and time recorded" },
+    { "text": "Consent stored in patient record" }
+  ]
+},
     {
-      "id": "cbct_review",
-      "text": "CBCT scan reviewed",
-      "phase": "planning",
-      "visit": "v1",
-      "section": "pre_op",
-      "assignedRole": "implantologist",
-      "type": "critical",
-      "order": 2,
-      "severity": "normal",
-      "uiType": "action"
-    },
+"id": "cbct_review",
+"text": "CBCT scan reviewed",
+"phase": "planning",
+"visit": "v1",
+"section": "pre_op",
+"assignedRole": "implantologist",
+"type": "critical",
+"order": 2,
+"severity": "normal",
+"uiType": "action",
+"subItems": [
+{ "text": "Correct patient CBCT loaded and verified" },
+{ "text": "Scan orientation aligned (axial, sagittal, coronal views)" },
+{ "text": "Region of interest identified (implant site)" },
+{ "text": "Image quality adequate (no major artifacts)" },
+
+
+{ "text": "Bone height measured at implant site" },
+{ "text": "Bone width measured (buccolingual)" },
+{ "text": "Buccal plate thickness evaluated" },
+{ "text": "Bone density assessed" },
+{ "text": "Cortical vs cancellous bone noted" },
+
+{ "text": "Inferior alveolar nerve location identified (mandible)" },
+{ "text": "Mental foramen position identified" },
+{ "text": "Maxillary sinus floor evaluated" },
+{ "text": "Nasal floor assessed (anterior maxilla)" },
+{ "text": "Adjacent root proximity checked" },
+
+{ "text": "Socket condition evaluated (if extraction site)" },
+{ "text": "Pathology ruled out (infection/cyst)" },
+{ "text": "Bone defects or dehiscence identified" },
+{ "text": "Ridge contour and angulation assessed" },
+
+{ "text": "Implant planned prosthetically (not bone-driven)" },
+{ "text": "Angulation aligned with crown position" },
+{ "text": "Restorative space evaluated" },
+{ "text": "Need for angled abutment assessed" },
+
+{ "text": "Need for GBR identified" },
+{ "text": "Need for sinus lift evaluated" },
+{ "text": "Immediate vs delayed placement supported by CBCT" },
+{ "text": "Need for surgical guide evaluated" },
+
+{ "text": "Key CBCT slices saved" },
+{ "text": "Measurements documented" },
+{ "text": "Treatment plan updated based on CBCT" }
+
+
+]
+},
     {
-      "id": "implant_specs",
-      "text": "Implant diameter and length finalized",
-      "phase": "planning",
-      "visit": "v1",
-      "section": "pre_op",
-      "assignedRole": "implantologist",
-      "type": "critical",
-      "order": 3,
-      "severity": "normal",
-      "uiType": "action"
-    },
+"id": "implant_specs",
+"text": "Implant diameter and length finalized",
+"phase": "planning",
+"visit": "v1",
+"section": "pre_op",
+"assignedRole": "implantologist",
+"type": "critical",
+"order": 3,
+"severity": "normal",
+"uiType": "action",
+"subItems": [
+{ "text": "Minimum 1.5 mm clearance maintained from adjacent teeth" },
+{ "text": "Minimum 2 mm buccal bone thickness ensured" },
+{ "text": "Implant diameter fits ridge width" },
+{ "text": "Avoid dehiscence due to excessive diameter" },
+{ "text": "Platform size selected appropriately (NP/RP/WP)" },
+
+
+{ "text": "Bone height measured from CBCT" },
+{ "text": "≥2 mm safety distance from nerve/sinus maintained" },
+{ "text": "Implant length maximized safely" },
+{ "text": "Apical anchorage planned for stability" },
+{ "text": "Short implant used if anatomical limitation exists" },
+
+{ "text": "Inferior alveolar nerve clearance verified" },
+{ "text": "Sinus proximity evaluated" },
+{ "text": "Nasal floor clearance ensured" },
+{ "text": "Adjacent root proximity avoided" },
+
+{ "text": "Implant size supports emergence profile" },
+{ "text": "Compatible with abutment and crown design" },
+{ "text": "Angulation allows screw-retained prosthesis" },
+{ "text": "Avoid prosthetic compromise due to size mismatch" },
+
+{ "text": "Primary stability strategy considered" },
+{ "text": "Bone density factored into size selection" },
+{ "text": "Immediate loading feasibility evaluated" },
+
+{ "text": "Esthetic zone: preserve buccal plate with size selection" },
+{ "text": "Immediate case: apical extension planned" },
+{ "text": "Full arch: standardization considered" },
+{ "text": "Sinus case: alternative planning done if needed" },
+
+{ "text": "Implant size verified with surgical kit" },
+{ "text": "Backup implant sizes planned" },
+{ "text": "Final specs documented in treatment plan" }
+
+
+]
+},
     {
-      "id": "loading_protocol",
-      "text": "Loading protocol decided",
-      "phase": "planning",
-      "visit": "v1",
-      "section": "pre_op",
-      "assignedRole": "implantologist",
-      "type": "critical",
-      "order": 4,
-      "severity": "normal",
-      "uiType": "action"
-    },
+"id": "loading_protocol",
+"text": "Loading protocol decided",
+"phase": "planning",
+"visit": "v1",
+"section": "pre_op",
+"assignedRole": "implantologist",
+"type": "critical",
+"order": 4,
+"severity": "normal",
+"uiType": "action",
+"subItems": [
+{ "text": "Insertion torque value recorded" },
+{ "text": "ISQ value measured (if available)" },
+{ "text": "No implant mobility clinically" },
+{ "text": "Bone density considered (D1–D4)" },
+
+
+{ "text": "Torque ≥35 Ncm supports immediate loading" },
+{ "text": "Torque 25–35 Ncm → consider early loading" },
+{ "text": "Torque <25 Ncm → delayed loading preferred" },
+{ "text": "ISQ ≥70 supports immediate loading" },
+{ "text": "ISQ <60 suggests delayed loading" },
+
+{ "text": "Bone quality adequate for selected loading protocol" },
+{ "text": "No major bone defects compromising stability" },
+{ "text": "Buccal plate intact (esthetic zone priority)" },
+{ "text": "No extensive graft delaying loading" },
+
+{ "text": "Immediate placement cases evaluated cautiously" },
+{ "text": "Esthetic zone cases favor controlled loading" },
+{ "text": "Full arch cases consider cross-arch stabilization" },
+{ "text": "Sinus cases typically favor delayed loading" },
+
+{ "text": "Bruxism or heavy occlusion considered" },
+{ "text": "Opposing dentition evaluated" },
+{ "text": "Occlusal load distribution planned" },
+
+{ "text": "Immediate / early / delayed loading selected" },
+{ "text": "Temporary restoration planned if immediate loading" },
+{ "text": "Non-functional loading considered if required" },
+{ "text": "Prosthetic components aligned with loading plan" },
+
+{ "text": "Loading protocol documented in case plan" },
+{ "text": "Decision rationale recorded" },
+{ "text": "Patient informed about loading approach" }
+
+
+]
+},
     {
-      "id": "guide_verification",
-      "text": "Surgical guide verified intraorally",
-      "phase": "surgery",
-      "visit": "v1",
-      "section": "pre_op",
-      "assignedRole": "implantologist",
-      "type": "important",
-      "order": 5,
-      "conditions": {
-        "modifiers.guide": true
-      },
-      "severity": "warning",
-      "uiType": "alert"
-    },
+"id": "guide_verification",
+"text": "Surgical guide verified intraorally",
+"phase": "surgery",
+"visit": "v1",
+"section": "pre_op",
+"assignedRole": "implantologist",
+"type": "important",
+"order": 5,
+"conditions": {
+"modifiers.guide": true
+},
+"severity": "warning",
+"uiType": "alert",
+"subItems": [
+{ "text": "Guide seats fully without rocking" },
+{ "text": "Passive and stable fit confirmed" },
+{ "text": "No gap between guide and teeth/mucosa" },
+{ "text": "Guide fully seated to planned depth" },
+
+
+{ "text": "Tooth-supported guide properly supported on teeth" },
+{ "text": "Mucosa-supported guide stable without movement" },
+{ "text": "Bone-supported guide stable (if flap raised)" },
+
+{ "text": "Guide remains stable under pressure" },
+{ "text": "No movement during simulated drilling" },
+{ "text": "Fixation pins used if required" },
+
+{ "text": "Drill sleeves aligned with planned implant position" },
+{ "text": "Adequate mouth opening for drill access" },
+{ "text": "No interference from adjacent teeth or soft tissue" },
+{ "text": "Handpiece reaches full drilling depth easily" },
+
+{ "text": "Guide position matches CBCT planning" },
+{ "text": "Angulation verified clinically" },
+{ "text": "Relation to adjacent teeth confirmed" },
+
+{ "text": "No soft tissue impingement" },
+{ "text": "No mucosal blanching or distortion" },
+{ "text": "No risk of displacement during drilling" },
+
+{ "text": "Freehand backup plan considered" },
+{ "text": "Implant position mentally mapped without guide" }
+
+
+]
+},
     {
-      "id": "backup_implants",
-      "text": "Backup implants available",
-      "phase": "surgery",
-      "visit": "v1",
-      "section": "pre_op",
-      "assignedRole": "assistant",
-      "type": "important",
-      "order": 6,
-      "severity": "warning",
-      "uiType": "alert"
-    },
+"id": "backup_implants",
+"text": "Backup implants available",
+"phase": "surgery",
+"visit": "v1",
+"section": "pre_op",
+"assignedRole": "assistant",
+"type": "important",
+"order": 6,
+"severity": "warning",
+"uiType": "alert",
+"subItems": [
+{ "text": "Backup implant with smaller diameter available" },
+{ "text": "Backup implant with larger diameter available if needed" },
+{ "text": "Shorter implant available for limited bone height" },
+{ "text": "Longer implant available for additional stability" },
+
+
+{ "text": "Backup planned for poor bone quality cases" },
+{ "text": "Backup available if osteotomy becomes wider than planned" },
+{ "text": "Alternative implant ready if primary stability is low" },
+{ "text": "Backup considered for immediate placement scenarios" },
+
+{ "text": "Backup implants from same system and platform" },
+{ "text": "Compatible drivers available" },
+{ "text": "Compatible abutments available if needed" },
+
+{ "text": "Drills available for alternative implant sizes" },
+{ "text": "Surgical kit supports backup implants" },
+{ "text": "All backup components sterile and ready" },
+
+{ "text": "Backup implants accessible chairside" },
+{ "text": "Assistant aware of backup options" },
+{ "text": "No delay expected during implant switch" },
+
+{ "text": "Plan defined if primary implant fails" },
+{ "text": "Alternative selection mentally prepared" },
+{ "text": "Surgeon ready to adapt intra-operatively" }
+
+
+]
+},
     {
-      "id": "site_verification",
-      "text": "Surgical site verified",
-      "phase": "surgery",
-      "visit": "v1",
-      "section": "intra_op",
-      "assignedRole": "implantologist",
-      "type": "critical",
-      "order": 7,
-      "severity": "critical",
-      "uiType": "alert"
-    },
+"id": "site_verification",
+"text": "Surgical site verified",
+"phase": "surgery",
+"visit": "v1",
+"section": "intra_op",
+"assignedRole": "implantologist",
+"type": "critical",
+"order": 7,
+"severity": "critical",
+"uiType": "alert",
+"subItems": [
+{ "text": "Correct patient confirmed verbally and via records" },
+{ "text": "Correct tooth/site confirmed (FDI/Universal notation)" },
+{ "text": "Left vs right side verified clearly" },
+{ "text": "Site matches treatment plan and CBCT" },
+
+
+{ "text": "Edentulous or extraction site correctly identified" },
+{ "text": "Adjacent teeth visually confirmed" },
+{ "text": "No ambiguity in site selection" },
+
+{ "text": "CBCT plan cross-checked mentally or visually" },
+{ "text": "Implant position recalled before osteotomy" },
+{ "text": "Angulation and entry point confirmed" },
+
+{ "text": "Surgical guide verified if used" },
+{ "text": "Site marking done if freehand" },
+{ "text": "Entry point confirmed before drilling" },
+
+{ "text": "Soft tissue access adequate" },
+{ "text": "Visibility of site is clear" },
+{ "text": "No obstruction during drilling" },
+
+{ "text": "Final confirmation before first drill" },
+{ "text": "Assistant and surgeon aligned" },
+{ "text": "No uncertainty before proceeding" }
+
+
+]
+},
     {
-      "id": "osteotomy_sequence",
-      "text": "Osteotomy sequence followed correctly",
-      "phase": "surgery",
-      "visit": "v1",
-      "section": "intra_op",
-      "assignedRole": "implantologist",
-      "type": "critical",
-      "order": 8,
-      "severity": "critical",
-      "uiType": "alert"
-    },
+"id": "osteotomy_sequence",
+"text": "Osteotomy sequence followed correctly",
+"phase": "surgery",
+"visit": "v1",
+"section": "intra_op",
+"assignedRole": "implantologist",
+"type": "critical",
+"order": 8,
+"severity": "critical",
+"uiType": "alert",
+"subItems": [
+{ "text": "Pilot drill entry point placed as per plan" },
+{ "text": "Correct angulation established from first drill" },
+{ "text": "Drill stabilized before penetration" },
+
+
+{ "text": "Manufacturer-recommended drill sequence followed" },
+{ "text": "Drill diameter increased step-by-step" },
+{ "text": "Each drill used to correct planned depth" },
+{ "text": "Depth verified using markings or stopper" },
+
+{ "text": "Copious irrigation maintained throughout drilling" },
+{ "text": "Appropriate drilling speed maintained" },
+{ "text": "Intermittent drilling used to prevent overheating" },
+{ "text": "Bone temperature kept below 47°C" },
+
+{ "text": "Tactile feedback monitored during drilling" },
+{ "text": "Bone density assessed intra-operatively" },
+{ "text": "Over-preparation avoided in soft bone" },
+{ "text": "Under-preparation used when needed for stability" },
+
+{ "text": "Angulation maintained throughout drilling" },
+{ "text": "No deviation from planned implant axis" },
+{ "text": "Parallelism maintained in multi-implant cases" },
+
+{ "text": "Safe distance maintained from vital structures" },
+{ "text": "No over-penetration beyond planned depth" },
+{ "text": "Sinus/nerve proximity respected" },
+
+{ "text": "Final osteotomy matches implant size" },
+{ "text": "Osteotomy walls intact" },
+{ "text": "No buccal plate damage or perforation" },
+{ "text": "Site ready for implant placement" }
+
+
+]
+},
     {
-      "id": "implant_position",
-      "text": "Implant positioned correctly",
-      "phase": "surgery",
-      "visit": "v1",
-      "section": "intra_op",
-      "assignedRole": "implantologist",
-      "type": "critical",
-      "order": 9,
-      "severity": "critical",
-      "uiType": "alert"
-    },
+"id": "implant_position",
+"text": "Implant positioned correctly",
+"phase": "surgery",
+"visit": "v1",
+"section": "intra_op",
+"assignedRole": "implantologist",
+"type": "critical",
+"order": 9,
+"severity": "critical",
+"uiType": "alert",
+"subItems": [
+{ "text": "Minimum 1.5 mm clearance from adjacent teeth maintained" },
+{ "text": "Adequate spacing from adjacent implants (≥3 mm)" },
+{ "text": "Centered within edentulous space" },
+
+
+{ "text": "Implant positioned slightly palatal/lingual" },
+{ "text": "Minimum 2 mm buccal bone preserved" },
+{ "text": "No buccal plate perforation risk" },
+{ "text": "Emergence profile space maintained" },
+
+{ "text": "Implant platform placed at correct vertical depth" },
+{ "text": "3–4 mm apical positioning in esthetic zone" },
+{ "text": "No shallow placement causing esthetic compromise" },
+{ "text": "No excessive depth causing prosthetic difficulty" },
+
+{ "text": "Implant aligned with prosthetic axis" },
+{ "text": "No excessive labial angulation" },
+{ "text": "Screw access positioned favorably" },
+{ "text": "Angulation supports screw-retained restoration" },
+
+{ "text": "Safe distance from adjacent roots maintained" },
+{ "text": "No encroachment on vital structures" },
+{ "text": "Position consistent with CBCT plan" },
+
+{ "text": "Position verified intra-operatively" },
+{ "text": "Guide followed accurately if used" },
+{ "text": "Parallelism checked in multi-implant cases" },
+
+{ "text": "Radiograph taken if needed" },
+{ "text": "Position confirmed radiographically" },
+{ "text": "No deviation detected" }
+
+
+]
+},
     {
-      "id": "torque_recorded",
-      "text": "Insertion torque recorded",
-      "phase": "surgery",
-      "visit": "v1",
-      "section": "intra_op",
-      "assignedRole": "assistant",
-      "type": "critical",
-      "order": 10,
-      "severity": "critical",
-      "uiType": "alert"
-    },
+"id": "torque_recorded",
+"text": "Insertion torque recorded",
+"phase": "surgery",
+"visit": "v1",
+"section": "intra_op",
+"assignedRole": "assistant",
+"type": "critical",
+"order": 10,
+"severity": "critical",
+"uiType": "alert",
+"subItems": [
+{ "text": "Insertion torque measured using calibrated device" },
+{ "text": "Final seating torque value captured" },
+{ "text": "Torque measured at full implant seating depth" },
+
+
+{ "text": "Exact torque value recorded in Ncm" },
+{ "text": "Value entered into case record immediately" },
+{ "text": "No reliance on memory for later recording" },
+
+{ "text": "Bone density considered during interpretation" },
+{ "text": "Tactile feedback correlated with torque value" },
+{ "text": "Any abnormal resistance noted" },
+
+{ "text": "Torque consistent with expected stability" },
+{ "text": "No sudden drop in torque observed" },
+{ "text": "No over-torqueing beyond limits" },
+
+{ "text": "Torque value communicated clearly to clinician" },
+{ "text": "Used for loading protocol decision" },
+{ "text": "Correlated with ISQ if available" },
+
+{ "text": "Torque documented in surgical notes" },
+{ "text": "Included in case summary" },
+{ "text": "Available for future reference" }
+
+
+]
+},
     {
-      "id": "primary_stability",
-      "text": "Primary stability assessed",
-      "phase": "surgery",
-      "visit": "v1",
-      "section": "intra_op",
-      "assignedRole": "implantologist",
-      "type": "critical",
-      "order": 11,
-      "severity": "critical",
-      "uiType": "alert"
-    },
+"id": "primary_stability",
+"text": "Primary stability assessed",
+"phase": "surgery",
+"visit": "v1",
+"section": "intra_op",
+"assignedRole": "implantologist",
+"type": "critical",
+"order": 11,
+"severity": "critical",
+"uiType": "alert",
+"subItems": [
+{ "text": "Insertion torque value reviewed" },
+{ "text": "Torque categorized (≥35 / 25–35 / <25 Ncm)" },
+{ "text": "Torque consistent with expected stability" },
+
+
+{ "text": "ISQ value measured if available" },
+{ "text": "ISQ interpreted (≥70 strong, 60–70 moderate, <60 low)" },
+{ "text": "ISQ consistent with torque and clinical feel" },
+
+{ "text": "No implant mobility detected" },
+{ "text": "Firm resistance felt during placement" },
+{ "text": "No spinning or loss of resistance" },
+
+{ "text": "Bone quality correlated with stability" },
+{ "text": "No excessive compression or damage" },
+{ "text": "Osteotomy appropriate for bone type" },
+
+{ "text": "Low torque identified if present" },
+{ "text": "Low ISQ identified if present" },
+{ "text": "Any instability flagged immediately" },
+
+{ "text": "Immediate loading possible if stability adequate" },
+{ "text": "Early loading considered if moderate stability" },
+{ "text": "Delayed loading planned if stability low" },
+
+{ "text": "Stability assessment recorded in notes" },
+{ "text": "Torque and ISQ documented together" },
+{ "text": "Loading decision linked to stability" }
+
+
+]
+},
     {
-      "id": "intra_op_radiograph",
-      "text": "Intra-operative radiograph taken",
-      "phase": "surgery",
-      "visit": "v1",
-      "section": "intra_op",
-      "assignedRole": "assistant",
-      "type": "important",
-      "order": 12,
-      "severity": "warning",
-      "uiType": "alert"
-    },
+"id": "intra_op_radiograph",
+"text": "Intra-operative radiograph taken",
+"phase": "surgery",
+"visit": "v1",
+"section": "intra_op",
+"assignedRole": "assistant",
+"type": "important",
+"order": 12,
+"severity": "warning",
+"uiType": "alert",
+"subItems": [
+{ "text": "Radiograph taken at appropriate stage (pilot/direction/final as needed)" },
+{ "text": "Clear purpose defined (position, depth, proximity check)" },
+{ "text": "Unnecessary repeat exposures avoided" },
+
+
+{ "text": "Sensor positioned correctly for target site" },
+{ "text": "Angulation optimized to reduce distortion" },
+{ "text": "Implant/osteotomy clearly visible" },
+{ "text": "Image quality diagnostic and usable" },
+
+{ "text": "Mesio-distal position appropriate" },
+{ "text": "Apico-coronal depth consistent with plan" },
+{ "text": "Implant axis appears correct (2D verification)" },
+
+{ "text": "Safe distance from nerve confirmed (mandible)" },
+{ "text": "Sinus proximity acceptable (maxilla)" },
+{ "text": "No encroachment on adjacent roots" },
+
+{ "text": "No correction required before proceeding" },
+{ "text": "Any deviation identified and addressed" },
+{ "text": "Plan modified if needed based on findings" },
+
+{ "text": "Radiograph saved to patient record" },
+{ "text": "Image labeled appropriately" },
+{ "text": "Findings documented in surgical notes" }
+
+
+]
+},
     {
-      "id": "postop_radiograph_saved",
-      "text": "Post-op radiograph saved",
-      "phase": "surgery",
-      "visit": "v1",
-      "section": "post_op",
-      "assignedRole": "assistant",
-      "type": "important",
-      "order": 13,
-      "severity": "warning",
-      "uiType": "alert"
-    },
+"id": "postop_radiograph_saved",
+"text": "Post-op radiograph saved",
+"phase": "surgery",
+"visit": "v1",
+"section": "post_op",
+"assignedRole": "assistant",
+"type": "important",
+"order": 13,
+"severity": "warning",
+"uiType": "alert",
+"subItems": [
+{ "text": "Radiograph taken immediately after implant placement" },
+{ "text": "Image serves as baseline for future comparison" },
+{ "text": "No delay between placement and imaging" },
+
+
+{ "text": "Implant clearly visible along full length" },
+{ "text": "Threads and platform clearly distinguishable" },
+{ "text": "Minimal distortion or overlap" },
+{ "text": "Standardized angulation maintained" },
+
+{ "text": "Final implant depth confirmed" },
+{ "text": "Mesio-distal position verified" },
+{ "text": "No immediate complications visible" },
+
+{ "text": "Safe distance from anatomical structures confirmed" },
+{ "text": "No root encroachment" },
+{ "text": "Bone-implant interface acceptable" },
+
+{ "text": "Baseline bone level documented" },
+{ "text": "Crestal bone clearly visible" },
+{ "text": "Reference established for future bone loss comparison" },
+
+{ "text": "Radiograph saved in patient record" },
+{ "text": "File labeled with date and stage" },
+{ "text": "Linked to correct implant site" },
+
+{ "text": "Findings documented in case notes" },
+{ "text": "Any deviations recorded" },
+{ "text": "Included in treatment summary/report" }
+
+
+]
+},
     {
-      "id": "medication_prescribed",
-      "text": "Medication prescribed",
-      "phase": "surgery",
-      "visit": "v1",
-      "section": "post_op",
-      "assignedRole": "clinician",
-      "type": "critical",
-      "order": 14,
-      "severity": "critical",
-      "uiType": "alert"
-    },
+"id": "medication_prescribed",
+"text": "Medication prescribed",
+"phase": "surgery",
+"visit": "v1",
+"section": "post_op",
+"assignedRole": "clinician",
+"type": "critical",
+"order": 14,
+"severity": "critical",
+"uiType": "alert",
+"subItems": [
+{ "text": "Appropriate analgesic prescribed" },
+{ "text": "Correct dosage and frequency defined" },
+{ "text": "NSAID suitability checked" },
+{ "text": "Alternative analgesic provided if needed" },
+
+
+{ "text": "Antibiotic prescribed only if indicated" },
+{ "text": "Correct antibiotic selected" },
+{ "text": "Dosage and duration defined" },
+{ "text": "Allergy history checked before prescribing" },
+
+{ "text": "Chlorhexidine mouthwash prescribed if required" },
+{ "text": "Instructions for mouthwash use explained" },
+{ "text": "Additional medications prescribed if needed" },
+
+{ "text": "Medical history reviewed before prescribing" },
+{ "text": "Drug interactions checked" },
+{ "text": "Systemic conditions considered" },
+{ "text": "Pregnancy/lactation considered if applicable" },
+
+{ "text": "Prescription adjusted based on case complexity" },
+{ "text": "Higher risk cases appropriately covered" },
+{ "text": "Healing risk factors considered" },
+
+{ "text": "Dosage schedule explained clearly" },
+{ "text": "Duration explained to patient" },
+{ "text": "Start time instructions given" },
+{ "text": "Side effects explained if relevant" },
+
+{ "text": "Prescription documented in records" },
+{ "text": "Medication details recorded" },
+{ "text": "Copy provided to patient" }
+
+
+]
+},
     {
-      "id": "postop_instructions",
-      "text": "Post-operative instructions given",
-      "phase": "surgery",
-      "visit": "v1",
-      "section": "post_op",
-      "assignedRole": "assistant",
-      "type": "critical",
-      "order": 15,
-      "severity": "critical",
-      "uiType": "alert"
-    },
+"id": "postop_instructions",
+"text": "Post-operative instructions given",
+"phase": "surgery",
+"visit": "v1",
+"section": "post_op",
+"assignedRole": "assistant",
+"type": "critical",
+"order": 15,
+"severity": "critical",
+"uiType": "alert",
+"subItems": [
+{ "text": "Patient advised to bite on gauze for required duration" },
+{ "text": "Instructions given for managing minor bleeding" },
+{ "text": "Advised when to seek help for excessive bleeding" },
+
+
+{ "text": "Cold compression advised for first 24 hours" },
+{ "text": "Expected swelling explained" },
+{ "text": "Pain management instructions reinforced" },
+
+{ "text": "Soft diet advised" },
+{ "text": "Avoid hot, hard, or spicy foods" },
+{ "text": "Avoid chewing on surgical side" },
+
+{ "text": "Avoid strenuous activity for 24–48 hours" },
+{ "text": "Avoid smoking and alcohol" },
+{ "text": "Avoid disturbing surgical site" },
+
+{ "text": "Oral hygiene instructions explained" },
+{ "text": "Avoid brushing surgical site initially" },
+{ "text": "Mouthwash usage explained if prescribed" },
+
+{ "text": "Medication schedule reinforced" },
+{ "text": "Antibiotic compliance explained if applicable" },
+{ "text": "Pain medication usage clarified" },
+
+{ "text": "Signs of infection explained" },
+{ "text": "Advised to report abnormal symptoms" },
+{ "text": "Emergency contact provided" },
+
+{ "text": "Next appointment explained" },
+{ "text": "Healing timeline discussed" },
+
+{ "text": "Instructions given in simple language" },
+{ "text": "Patient confirmed understanding" },
+{ "text": "Written instructions provided if possible" }
+
+
+]
+},
     {
-      "id": "followup_scheduled",
-      "text": "Follow-up appointment scheduled",
-      "phase": "surgery",
-      "visit": "v1",
-      "section": "post_op",
-      "assignedRole": "assistant",
-      "type": "important",
-      "order": 16,
-      "severity": "normal",
-      "uiType": "action"
-    },
+"id": "followup_scheduled",
+"text": "Follow-up appointment scheduled",
+"phase": "surgery",
+"visit": "v1",
+"section": "post_op",
+"assignedRole": "assistant",
+"type": "important",
+"order": 16,
+"severity": "normal",
+"uiType": "action",
+"subItems": [
+{ "text": "First follow-up scheduled within appropriate timeframe" },
+{ "text": "Timing aligned with procedure type" },
+{ "text": "Additional follow-ups planned if required" },
+
+
+{ "text": "Purpose of follow-up explained to patient" },
+{ "text": "Patient aware of importance of visit" },
+
+{ "text": "Date and time confirmed with patient" },
+{ "text": "Appointment added to scheduling system" },
+{ "text": "Correct clinician assigned" },
+
+{ "text": "Appointment details shared with patient" },
+{ "text": "Reminder system activated" },
+
+{ "text": "High-risk cases scheduled earlier if needed" },
+{ "text": "Patient advised to report early if issues arise" },
+
+{ "text": "Follow-up recorded in patient file" },
+{ "text": "Linked to current case" }
+
+
+]
+},
+{
+"id": "integration_check",
+"text": "Implant integration confirmed",
+"phase": "impression",
+"visit": "v2",
+"section": "pre_op",
+"assignedRole": "implantologist",
+"type": "critical",
+"order": 17,
+"severity": "critical",
+"uiType": "alert",
+"subItems": [
+{ "text": "No clinical mobility detected" },
+{ "text": "Implant rigid on manual testing" },
+{ "text": "No rotation under load" },
+
+
+{ "text": "Soft tissue healthy around implant" },
+{ "text": "No inflammation present" },
+{ "text": "No bleeding or suppuration" },
+
+{ "text": "Radiograph reviewed before proceeding" },
+{ "text": "Bone-implant interface stable" },
+{ "text": "No radiolucency around implant" },
+{ "text": "Crestal bone levels acceptable" },
+
+{ "text": "ISQ measured if available" },
+{ "text": "ISQ ≥65–70 supports integration" },
+{ "text": "ISQ consistent with clinical findings" },
+
+{ "text": "Any mobility flagged immediately" },
+{ "text": "No pain on loading or tapping" },
+{ "text": "No signs of peri-implant infection" },
+
+{ "text": "Implant suitable for prosthetic loading" },
+{ "text": "Delayed loading if borderline stability" },
+{ "text": "Further healing advised if needed" },
+
+{ "text": "Integration status documented" },
+{ "text": "Radiographic findings recorded" },
+{ "text": "Decision to proceed documented" }
+
+
+]
+},
+   {
+"id": "iaj_verification",
+"text": "IAJ verified (no gap)",
+"phase": "impression",
+"visit": "v2",
+"section": "pre_op",
+"assignedRole": "prosthodontist",
+"type": "critical",
+"order": 18,
+"severity": "critical",
+"uiType": "alert",
+"subItems": [
+{ "text": "Implant internal connection cleaned" },
+{ "text": "Component inspected for defects" },
+{ "text": "Correct component selected" },
+
+
+{ "text": "Component fully seated into implant" },
+{ "text": "No rocking or movement after seating" },
+{ "text": "Proper seating feel confirmed" },
+{ "text": "No visible gap at junction" },
+{ "text": "Interface flush circumferentially" },
+{ "text": "No soft tissue trapped" },
+
+{ "text": "Screw engages smoothly" },
+{ "text": "No cross-threading" },
+{ "text": "Full seating before tightening" },
+
+{ "text": "Radiograph taken to confirm seating" },
+{ "text": "No radiolucent gap present" },
+{ "text": "Component fully seated radiographically" },
+
+{ "text": "Misfit identified immediately if present" },
+{ "text": "Debris or obstruction ruled out" },
+{ "text": "Component replaced if needed" },
+
+{ "text": "IAJ verified before impression" },
+{ "text": "Stable base ensured for impression" },
+{ "text": "No distortion risk present" },
+
+{ "text": "Verification documented in notes" },
+{ "text": "Radiograph saved" },
+{ "text": "Adjustments recorded if any" }
+
+
+]
+},
+   {
+"id": "impression_method",
+"text": "Correct impression method selected",
+"phase": "impression",
+"visit": "v2",
+"section": "intra_op",
+"assignedRole": "prosthodontist",
+"type": "critical",
+"order": 19,
+"severity": "critical",
+"uiType": "alert",
+"subItems": [
+{ "text": "Single vs multiple implant case identified" },
+{ "text": "Full arch vs partial case recognized" },
+{ "text": "Implant angulation complexity assessed" },
+
+
+{ "text": "Open tray selected for multiple/non-parallel implants" },
+{ "text": "Closed tray selected for simple cases" },
+{ "text": "Digital impression considered if feasible" },
+
+{ "text": "High precision method used for esthetic cases" },
+{ "text": "Method minimizes positional error" },
+{ "text": "Splinting considered for multiple implants" },
+
+{ "text": "Mouth opening sufficient for technique" },
+{ "text": "Tray access evaluated" },
+{ "text": "Patient comfort considered" },
+
+{ "text": "Compatible copings available" },
+{ "text": "System supports selected method" },
+{ "text": "All components ready before procedure" },
+
+{ "text": "Technique minimizes distortion risk" },
+{ "text": "Coping movement risk minimized" },
+{ "text": "Soft tissue condition considered" },
+
+{ "text": "Method aligned with prosthetic plan" },
+{ "text": "Decision confirmed before impression" },
+{ "text": "Method documented in case plan" }
+
+
+]
+},
     {
-      "id": "integration_check",
-      "text": "Implant integration confirmed",
-      "phase": "impression",
-      "visit": "v2",
-      "section": "pre_op",
-      "assignedRole": "implantologist",
-      "type": "critical",
-      "order": 17,
-      "severity": "critical",
-      "uiType": "alert"
-    },
+"id": "torque_protocol",
+"text": "Final torque protocol followed",
+"phase": "delivery",
+"visit": "v3",
+"section": "intra_op",
+"assignedRole": "prosthodontist",
+"type": "critical",
+"order": 20,
+"severity": "critical",
+"uiType": "alert",
+"subItems": [
+{ "text": "Components cleaned and free of debris" },
+{ "text": "Screw inspected for defects" },
+{ "text": "Correct screw selected" },
+
+
+{ "text": "Prosthesis fully seated" },
+{ "text": "No obstruction at seating interface" },
+{ "text": "Passive fit confirmed before tightening" },
+
+{ "text": "Calibrated torque driver used" },
+{ "text": "Manufacturer torque value followed" },
+{ "text": "Torque applied slowly and steadily" },
+{ "text": "No over-tightening" },
+
+{ "text": "Screw allowed to settle after initial torque" },
+{ "text": "Re-torque applied after 5–10 minutes" },
+
+{ "text": "Screw engages smoothly" },
+{ "text": "No cross-threading" },
+{ "text": "No prosthesis rotation during tightening" },
+
+{ "text": "Prosthesis stable after torque" },
+{ "text": "No micro-movement detected" },
+{ "text": "Passive fit maintained" },
+
+{ "text": "Radiograph taken if required" },
+{ "text": "No gap at interface confirmed" },
+
+{ "text": "Final torque value documented" },
+{ "text": "Torque protocol recorded" },
+{ "text": "Deviations noted if any" }
+
+
+]
+},
     {
-      "id": "iaj_verification",
-      "text": "IAJ verified (no gap)",
-      "phase": "impression",
-      "visit": "v2",
-      "section": "pre_op",
-      "assignedRole": "prosthodontist",
-      "type": "critical",
-      "order": 18,
-      "severity": "critical",
-      "uiType": "alert"
-    },
+"id": "occlusion_check",
+"text": "Occlusion checked after torque",
+"phase": "delivery",
+"visit": "v3",
+"section": "intra_op",
+"assignedRole": "prosthodontist",
+"type": "critical",
+"order": 21,
+"severity": "critical",
+"uiType": "alert",
+"subItems": [
+{ "text": "Light contact in centric occlusion (or no contact if planned)" },
+{ "text": "No premature contact vs adjacent teeth" },
+{ "text": "Contacts evenly distributed" },
+
+
+{ "text": "Implant crown not overloaded" },
+{ "text": "Occlusion adjusted to reduce implant load" },
+{ "text": "Infra-occlusion maintained if required" },
+
+{ "text": "No contact in lateral excursions" },
+{ "text": "No non-working side contacts" },
+{ "text": "No protrusive contact if not planned" },
+
+{ "text": "Bruxism/heavy bite considered" },
+{ "text": "Additional reduction done if needed" },
+{ "text": "Night guard planned if indicated" },
+
+{ "text": "Adjustments done without overheating" },
+{ "text": "Restoration polished after adjustment" },
+{ "text": "No rough surfaces present" },
+
+{ "text": "Patient confirmed comfort on biting" },
+{ "text": "No high spot reported" },
+{ "text": "Final occlusion acceptable" },
+
+{ "text": "Occlusion check documented" },
+{ "text": "Adjustments recorded" },
+{ "text": "Risk factors noted" }
+
+
+]
+},
+   {
+"id": "passive_fit",
+"text": "Passive fit verified",
+"phase": "delivery",
+"visit": "v3",
+"section": "intra_op",
+"assignedRole": "prosthodontist",
+"type": "critical",
+"order": 22,
+"severity": "critical",
+"uiType": "alert",
+"subItems": [
+{ "text": "Prosthesis seats completely without force" },
+{ "text": "No rocking before screw tightening" },
+{ "text": "No soft tissue or debris interfering" },
+
+
+{ "text": "Margins flush with interface" },
+{ "text": "No visible gap" },
+{ "text": "Uniform seating across all units" },
+
+{ "text": "One-screw test performed" },
+{ "text": "No lifting at other implant sites" },
+{ "text": "Prosthesis remains fully seated" },
+
+{ "text": "Radiograph taken to confirm seating" },
+{ "text": "No radiolucent gap present" },
+{ "text": "Full seating confirmed on all implants" },
+
+{ "text": "Misfit identified immediately if present" },
+{ "text": "No strain during screw tightening" },
+{ "text": "No forced seating required" },
+
+{ "text": "Prosthesis adjusted or remade if needed" },
+{ "text": "Avoid proceeding if passive fit not achieved" },
+
+{ "text": "Passive fit verified across all implants" },
+{ "text": "No cross-arch stress present" },
+
+{ "text": "Verification documented" },
+{ "text": "Radiograph saved" },
+{ "text": "Adjustments recorded" }
+
+
+]
+},
     {
-      "id": "impression_method",
-      "text": "Correct impression method selected",
-      "phase": "impression",
-      "visit": "v2",
-      "section": "intra_op",
-      "assignedRole": "prosthodontist",
-      "type": "critical",
-      "order": 19,
-      "severity": "critical",
-      "uiType": "alert"
-    },
+"id": "nightguard_required",
+"text": "Nightguard planned",
+"phase": "delivery",
+"visit": "v3",
+"section": "post_op",
+"assignedRole": "prosthodontist",
+"type": "important",
+"order": 23,
+"conditions": {
+"functional_risk": ["bruxism"]
+},
+"severity": "warning",
+"uiType": "alert",
+"subItems": [
+{ "text": "Bruxism or clenching habit identified" },
+{ "text": "Signs of parafunction present" },
+{ "text": "Patient history of grinding confirmed" },
+
+
+{ "text": "Implant at higher risk due to overload" },
+{ "text": "Occlusal forces exceed safe limits" },
+{ "text": "Risk of screw loosening or damage considered" },
+
+{ "text": "Nightguard indicated for implant protection" },
+{ "text": "Decision explained to patient" },
+{ "text": "Purpose clearly understood" },
+
+{ "text": "Appropriate nightguard type selected" },
+{ "text": "Full arch coverage planned" },
+{ "text": "Occlusal scheme considered" },
+
+{ "text": "Impression or scan taken" },
+{ "text": "Accurate bite recorded" },
+
+{ "text": "Patient instructed on usage" },
+{ "text": "Cleaning instructions explained" },
+{ "text": "Importance of compliance emphasized" },
+
+{ "text": "Delivery appointment scheduled" },
+{ "text": "Fit to be checked at delivery" },
+{ "text": "Periodic review planned" },
+
+{ "text": "Risk documented in case record" },
+{ "text": "Recommendation recorded" },
+{ "text": "Patient acceptance noted" }
+
+
+]
+},
     {
-      "id": "torque_protocol",
-      "text": "Final torque protocol followed",
-      "phase": "delivery",
-      "visit": "v3",
-      "section": "intra_op",
-      "assignedRole": "prosthodontist",
-      "type": "critical",
-      "order": 20,
-      "severity": "critical",
-      "uiType": "alert"
-    },
+"id": "papilla_prediction",
+"text": "Papilla prediction completed",
+"phase": "planning",
+"visit": "v1",
+"section": "pre_op",
+"assignedRole": "prosthodontist",
+"type": "critical",
+"order": 24,
+"conditions": {
+"modifiers.esthetic": true
+},
+"severity": "critical",
+"uiType": "alert",
+"subItems": [
+{ "text": "Distance from contact point to bone crest evaluated" },
+{ "text": "≤5 mm distance favorable for papilla fill" },
+{ "text": ">5 mm flagged as risk for black triangle" },
+
+
+{ "text": "Adjacent teeth assessed for papilla support" },
+{ "text": "Inter-implant distance ≥3 mm maintained" },
+{ "text": "Tooth–implant vs implant–implant scenario identified" },
+
+{ "text": "Crestal bone level evaluated" },
+{ "text": "Bone peak between adjacent structures assessed" },
+{ "text": "Adequate bone support confirmed" },
+
+{ "text": "Gingival biotype classified (thin/thick)" },
+{ "text": "Thin biotype flagged as high risk" },
+{ "text": "Soft tissue graft considered if needed" },
+
+{ "text": "Implant positioned to support papilla" },
+{ "text": "Bucco-lingual position optimized" },
+{ "text": "Vertical depth supports emergence profile" },
+
+{ "text": "Contact point planned appropriately" },
+{ "text": "Crown contour supports soft tissue" },
+{ "text": "Emergence profile planned for shaping" },
+
+{ "text": "Risk of incomplete papilla explained to patient" },
+{ "text": "Black triangle possibility discussed" },
+{ "text": "Expectations aligned with limitations" },
+
+{ "text": "Soft tissue graft planned if required" },
+{ "text": "Provisional shaping planned if needed" },
+{ "text": "Alternative strategies considered" },
+
+{ "text": "Prediction documented in treatment plan" },
+{ "text": "Measurements and risks recorded" },
+{ "text": "Patient consent noted" }
+
+
+]
+},
     {
-      "id": "occlusion_check",
-      "text": "Occlusion checked after torque",
-      "phase": "delivery",
-      "visit": "v3",
-      "section": "intra_op",
-      "assignedRole": "prosthodontist",
-      "type": "critical",
-      "order": 21,
-      "severity": "critical",
-      "uiType": "alert"
-    },
+"id": "smile_line_assessed",
+"text": "Smile line assessed",
+"phase": "planning",
+"visit": "v1",
+"section": "pre_op",
+"assignedRole": "prosthodontist",
+"type": "important",
+"order": 104,
+"conditions": {
+"modifiers.esthetic": true
+},
+"severity": "warning",
+"uiType": "alert",
+"subItems": [
+{ "text": "Smile line classified (low / medium / high)" },
+{ "text": "High smile line identified (full gingival display)" },
+{ "text": "Low smile line identified (minimal gingival display)" },
+
+
+{ "text": "Extent of gingival display assessed" },
+{ "text": "Visibility of cervical margins evaluated" },
+{ "text": "Gingival symmetry observed" },
+
+{ "text": "Tooth display at rest evaluated" },
+{ "text": "Incisal edge position assessed" },
+{ "text": "Smile arc analyzed" },
+
+{ "text": "Full smile photographs captured" },
+{ "text": "Dynamic smile recorded" },
+{ "text": "Images stored for planning" },
+
+{ "text": "High smile line flagged as high risk" },
+{ "text": "Visibility of minor discrepancies noted" },
+{ "text": "Precision requirement increased" },
+
+{ "text": "Implant depth planned accordingly" },
+{ "text": "Buccal positioning controlled" },
+{ "text": "Soft tissue strategy adjusted" },
+
+{ "text": "Emergence profile planned" },
+{ "text": "Margin placement adjusted" },
+{ "text": "Material selection influenced" },
+
+{ "text": "Smile line impact explained to patient" },
+{ "text": "Expectations aligned" },
+{ "text": "Limitations discussed" },
+
+{ "text": "Classification recorded in plan" },
+{ "text": "Photos saved" },
+{ "text": "Risk level documented" }
+
+
+]
+},
     {
-      "id": "passive_fit",
-      "text": "Passive fit verified",
-      "phase": "delivery",
-      "visit": "v3",
-      "section": "intra_op",
-      "assignedRole": "prosthodontist",
-      "type": "critical",
-      "order": 22,
-      "severity": "critical",
-      "uiType": "alert"
-    },
+"id": "biotype_checked",
+"text": "Soft tissue biotype assessed",
+"phase": "planning",
+"visit": "v1",
+"section": "pre_op",
+"assignedRole": "prosthodontist",
+"type": "important",
+"order": 105,
+"conditions": {
+"modifiers.esthetic": true
+},
+"severity": "warning",
+"uiType": "alert",
+"subItems": [
+{ "text": "Biotype classified (thin / thick)" },
+{ "text": "Probe transparency test used if needed" },
+{ "text": "Visual assessment confirmed" },
+
+
+{ "text": "Gingival thickness evaluated" },
+{ "text": "Keratinized tissue width assessed" },
+{ "text": "Tissue scallop form observed" },
+
+{ "text": "Thin biotype flagged as high risk" },
+{ "text": "Papilla loss risk identified" },
+{ "text": "Higher esthetic sensitivity noted" },
+
+{ "text": "Biotype correlated with bone thickness" },
+{ "text": "Buccal bone thickness considered" },
+{ "text": "Risk of buccal collapse evaluated" },
+
+{ "text": "Implant positioned palatally/lingually if needed" },
+{ "text": "Depth control planned carefully" },
+{ "text": "Avoid buccal positioning" },
+
+{ "text": "CTG considered if thin biotype" },
+{ "text": "Soft tissue augmentation planned if needed" },
+{ "text": "Flap design adjusted" },
+
+{ "text": "Emergence profile designed for support" },
+{ "text": "Provisionalization planned for shaping" },
+{ "text": "Material selection adjusted" },
+
+{ "text": "Risks explained to patient" },
+{ "text": "Recession possibility discussed" },
+{ "text": "Expectations aligned" },
+
+{ "text": "Biotype recorded in case plan" },
+{ "text": "Risk level documented" },
+{ "text": "Soft tissue plan noted" }
+
+
+]
+},
     {
-      "id": "nightguard_required",
-      "text": "Nightguard planned",
-      "phase": "delivery",
-      "visit": "v3",
-      "section": "post_op",
-      "assignedRole": "prosthodontist",
-      "type": "important",
-      "order": 23,
-      "conditions": {
-        "functional_risk": [
-          "bruxism"
-        ]
-      },
-      "severity": "warning",
-      "uiType": "alert"
-    },
+"id": "ctg_planned",
+"text": "Connective tissue graft planned",
+"phase": "planning",
+"visit": "v1",
+"section": "pre_op",
+"assignedRole": "periodontist",
+"type": "important",
+"order": 106,
+"conditions": {
+"modifiers.esthetic": true
+},
+"severity": "warning",
+"uiType": "alert",
+"subItems": [
+{ "text": "Thin biotype identified as indication" },
+{ "text": "High esthetic zone case identified" },
+{ "text": "Buccal bone deficiency or risk detected" },
+{ "text": "High smile line increasing esthetic demand" },
+
+
+{ "text": "Risk of gingival recession identified" },
+{ "text": "Risk of buccal collapse noted" },
+{ "text": "Risk of papilla loss considered" },
+
+{ "text": "Soft tissue thickness assessed" },
+{ "text": "Keratinized tissue width evaluated" },
+{ "text": "Recipient site suitability confirmed" },
+
+{ "text": "CTG timing decided (simultaneous or staged)" },
+{ "text": "Timing aligned with treatment plan" },
+
+{ "text": "Technique selected (envelope/tunnel/flap)" },
+{ "text": "Donor site identified" },
+{ "text": "Graft dimensions planned" },
+
+{ "text": "Goal defined: increase tissue thickness" },
+{ "text": "Emergence profile support planned" },
+{ "text": "Long-term esthetic stability targeted" },
+
+{ "text": "Procedure explained to patient" },
+{ "text": "Healing and additional steps discussed" },
+{ "text": "Consent obtained" },
+
+{ "text": "CTG included in surgical planning" },
+{ "text": "Materials and instruments prepared" },
+{ "text": "Team informed" },
+
+{ "text": "Plan documented in case record" },
+{ "text": "Rationale recorded" },
+{ "text": "Consent noted" }
+
+
+]
+},
     {
-      "id": "papilla_prediction",
-      "text": "Papilla prediction completed",
-      "phase": "planning",
-      "visit": "v1",
-      "section": "pre_op",
-      "assignedRole": "prosthodontist",
-      "type": "critical",
-      "order": 24,
-      "conditions": {
-        "modifiers.esthetic": true
-      },
-      "severity": "critical",
-      "uiType": "alert"
-    },
+"id": "bone_height_measured",
+"text": "Residual bone height measured",
+"phase": "planning",
+"visit": "v1",
+"section": "pre_op",
+"assignedRole": "implantologist",
+"type": "critical",
+"order": 107,
+"conditions": {
+"modifiers.sinus": true
+},
+"severity": "critical",
+"uiType": "alert",
+"subItems": [
+{ "text": "CBCT used for vertical bone measurement" },
+{ "text": "Measured from crest to sinus floor" },
+{ "text": "Multiple cross-sections evaluated" },
+{ "text": "Shortest bone height identified" },
+
+
+{ "text": "Measurement aligned with implant axis" },
+{ "text": "Perpendicular measurement ensured" },
+{ "text": "Distortion minimized" },
+
+{ "text": "Bone density assessed (D3/D4 common)" },
+{ "text": "Trabecular pattern evaluated" },
+{ "text": "Cortical thickness noted" },
+
+{ "text": "Sinus anatomy assessed" },
+{ "text": "Septa presence evaluated" },
+{ "text": "Membrane condition reviewed" },
+
+{ "text": ">10 mm → no sinus lift needed" },
+{ "text": "6–10 mm → crestal lift considered" },
+{ "text": "<6 mm → lateral lift required" },
+
+{ "text": "Implant length selected accordingly" },
+{ "text": "Augmentation need determined" },
+{ "text": "Surgical approach planned" },
+
+{ "text": "Insufficient height flagged as risk" },
+{ "text": "Perforation risk identified" },
+{ "text": "Stability challenges anticipated" },
+
+{ "text": "Findings explained to patient" },
+{ "text": "Sinus lift discussed if needed" },
+{ "text": "Cost/time implications explained" },
+
+{ "text": "Measurement recorded in mm" },
+{ "text": "Location documented" },
+{ "text": "Decision linked to measurement" }
+
+
+]
+},
     {
-      "id": "smile_line_assessed",
-      "text": "Smile line assessed",
-      "phase": "planning",
-      "visit": "v1",
-      "section": "pre_op",
-      "assignedRole": "prosthodontist",
-      "type": "important",
-      "order": 104,
-      "conditions": {
-        "modifiers.esthetic": true
-      },
-      "severity": "warning",
-      "uiType": "alert"
-    },
+"id": "sinus_approach_selected",
+"text": "Sinus approach selected",
+"phase": "planning",
+"visit": "v1",
+"section": "pre_op",
+"assignedRole": "implantologist",
+"type": "critical",
+"order": 108,
+"conditions": {
+"modifiers.sinus": true
+},
+"severity": "critical",
+"uiType": "alert",
+"subItems": [
+{ "text": "Residual bone height reviewed" },
+{ "text": "Measurement correlated with CBCT" },
+{ "text": "Decision based on minimum bone height" },
+
+
+{ "text": ">10 mm → no sinus lift needed" },
+{ "text": "6–10 mm → crestal sinus lift selected" },
+{ "text": "<6 mm → lateral sinus lift selected" },
+
+{ "text": "Sinus floor morphology considered" },
+{ "text": "Septa presence evaluated" },
+{ "text": "Membrane condition assessed" },
+
+{ "text": "Perforation risk evaluated" },
+{ "text": "Bone quality considered" },
+{ "text": "Stability challenges anticipated" },
+
+{ "text": "Implant length selected accordingly" },
+{ "text": "Simultaneous vs staged placement decided" },
+{ "text": "Primary stability considered" },
+
+{ "text": "Graft requirement identified" },
+{ "text": "Graft material selected" },
+{ "text": "Graft volume estimated" },
+
+{ "text": "Required instruments planned" },
+{ "text": "Technique selected" },
+{ "text": "Team prepared" },
+
+{ "text": "Procedure explained to patient" },
+{ "text": "Healing time discussed" },
+{ "text": "Risks explained" },
+{ "text": "Consent obtained" },
+
+{ "text": "Approach documented" },
+{ "text": "Rationale recorded" },
+{ "text": "Plan linked to case" }
+
+
+]
+},
     {
-      "id": "biotype_checked",
-      "text": "Soft tissue biotype assessed",
-      "phase": "planning",
-      "visit": "v1",
-      "section": "pre_op",
-      "assignedRole": "prosthodontist",
-      "type": "important",
-      "order": 105,
-      "conditions": {
-        "modifiers.esthetic": true
-      },
-      "severity": "warning",
-      "uiType": "alert"
-    },
+"id": "socket_integrity_checked",
+"text": "Socket wall integrity checked",
+"phase": "planning",
+"visit": "v1",
+"section": "pre_op",
+"assignedRole": "implantologist",
+"type": "critical",
+"order": 109,
+"conditions": {
+"modifiers.immediate": true
+},
+"severity": "critical",
+"uiType": "alert",
+"subItems": [
+{ "text": "Atraumatic extraction performed" },
+{ "text": "Socket walls preserved during extraction" },
+{ "text": "No excessive force used" },
+
+
+{ "text": "All socket walls inspected" },
+{ "text": "Buccal plate specifically evaluated" },
+{ "text": "No fracture or dehiscence present" },
+
+{ "text": "Buccal plate intact and continuous" },
+{ "text": "Buccal thickness assessed" },
+{ "text": "Thin plate flagged as risk" },
+
+{ "text": "Defects identified if present" },
+{ "text": "Defects classified" },
+{ "text": "Gap anticipated if present" },
+
+{ "text": "Apical bone available for stability" },
+{ "text": "Primary stability feasibility confirmed" },
+{ "text": "Anchorage beyond socket assessed" },
+
+{ "text": "Immediate placement feasibility confirmed" },
+{ "text": "Need for grafting identified" },
+{ "text": "Delayed placement considered if needed" },
+
+{ "text": "Graft planned if required" },
+{ "text": "Membrane considered" },
+{ "text": "Soft tissue support planned" },
+
+{ "text": "Risk of buccal collapse identified" },
+{ "text": "Esthetic risk noted" },
+{ "text": "Stability risk flagged" },
+
+{ "text": "Condition explained to patient" },
+{ "text": "Options discussed" },
+{ "text": "Expectations aligned" },
+
+{ "text": "Findings documented" },
+{ "text": "Defects recorded" },
+{ "text": "Decision linked to findings" }
+
+
+]
+},
     {
-      "id": "ctg_planned",
-      "text": "Connective tissue graft planned",
-      "phase": "planning",
-      "visit": "v1",
-      "section": "pre_op",
-      "assignedRole": "periodontist",
-      "type": "important",
-      "order": 106,
-      "conditions": {
-        "modifiers.esthetic": true
-      },
-      "severity": "warning",
-      "uiType": "alert"
-    },
+"id": "cross_arch_stability",
+"text": "Cross-arch stability planned",
+"phase": "planning",
+"visit": "v1",
+"section": "pre_op",
+"assignedRole": "prosthodontist",
+"type": "critical",
+"order": 110,
+"conditions": {
+"modifiers.full_arch": true
+},
+"severity": "critical",
+"uiType": "alert",
+"subItems": [
+{ "text": "Full-arch case confirmed" },
+{ "text": "Edentulous scenario identified" },
+{ "text": "Immediate vs delayed loading considered" },
+
+
+{ "text": "Adequate number of implants planned" },
+{ "text": "Implants distributed across arch" },
+{ "text": "AP spread optimized" },
+
+{ "text": "Posterior implants angled if needed" },
+{ "text": "Implant positions reduce cantilever" },
+{ "text": "Parallelism optimized" },
+
+{ "text": "Load distributed across implants" },
+{ "text": "No implant overloaded" },
+{ "text": "Cross-arch splinting planned" },
+
+{ "text": "Rigid framework planned" },
+{ "text": "Passive fit ensured" },
+{ "text": "Framework strength adequate" },
+
+{ "text": "Cantilever minimized" },
+{ "text": "Within safe limits" },
+{ "text": "Excess cantilever flagged" },
+
+{ "text": "Occlusal scheme designed" },
+{ "text": "Lateral forces minimized" },
+{ "text": "Implant protection ensured" },
+
+{ "text": "Immediate load splinting planned if needed" },
+{ "text": "Primary stability ensured" },
+{ "text": "Temporary prosthesis planned" },
+
+{ "text": "Load imbalance risk identified" },
+{ "text": "Flexure risk noted" },
+{ "text": "Screw/prosthesis risk considered" },
+
+{ "text": "Complexity explained to patient" },
+{ "text": "Long-term stability discussed" },
+{ "text": "Maintenance emphasized" },
+
+{ "text": "Plan documented" },
+{ "text": "Implant distribution recorded" },
+{ "text": "Framework plan noted" }
+
+
+]
+},
     {
-      "id": "bone_height_measured",
-      "text": "Residual bone height measured",
-      "phase": "planning",
-      "visit": "v1",
-      "section": "pre_op",
-      "assignedRole": "implantologist",
-      "type": "critical",
-      "order": 107,
-      "conditions": {
-        "modifiers.sinus": true
-      },
-      "severity": "critical",
-      "uiType": "alert"
-    },
+"id": "bop_checked",
+"text": "Bleeding on probing assessed",
+"phase": "maintenance",
+"visit": "v4",
+"section": "post_op",
+"assignedRole": "periodontist",
+"type": "critical",
+"order": 111,
+"severity": "critical",
+"uiType": "alert",
+"subItems": [
+{ "text": "Gentle probing performed (≤0.25 N force)" },
+{ "text": "All six sites assessed" },
+{ "text": "Appropriate probe used" },
+
+
+{ "text": "Bleeding presence noted" },
+{ "text": "Bleeding intensity classified" },
+{ "text": "Timing of bleeding observed" },
+
+{ "text": "Bleeding recorded per site" },
+{ "text": "Localized vs generalized identified" },
+
+{ "text": "Bleeding correlated with inflammation signs" },
+{ "text": "Mucositis identified if present" },
+{ "text": "Suppuration checked" },
+
+{ "text": "Healthy vs inflamed tissue interpreted" },
+{ "text": "Mucositis vs peri-implantitis risk flagged" },
+
+{ "text": "Plaque levels assessed" },
+{ "text": "Oral hygiene evaluated" },
+{ "text": "Prosthesis factors considered" },
+
+{ "text": "Oral hygiene reinforced" },
+{ "text": "Professional cleaning planned" },
+{ "text": "Early treatment initiated if needed" },
+
+{ "text": "Follow-up scheduled based on findings" },
+{ "text": "Monitoring interval adjusted" },
+
+{ "text": "Findings documented" },
+{ "text": "Sites and severity recorded" },
+{ "text": "Compared with previous records" }
+
+
+]
+},
     {
-      "id": "sinus_approach_selected",
-      "text": "Sinus approach selected",
-      "phase": "planning",
-      "visit": "v1",
-      "section": "pre_op",
-      "assignedRole": "implantologist",
-      "type": "critical",
-      "order": 108,
-      "conditions": {
-        "modifiers.sinus": true
-      },
-      "severity": "critical",
-      "uiType": "alert"
-    },
-    {
-      "id": "socket_integrity_checked",
-      "text": "Socket wall integrity checked",
-      "phase": "planning",
-      "visit": "v1",
-      "section": "pre_op",
-      "assignedRole": "implantologist",
-      "type": "critical",
-      "order": 109,
-      "conditions": {
-        "modifiers.immediate": true
-      },
-      "severity": "critical",
-      "uiType": "alert"
-    },
-    {
-      "id": "cross_arch_stability",
-      "text": "Cross-arch stability planned",
-      "phase": "planning",
-      "visit": "v1",
-      "section": "pre_op",
-      "assignedRole": "prosthodontist",
-      "type": "critical",
-      "order": 110,
-      "conditions": {
-        "modifiers.full_arch": true
-      },
-      "severity": "critical",
-      "uiType": "alert"
-    },
-    {
-      "id": "bop_checked",
-      "text": "Bleeding on probing assessed",
-      "phase": "maintenance",
-      "visit": "v4",
-      "section": "post_op",
-      "assignedRole": "periodontist",
-      "type": "critical",
-      "order": 111,
-      "severity": "critical",
-      "uiType": "alert"
-    },
-    {
-      "id": "bone_loss_checked",
-      "text": "Bone loss assessed radiographically",
-      "phase": "maintenance",
-      "visit": "v4",
-      "section": "post_op",
-      "assignedRole": "periodontist",
-      "type": "critical",
-      "order": 112,
-      "severity": "critical",
-      "uiType": "alert"
-    },
+"id": "bone_loss_checked",
+"text": "Bone loss assessed radiographically",
+"phase": "maintenance",
+"visit": "v4",
+"section": "post_op",
+"assignedRole": "periodontist",
+"type": "critical",
+"order": 112,
+"severity": "critical",
+"uiType": "alert",
+"subItems": [
+{ "text": "Standardized periapical radiograph taken" },
+{ "text": "Same angulation as baseline maintained" },
+{ "text": "Threads clearly visible" },
+
+
+{ "text": "Baseline radiograph retrieved" },
+{ "text": "Bone level compared with baseline" },
+{ "text": "Reference point used for comparison" },
+
+{ "text": "Bone level measured in mm" },
+{ "text": "Mesial and distal levels assessed" },
+{ "text": "Measurement calibrated accurately" },
+
+{ "text": "≤1.5 mm first-year loss acceptable" },
+{ "text": "≤0.2 mm annual loss acceptable" },
+{ "text": "Excessive loss flagged" },
+
+{ "text": "Pattern analyzed (horizontal/vertical)" },
+{ "text": "Localized vs generalized loss identified" },
+{ "text": "Progression evaluated" },
+
+{ "text": "Findings correlated with BOP" },
+{ "text": "Probing depth evaluated" },
+{ "text": "Peri-implantitis signs assessed" },
+
+{ "text": "Early bone loss flagged" },
+{ "text": "Peri-implantitis risk identified" },
+{ "text": "Implant prognosis evaluated" },
+
+{ "text": "Non-surgical intervention planned if needed" },
+{ "text": "Surgical intervention considered if required" },
+{ "text": "Occlusion and hygiene reviewed" },
+
+{ "text": "Follow-up interval adjusted" },
+{ "text": "Frequent monitoring planned if needed" },
+
+{ "text": "Measurements documented" },
+{ "text": "Comparison recorded" },
+{ "text": "Trend noted over time" }
+
+
+]
+},
     {
       "id": "use_patient_name",
       "text": "Use patient name at first interaction",
@@ -503,117 +1669,360 @@
       "uiType": "guidance"
     },
     {
-      "id": "component_system_match",
-      "text": "Verify all components belong to same implant system",
-      "phase": "planning",
-      "visit": "v1",
-      "section": "pre_op",
-      "assignedRole": "assistant",
-      "type": "critical",
-      "severity": "critical",
-      "uiType": "alert",
-      "order": 119
-    },
+"id": "component_system_match",
+"text": "Verify all components belong to same implant system",
+"phase": "planning",
+"visit": "v1",
+"section": "pre_op",
+"assignedRole": "assistant",
+"type": "critical",
+"severity": "critical",
+"uiType": "alert",
+"order": 119,
+"subItems": [
+{ "text": "Implant system brand identified" },
+{ "text": "Platform and connection type confirmed" },
+{ "text": "System details recorded in case file" },
+
+
+{ "text": "Abutments compatible with system" },
+{ "text": "Healing abutments match platform" },
+{ "text": "Impression copings compatible" },
+{ "text": "Prosthetic screws match system" },
+
+{ "text": "Connection type verified" },
+{ "text": "No cross-system components used" },
+{ "text": "Platform switching compatibility confirmed" },
+
+{ "text": "Packaging labels checked" },
+{ "text": "Lot and system details verified" },
+{ "text": "No mixed inventory used" },
+
+{ "text": "No mixing of different brands" },
+{ "text": "No incompatible third-party parts used" },
+{ "text": "Assistant aware of system specifics" },
+
+{ "text": "Component seats correctly" },
+{ "text": "No misfit or gap observed" },
+{ "text": "Screw engages smoothly" },
+
+{ "text": "Lab informed of correct system" },
+{ "text": "Prescription includes system details" },
+{ "text": "Lab components verified" },
+
+{ "text": "System recorded in case file" },
+{ "text": "Changes documented if any" },
+{ "text": "Traceability maintained" }
+
+
+]
+},
     {
-      "id": "motor_calibration",
-      "text": "Check implant motor calibration and settings",
-      "phase": "surgery",
-      "visit": "v1",
-      "section": "pre_op",
-      "assignedRole": "assistant",
-      "type": "critical",
-      "severity": "warning",
-      "uiType": "alert",
-      "order": 120
-    },
+"id": "motor_calibration",
+"text": "Check implant motor calibration and settings",
+"phase": "surgery",
+"visit": "v1",
+"section": "pre_op",
+"assignedRole": "assistant",
+"type": "critical",
+"severity": "critical",
+"uiType": "alert",
+"order": 120,
+"subItems": [
+{ "text": "Motor functioning properly" },
+{ "text": "No abnormal noise or vibration" },
+{ "text": "Foot control working smoothly" },
+
+
+{ "text": "Motor calibration verified" },
+{ "text": "Torque accuracy checked if possible" },
+{ "text": "Servicing status confirmed" },
+
+{ "text": "Drilling speed set correctly" },
+{ "text": "Pilot drill speed verified" },
+{ "text": "Final drill speed adjusted" },
+
+{ "text": "Torque limits set correctly" },
+{ "text": "Insertion torque verified" },
+{ "text": "No excessive torque applied" },
+
+{ "text": "Irrigation functioning properly" },
+{ "text": "Adequate saline flow confirmed" },
+{ "text": "No blockage in lines" },
+
+{ "text": "Handpiece securely connected" },
+{ "text": "No wobble or instability" },
+{ "text": "Correct handpiece used" },
+
+{ "text": "Correct system preset selected" },
+{ "text": "Manual settings verified" },
+{ "text": "Aligned with protocol" },
+
+{ "text": "No overheating risk" },
+{ "text": "Settings rechecked before drilling" },
+{ "text": "Assistant confirms readiness" },
+
+{ "text": "Settings verified before procedure" }
+
+
+]
+},
     {
-      "id": "irrigation_check",
-      "text": "Ensure irrigation flow adequate during drilling",
-      "phase": "surgery",
-      "visit": "v1",
-      "section": "intra_op",
-      "assignedRole": "assistant",
-      "type": "important",
-      "severity": "warning",
-      "uiType": "alert",
-      "order": 121
-    },
+"id": "irrigation_check",
+"text": "Ensure irrigation flow adequate during drilling",
+"phase": "surgery",
+"visit": "v1",
+"section": "intra_op",
+"assignedRole": "assistant",
+"type": "important",
+"severity": "warning",
+"uiType": "alert",
+"order": 121,
+"subItems": [
+{ "text": "Irrigation line connected properly" },
+{ "text": "Saline bottle positioned correctly" },
+{ "text": "Flow tested before drilling" },
+
+
+{ "text": "Continuous flow observed at drill tip" },
+{ "text": "No delay in irrigation on activation" },
+{ "text": "Adequate volume reaching site" },
+
+{ "text": "Assistant monitors flow continuously" },
+{ "text": "Bone remains visibly wet" },
+{ "text": "No dry drilling occurs" },
+
+{ "text": "Flow interruption detected immediately" },
+{ "text": "Drilling paused if flow stops" },
+{ "text": "Issue corrected before continuing" },
+
+{ "text": "Flow sufficient to prevent overheating" },
+{ "text": "No burn or dryness signs" },
+{ "text": "Speed matched with irrigation" },
+
+{ "text": "No blockage in line" },
+{ "text": "Nozzle aligned correctly" },
+{ "text": "Backup irrigation available" },
+
+{ "text": "Assistant responsible for monitoring" },
+{ "text": "Clear communication maintained" },
+
+{ "text": "Irrigation maintained during procedure" }
+
+
+]
+},
     {
-      "id": "isq_recorded",
-      "text": "ISQ value recorded",
-      "phase": "surgery",
-      "visit": "v1",
-      "section": "intra_op",
-      "assignedRole": "implantologist",
-      "type": "critical",
-      "severity": "normal",
-      "uiType": "action",
-      "order": 122
-    },
+"id": "isq_recorded",
+"text": "ISQ value recorded",
+"phase": "surgery",
+"visit": "v1",
+"section": "intra_op",
+"assignedRole": "implantologist",
+"type": "critical",
+"severity": "warning",
+"uiType": "action",
+"order": 122,
+"subItems": [
+{ "text": "ISQ measured using appropriate device" },
+{ "text": "SmartPeg correctly attached" },
+{ "text": "Measurement taken post-placement" },
+
+
+{ "text": "Measured in multiple directions" },
+{ "text": "Lowest value considered" },
+{ "text": "Readings consistent" },
+
+{ "text": "ISQ value recorded" },
+{ "text": "Implant site noted" },
+{ "text": "Baseline established" },
+
+{ "text": "≥70 high stability" },
+{ "text": "60–69 moderate stability" },
+{ "text": "<60 low stability flagged" },
+
+{ "text": "Immediate loading considered if high" },
+{ "text": "Delayed loading if moderate" },
+{ "text": "Extended healing if low" },
+
+{ "text": "Low ISQ flagged as risk" },
+{ "text": "Stability concerns documented" },
+{ "text": "Follow-up caution planned" },
+
+{ "text": "Repeat measurement planned if needed" },
+{ "text": "Healing monitored before loading" },
+
+{ "text": "Values recorded with date" },
+{ "text": "Used for future comparison" }
+
+
+]
+},
     {
-      "id": "stability_decision_matrix",
-      "text": "Use torque + ISQ to decide loading protocol",
-      "phase": "surgery",
-      "visit": "v1",
-      "section": "intra_op",
-      "assignedRole": "implantologist",
-      "type": "critical",
-      "severity": "critical",
-      "uiType": "alert",
-      "order": 123
-    },
+"id": "stability_decision_matrix",
+"text": "Use torque + ISQ to decide loading protocol",
+"phase": "surgery",
+"visit": "v1",
+"section": "intra_op",
+"assignedRole": "implantologist",
+"type": "critical",
+"severity": "critical",
+"uiType": "action",
+"order": 123,
+"subItems": [
+{ "text": "Insertion torque recorded (Ncm)" },
+{ "text": "ISQ value recorded" },
+
+
+{ "text": "Torque ≥35 Ncm considered high" },
+{ "text": "Torque 25–34 Ncm considered moderate" },
+{ "text": "Torque <25 Ncm considered low" },
+
+{ "text": "ISQ ≥70 high stability" },
+{ "text": "ISQ 60–69 moderate stability" },
+{ "text": "ISQ <60 low stability" },
+
+{ "text": "High torque + ISQ → immediate loading" },
+{ "text": "Mixed values → early/delayed loading" },
+{ "text": "Low stability → delayed loading" },
+
+{ "text": "Loading protocol selected accordingly" },
+{ "text": "Decision aligned with case conditions" },
+
+{ "text": "Low stability flagged for caution" },
+{ "text": "Avoid premature loading" },
+
+{ "text": "Values documented" },
+{ "text": "Decision recorded" }
+
+
+]
+},
     {
-      "id": "immediate_4_gate_check",
-      "text": "Verify 4 gates (socket walls, apical bone, stability, infection)",
-      "phase": "planning",
-      "visit": "v1",
-      "assignedRole": "implantologist",
-      "type": "critical",
-      "severity": "critical",
-      "uiType": "alert",
-      "order": 124,
-      "conditions": {
-        "modifiers.immediate": true
-      }
-    },
+"id": "immediate_4_gate_check",
+"text": "Verify 4 gates (socket walls, apical bone, stability, infection)",
+"phase": "planning",
+"visit": "v1",
+"assignedRole": "implantologist",
+"type": "critical",
+"severity": "critical",
+"section": "pre_op",
+"uiType": "alert",
+"order": 124,
+"conditions": {
+"modifiers.immediate": true
+},
+"subItems": [
+{ "text": "All socket walls intact" },
+{ "text": "Buccal plate preserved" },
+{ "text": "No major defect present" },
+
+
+{ "text": "Adequate apical bone available" },
+{ "text": "Palatal/lingual anchorage possible" },
+{ "text": "Primary stability achievable" },
+
+{ "text": "Expected torque ≥35 Ncm" },
+{ "text": "ISQ ≥65–70 if measured" },
+{ "text": "No mobility expected" },
+
+{ "text": "No acute infection present" },
+{ "text": "No active pathology" },
+{ "text": "Site clean after debridement" },
+
+{ "text": "All gates satisfied → immediate placement suitable" },
+{ "text": "Compromised gate → modify plan" },
+
+{ "text": "Risk flagged if any gate compromised" },
+{ "text": "Alternative approach considered" },
+
+{ "text": "Assessment documented" },
+{ "text": "Decision rationale recorded" }
+
+
+]
+},
     {
-      "id": "sinus_height_classification",
-      "text": "Classify bone height (6\u20139mm, 4\u20135mm, <4mm)",
-      "phase": "planning",
-      "visit": "v1",
-      "assignedRole": "implantologist",
-      "type": "critical",
-      "severity": "warning",
-      "uiType": "alert",
-      "order": 125,
-      "conditions": {
-        "modifiers.sinus": true
-      }
-    },
+"id": "sinus_height_classification",
+"text": "Classify bone height (>10mm, 6–10mm, 4–6mm, <4mm)",
+"phase": "planning",
+"visit": "v1",
+"assignedRole": "implantologist",
+"type": "critical",
+"severity": "warning",
+"section": "pre_op",
+"uiType": "action",
+"order": 125,
+"conditions": {
+"modifiers.sinus": true
+},
+"subItems": [
+{ "text": "Residual bone height measured using CBCT" },
+{ "text": "Lowest vertical height identified" },
+
+
+{ "text": ">10 mm → no sinus lift required" },
+{ "text": "6–10 mm → crestal sinus lift" },
+{ "text": "4–6 mm → borderline case" },
+{ "text": "<4 mm → lateral sinus lift required" },
+
+{ "text": "Approach selected based on classification" },
+{ "text": "Implant length planned accordingly" },
+
+{ "text": "Low height flagged as risk" },
+{ "text": "Stability concerns identified" },
+
+{ "text": "Classification recorded" },
+{ "text": "Linked to treatment plan" }
+
+
+]
+},
     {
-      "id": "verification_jig",
-      "text": "Verification jig checked for passive fit",
-      "phase": "impression",
-      "visit": "v2",
-      "assignedRole": "prosthodontist",
-      "type": "critical",
-      "severity": "critical",
-      "uiType": "alert",
-      "order": 126,
-      "conditions": {
-        "modifiers.full_arch": true
-      }
-    },
-    {
-      "id": "torque_3_stage",
-      "text": "3-stage torque protocol with 10 min re-torque",
-      "phase": "delivery",
-      "visit": "v3",
-      "assignedRole": "prosthodontist",
-      "type": "critical",
-      "severity": "critical",
-      "uiType": "alert",
-      "order": 127
-    }
-  ]
+"id": "verification_jig",
+"text": "Verification jig checked for passive fit",
+"phase": "impression",
+"visit": "v2",
+"assignedRole": "prosthodontist",
+"type": "critical",
+"severity": "critical",
+ "section": "intra_op",
+"uiType": "action",
+"order": 126,
+"conditions": {
+"modifiers.full_arch": true
+},
+"subItems": [
+{ "text": "Verification jig fabricated accurately" },
+{ "text": "Components securely connected" },
+{ "text": "No distortion present" },
+
+
+{ "text": "Jig seats completely intraorally" },
+{ "text": "No rocking observed" },
+{ "text": "No soft tissue interference" },
+
+{ "text": "One-screw test performed" },
+{ "text": "No lifting at other sites" },
+{ "text": "Passive fit confirmed" },
+
+{ "text": "Radiograph confirms seating" },
+{ "text": "No gap at interface" },
+
+{ "text": "No misfit detected" },
+{ "text": "No forced seating required" },
+{ "text": "No strain during tightening" },
+
+{ "text": "Impression repeated if needed" },
+{ "text": "Jig remade if required" },
+
+{ "text": "Master cast accuracy validated" },
+{ "text": "Proceed only after confirmation" },
+
+{ "text": "Result documented" },
+{ "text": "Corrections recorded" }
+
+
+]
+}  ]
 }
