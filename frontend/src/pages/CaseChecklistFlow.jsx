@@ -37,7 +37,7 @@ function normalizeGateData(gateData = {}) {
 
 function normalizeVisit(visitValue) {
   const visit = String(visitValue || '').toLowerCase();
-  return ['v1', 'v2', 'v3'].includes(visit) ? visit : null;
+  return ['v1', 'v2', 'v3', 'v4'].includes(visit) ? visit : null;
 }
 
 function normalizeCaseContext(caseContextValue) {
@@ -98,7 +98,7 @@ function ChecklistFlowScreen({ gateData, caseData, onEditGate, onChangeVisit, on
       <ChecklistPage
         state={state}
         dispatch={dispatch}
-        totalVisits={3}
+        totalVisits={4}
         onVisitNavigate={(visitNumber) => onChangeVisit(visitNumber, state)}
         onCompleteCase={() => onCompleteCase(state)}
       />

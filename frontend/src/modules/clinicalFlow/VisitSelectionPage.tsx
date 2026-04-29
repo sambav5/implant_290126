@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { deriveCaseContext, getRoutingVariant } from '@/lib/caseContext';
 
 type VisitOption = {
-  id: 'v1' | 'v2' | 'v3';
+  id: 'v1' | 'v2' | 'v3' | 'v4';
   title: string;
   subtitle: string;
 };
@@ -19,11 +19,12 @@ const visitOptions: VisitOption[] = [
   { id: 'v1', title: 'Visit 1', subtitle: 'Surgery' },
   { id: 'v2', title: 'Visit 2', subtitle: 'Impression' },
   { id: 'v3', title: 'Visit 3', subtitle: 'Delivery' },
+  { id: 'v4', title: 'Visit 4', subtitle: 'Maintenance' },
 ];
 
 function normalizeVisit(visitValue: unknown): VisitOption['id'] | null {
   const visit = String(visitValue || '').toLowerCase();
-  return visit === 'v1' || visit === 'v2' || visit === 'v3' ? visit : null;
+  return visit === 'v1' || visit === 'v2' || visit === 'v3' || visit === 'v4' ? visit : null;
 }
 
 function normalizeRoutingVariant(value: unknown): RoutingVariant | null {

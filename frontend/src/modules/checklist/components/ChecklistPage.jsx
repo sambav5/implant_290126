@@ -2,24 +2,24 @@ import { useEffect, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import WarningBanner from './WarningBanner';
 import PhaseTabs from './PhaseTabs';
-import ChecklistSection from './ChecklistSection';
+import ChecklistContainer from '@/components/checklist/ChecklistContainer';
 import RoleToggle from './RoleToggle';
 import InfoNote from './InfoNote';
-import CEOExperienceSection from './CEOExperienceSection';
 
 const phaseOrder = ['planning', 'surgery', 'delivery'];
 const visitLabels = {
   v1: 'Visit 1 — Surgery',
   v2: 'Visit 2 — Impression',
   v3: 'Visit 3 — Delivery',
+  v4: 'Visit 4 — Maintenance',
 };
 
 function normalizeVisit(visitValue) {
   const visit = String(visitValue || '').toLowerCase();
-  return ['v1', 'v2', 'v3'].includes(visit) ? visit : null;
+  return ['v1', 'v2', 'v3', 'v4'].includes(visit) ? visit : null;
 }
 
-export default function ChecklistPage({ state, dispatch, totalVisits = 3, onVisitNavigate, onCompleteCase }) {
+export default function ChecklistPage({ state, dispatch, totalVisits = 4, onVisitNavigate, onCompleteCase }) {
   const currentVisit = normalizeVisit(state.activeVisit);
   const currentVisitNumber = Number(currentVisit?.replace('v', '')) || 0;
   const filteredChecklist = useMemo(
@@ -50,26 +50,8 @@ export default function ChecklistPage({ state, dispatch, totalVisits = 3, onVisi
     }
   }, [currentVisit, dispatch, filteredChecklist.length, phases, state.activePhase, state.activeVisit]);
 
-  const sections = useMemo(() => {
-    return ['pre_op', 'intra_op', 'post_op']
-      .map((section) => ({
-        section,
-        items: filteredChecklist.filter(
-          (item) => item.phase === state.activePhase && item.section === section,
-        ),
-      }))
-      .filter((entry) => entry.items.length > 0);
-  }, [filteredChecklist, state.activePhase]);
-
+  const completedItems = state.responses || {};
   const onResponse = (id, value) => dispatch({ type: 'SET_RESPONSES', payload: { [id]: value } });
-  const isClinician = state.role === 'implantologist' || state.role === 'clinician';
-  const editableForItem = (item) => isClinician || item.assignedRole === state.role;
-
-  const visibleItems = state.myTasksOnly
-    ? sections
-      .map((entry) => ({ ...entry, items: entry.items.filter((item) => editableForItem(item)) }))
-      .filter((entry) => entry.items.length)
-    : sections;
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -103,28 +85,13 @@ export default function ChecklistPage({ state, dispatch, totalVisits = 3, onVisi
           onChange={(phase) => dispatch({ type: 'SET_ACTIVE_PHASE', payload: phase })}
         />
 
-        <div className="space-y-3">
-          {visibleItems.map((entry) => (
-            <ChecklistSection
-              key={entry.section}
-              section={entry.section}
-              items={entry.items}
-              responses={state.responses}
-              inlineWarnings={state.inlineWarnings}
-              editableForItem={editableForItem}
-              onChange={onResponse}
-            />
-          ))}
-          {!visibleItems.length && <p className="text-sm text-gray-500">No checklist items for this visit.</p>}
-        </div>
-
-        <CEOExperienceSection
-          items={filteredChecklist}
-          responses={state.responses}
-          inlineWarnings={state.inlineWarnings}
-          editableForItem={editableForItem}
-          onChange={onResponse}
-          myTasksOnly={state.myTasksOnly}
+        <ChecklistContainer
+          checklist={state.checklist}
+          caseContext={state.patientData?.caseContext}
+          activeVisit={currentVisit}
+          role={state.role}
+          completedItems={completedItems}
+          onToggleItem={onResponse}
         />
 
         <div className="mt-8 flex flex-col items-stretch gap-3 border-t border-divider pt-6 sm:flex-row sm:items-center sm:justify-between">
