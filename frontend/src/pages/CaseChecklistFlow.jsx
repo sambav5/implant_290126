@@ -50,7 +50,7 @@ function normalizeCaseContext(caseContextValue) {
   return deriveCaseContext({}, { legacyCaseType: legacyVariant });
 }
 
-function ChecklistFlowScreen({ gateData, caseData, onEditGate, onChangeVisit, onCompleteCase }) {
+function ChecklistFlowScreen({ gateData, caseData, visit, onVisitChange, onEditGate, onChangeVisit, onCompleteCase }) {
   const { state, dispatch } = useChecklist();
 
   useEffect(() => {
@@ -89,6 +89,18 @@ function ChecklistFlowScreen({ gateData, caseData, onEditGate, onChangeVisit, on
     };
   }, [dispatch]);
 
+  useEffect(() => {
+    if (visit) {
+      dispatch({ type: 'SET_ACTIVE_VISIT', payload: visit });
+    }
+  }, [dispatch, visit]);
+
+  useEffect(() => {
+    if (visit) {
+      console.log('Current visit:', visit);
+    }
+  }, [visit]);
+
   return (
     <div className="space-y-4">
       <div className="flex justify-end gap-2">
@@ -98,8 +110,10 @@ function ChecklistFlowScreen({ gateData, caseData, onEditGate, onChangeVisit, on
       <ChecklistPage
         state={state}
         dispatch={dispatch}
-        totalVisits={4}
-        onVisitNavigate={(visitNumber) => onChangeVisit(visitNumber, state)}
+        totalVisits={3}
+        activeVisit={visit}
+        onVisitChange={onVisitChange}
+        onChangeVisit={(visitNumber) => onChangeVisit(visitNumber, state)}
         onCompleteCase={() => onCompleteCase(state)}
       />
     </div>
@@ -112,6 +126,13 @@ export default function CaseChecklistFlow() {
   const location = useLocation();
   const [caseData, setCaseData] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [visit, setVisit] = useState(() => {
+    const fromRoute = normalizeVisit(location.state?.currentVisit);
+    if (fromRoute) return fromRoute;
+
+    const fromStorage = normalizeVisit(localStorage.getItem('currentVisit'));
+    return fromStorage || 'v1';
+  });
   const persistedChecklistState = useMemo(() => {
     try {
       return JSON.parse(localStorage.getItem(getChecklistStorageKey(id)) || 'null') || {};
@@ -123,6 +144,16 @@ export default function CaseChecklistFlow() {
     () => normalizeVisit(location.state?.currentVisit),
     [location.state?.currentVisit],
   );
+
+  useEffect(() => {
+    if (selectedVisit) {
+      setVisit(selectedVisit);
+    }
+  }, [selectedVisit]);
+
+  useEffect(() => {
+    localStorage.setItem('currentVisit', visit);
+  }, [visit]);
 
   const selectedCaseContext = useMemo(() => {
     const fromState = normalizeCaseContext(location.state?.caseContext);
@@ -176,37 +207,30 @@ export default function CaseChecklistFlow() {
       torque: null,
     },
     responses: persistedChecklistState.responses || {},
-    activeVisit: selectedVisit,
-  }), [gateData, persistedChecklistState.responses, selectedCaseContext, selectedVisit]);
+    activeVisit: visit,
+  }), [gateData, persistedChecklistState.responses, selectedCaseContext, visit]);
 
   const saveChecklist = useCallback((checklistState, nextVisit) => {
     const snapshot = {
       responses: checklistState?.responses || {},
-      lastVisit: nextVisit || selectedVisit,
+      lastVisit: nextVisit || visit,
       updatedAt: new Date().toISOString(),
     };
     localStorage.setItem(getChecklistStorageKey(id), JSON.stringify(snapshot));
-  }, [id, selectedVisit]);
+  }, [id, visit]);
 
   const goToVisit = useCallback((visitNumber, checklistState) => {
-    const nextVisit = `v${visitNumber}`;
-    saveChecklist(checklistState, nextVisit);
-    navigate(`/case/${id}/checklist`, {
-      state: { currentVisit: nextVisit, caseContext: selectedCaseContext, routingVariant: getRoutingVariant(selectedCaseContext) },
-    });
-  }, [id, navigate, saveChecklist, selectedCaseContext]);
+    const normalizedVisit = normalizeVisit(`v${visitNumber}`);
+    if (!normalizedVisit) return;
+    setVisit(normalizedVisit);
+    saveChecklist(checklistState, normalizedVisit);
+  }, [saveChecklist]);
 
   const handleCompleteCase = useCallback((checklistState) => {
-    saveChecklist(checklistState, selectedVisit);
+    saveChecklist(checklistState, visit);
     navigate(`/case/${id}`);
-  }, [id, navigate, saveChecklist, selectedVisit]);
+  }, [id, navigate, saveChecklist, visit]);
 
-  useEffect(() => {
-    if (loading) return;
-    if (!selectedVisit) {
-      navigate(`/case/${id}/checklist/visit`, { replace: true });
-    }
-  }, [id, loading, navigate, selectedVisit]);
 
   if (loading) {
     return (
@@ -216,9 +240,6 @@ export default function CaseChecklistFlow() {
     );
   }
 
-  if (!selectedVisit) {
-    return null;
-  }
 
   return (
     <AppLayout>
@@ -227,15 +248,17 @@ export default function CaseChecklistFlow() {
           <ChecklistFlowScreen
             gateData={gateData}
             caseData={{ ...caseData, selectedCaseContext }}
+            visit={visit}
+            onVisitChange={(visitNumber) => goToVisit(visitNumber)}
             onEditGate={() => navigate(`/case/${id}/gate`)}
             onChangeVisit={(visitNumber, checklistState) => {
               if (typeof visitNumber === 'number') {
                 goToVisit(visitNumber, checklistState);
                 return;
               }
-              saveChecklist(checklistState, selectedVisit);
+              saveChecklist(checklistState, visit);
               navigate(`/case/${id}/checklist/visit`, {
-                state: { currentVisit: selectedVisit, caseContext: selectedCaseContext, routingVariant: getRoutingVariant(selectedCaseContext) },
+                state: { currentVisit: visit, caseContext: selectedCaseContext, routingVariant: getRoutingVariant(selectedCaseContext) },
               });
             }}
             onCompleteCase={handleCompleteCase}
