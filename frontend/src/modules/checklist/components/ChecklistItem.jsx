@@ -5,22 +5,22 @@ export default function ChecklistItem({ item, value, editable, inlineWarning, on
   const isNumber = item.ui?.inputType === 'number';
 
   return (
-    <div className="flex items-center justify-between gap-3 py-2 border-b">
+    <div className="flex items-center justify-between gap-3 rounded-lg border border-[#D9D2C2] bg-[#F4EFE3] px-4 py-3 shadow-none">
       <div>
-        <p className="text-sm font-medium">{item.text}</p>
-        <p className="text-xs text-gray-500">{item.assignedRole} • {item.type}</p>
+        <p className="text-sm font-medium text-[#1A1A1A]">{item.text}</p>
+        <p className="text-xs text-[#6E6A60]">{item.assignedRole} • {item.type}</p>
         {inlineWarning && <p className="text-xs text-amber-700 mt-1">⚠ {inlineWarning}</p>}
       </div>
       {isNumber ? (
         <Input
           type="number"
-          className="w-24"
+          className="w-24 border-[#D9D2C2] bg-transparent text-[#1A1A1A]"
           disabled={!editable}
           value={value ?? ''}
           onChange={(event) => onChange(item.id, event.target.value)}
         />
       ) : (
-        <Checkbox disabled={!editable} checked={Boolean(value)} onCheckedChange={(checked) => onChange(item.id, Boolean(checked))} />
+        <Checkbox className="border-[#183328] text-[#183328] data-[state=checked]:bg-[#183328] data-[state=checked]:text-[#F4EFE3]" disabled={!editable} checked={Boolean(value)} onCheckedChange={(checked) => onChange(item.id, Boolean(checked))} />
       )}
     </div>
   );
