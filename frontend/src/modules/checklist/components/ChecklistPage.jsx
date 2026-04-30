@@ -19,8 +19,8 @@ function normalizeVisit(visitValue) {
   return ['v1', 'v2', 'v3', 'v4'].includes(visit) ? visit : null;
 }
 
-export default function ChecklistPage({ state, dispatch, totalVisits = 4, onVisitNavigate, onCompleteCase }) {
-  const currentVisit = normalizeVisit(state.activeVisit);
+export default function ChecklistPage({ state, dispatch, totalVisits = 4, activeVisit, onVisitChange, onChangeVisit, onCompleteCase }) {
+  const currentVisit = normalizeVisit(activeVisit || state.activeVisit);
   const currentVisitNumber = Number(currentVisit?.replace('v', '')) || 0;
   const filteredChecklist = useMemo(
     () => (currentVisit ? state.checklist.filter((item) => item.visit === currentVisit) : []),
@@ -58,8 +58,12 @@ export default function ChecklistPage({ state, dispatch, totalVisits = 4, onVisi
   }, [currentVisitNumber]);
 
   const goToVisit = (visitNumber) => {
-    if (!onVisitNavigate) return;
-    onVisitNavigate(visitNumber, state);
+    if (onVisitChange) {
+      onVisitChange(visitNumber);
+      return;
+    }
+    if (!onChangeVisit) return;
+    onChangeVisit(visitNumber, state);
   };
 
   return (
