@@ -6,16 +6,16 @@ function PhaseSection({ phase, sections, completedItems, canEditItem, onToggleIt
   const [openSections, setOpenSections] = useState(() => Object.keys(sections || {}).reduce((acc, key) => ({ ...acc, [key]: true }), {}));
 
   return (
-    <section id={`phase-${phase}`} className="space-y-3">
-      <h2 className="sticky top-0 z-10 bg-white/95 py-2 text-lg font-semibold capitalize backdrop-blur">{phase.replace('_', ' ')}</h2>
+    <section id={`phase-${phase}`} className="space-y-2">
+      <h2 className="sticky top-0 z-10 bg-[#F4EFE3]/95 py-2 text-lg font-semibold capitalize text-[#1A1A1A] backdrop-blur">{phase.replace('_', ' ')}</h2>
       {Object.entries(sections).map(([section, items]) => (
-        <div key={section} className="rounded-md border border-divider">
-          <button type="button" className="flex w-full items-center justify-between p-3 text-left" onClick={() => setOpenSections((prev) => ({ ...prev, [section]: !prev[section] }))}>
-            <span className="text-sm font-medium capitalize">{section.replace('_', ' ')}</span>
-            <span className="text-xs text-gray-500">{openSections[section] ? 'Hide' : 'Show'}</span>
+        <div key={section} className="rounded-lg border border-[#D9D2C2] bg-[#F4EFE3] shadow-none">
+          <button type="button" className="flex w-full items-center justify-between px-4 py-3 text-left" onClick={() => setOpenSections((prev) => ({ ...prev, [section]: !prev[section] }))}>
+            <span className="text-sm font-medium capitalize text-[#1A1A1A]">{section.replace('_', ' ')}</span>
+            <span className="text-xs text-[#6E6A60]">{openSections[section] ? 'Hide' : 'Show'}</span>
           </button>
           {openSections[section] && (
-            <div className="space-y-2 border-t border-divider p-3">
+            <div className="space-y-2 border-t border-[#D9D2C2] px-4 py-3">
               {items.map((item) => (
                 <ChecklistItem
                   key={item.id}
@@ -43,17 +43,17 @@ export default function ChecklistContainer({ checklist = [], caseContext, active
   const canEditItem = (item) => role === 'clinician' || role === 'implantologist' || item.assignedRole === role;
 
   return (
-    <div className="space-y-4">
-      <div className="rounded-md border border-divider p-3">
-        <div className="mb-2 flex items-center justify-between text-xs text-gray-600">
+    <div className="space-y-6">
+      <div className="rounded-lg border border-[#D9D2C2] bg-[#F4EFE3] p-4 shadow-none">
+        <div className="mb-2 flex items-center justify-between text-xs text-[#6E6A60]">
           <span>Progress</span><span>{done}/{total}</span>
         </div>
-        <div className="h-2 w-full overflow-hidden rounded-full bg-gray-100">
+        <div className="h-2 w-full overflow-hidden rounded-full bg-[#F4EFE3]">
           <div className="h-full bg-forest transition-all" style={{ width: `${progress}%` }} />
         </div>
       </div>
 
-      {!filteredItems.length && <p className="text-sm text-gray-500">No checklist items for this visit.</p>}
+      {!filteredItems.length && <p className="text-sm text-[#6E6A60]">No checklist items for this visit.</p>}
 
       {Object.entries(grouped).map(([phase, sections]) => (
         <PhaseSection
