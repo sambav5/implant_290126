@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Zap } from 'lucide-react';
+import { Zap } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -11,6 +11,7 @@ import { toast } from 'sonner';
 import { trackCaseCreated } from '@/lib/analytics';
 import axios from 'axios';
 import ContentContainer from '@/components/ui/ContentContainer';
+import AppHeader from '@/components/AppHeader';
 import AppLayout from '@/layout/AppLayout';
 import CaseSummary from '@/components/CaseSummary';
 
@@ -162,30 +163,7 @@ export default function NewCase() {
   });
 
   return (
-    <AppLayout headerContent={
-      <div className="px-4 py-4" style={{ background: 'var(--card)' }}>
-        <ContentContainer>
-          <div className="flex items-center gap-3">
-            <button
-              onClick={() => navigate(-1)}
-              className="p-2 -ml-2 rounded-lg touch-target"
-              style={{ background: 'transparent', border: 'none' }}
-              onMouseOver={(e) => (e.currentTarget.style.background = 'var(--border)')}
-              onMouseOut={(e) => (e.currentTarget.style.background = 'transparent')}
-              data-testid="back-btn"
-            >
-              <ArrowLeft className="h-5 w-5" style={{ color: 'var(--t2)' }} />
-            </button>
-            <div>
-              <h1 className="text-xl font-semibold" style={{ fontFamily: "'Lora', serif", color: 'var(--t1)' }}>New Case</h1>
-              <p className="text-sm" style={{ color: 'var(--t2)' }}>
-                {showSummary ? 'Step 3 of 4 • Case Summary' : 'Case Setup · Step 1 of 4'}
-              </p>
-            </div>
-          </div>
-        </ContentContainer>
-      </div>
-    }>
+    <AppLayout headerContent={<AppHeader title="New Case" />}>
 
       <ContentContainer className="pt-6 pb-8">
         {showSummary ? (
