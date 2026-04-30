@@ -2,16 +2,16 @@ import { Checkbox } from '@/components/ui/checkbox';
 import SubItemList from './SubItemList';
 
 const severityStyles = {
-  critical: 'border-red-500 bg-red-50',
-  warning: 'border-amber-400 bg-amber-50',
-  normal: 'border-divider bg-white',
+  critical: 'border-[#D9D2C2] bg-[#F4EFE3]',
+  warning: 'border-[#D9D2C2] bg-[#F4EFE3]',
+  normal: 'border-[#D9D2C2] bg-[#F4EFE3]',
 };
 
 const uiTypeStyles = {
   alert: 'ring-1 ring-red-200',
   action: '',
-  guidance: 'bg-slate-50 text-slate-600',
-  decision: 'ring-1 ring-indigo-200 bg-indigo-50',
+  guidance: 'text-[#6E6A60]',
+  decision: '',
 };
 
 export default function ChecklistItem({ item, completed, canEdit, onToggle }) {
@@ -20,21 +20,23 @@ export default function ChecklistItem({ item, completed, canEdit, onToggle }) {
   const showCheckbox = uiType !== 'guidance';
 
   return (
-    <div className={`rounded-md border p-3 ${severityStyles[severity] || severityStyles.normal} ${uiTypeStyles[uiType] || ''}`}>
-      <div className="flex items-start gap-3">
+    <div
+      className={`rounded-lg border p-3 shadow-none ${severityStyles[severity] || severityStyles.normal} ${uiTypeStyles[uiType] || ''} ${completed ? 'bg-[#E8DFC8]' : ''}`}
+    >
+      <div className="flex items-start justify-between gap-3">
         {showCheckbox && (
           <Checkbox
             checked={Boolean(completed)}
             disabled={!canEdit}
             onCheckedChange={(checked) => onToggle(item.id, Boolean(checked))}
-            className="mt-1"
+            className="mt-1 border-[#183328] text-[#183328] data-[state=checked]:bg-[#183328] data-[state=checked]:text-[#F4EFE3]"
           />
         )}
-        <div className="min-w-0">
-          <p className="text-sm font-medium">{item.text}</p>
-          <p className="text-xs text-gray-500 capitalize">{item.assignedRole} • {uiType} • {severity}</p>
+        <div className="min-w-0 flex-1">
+          <p className="text-sm font-medium text-[#1A1A1A]">{item.text}</p>
+          <p className="text-xs text-[#6E6A60] capitalize">{item.assignedRole} • {severity}</p>
           {uiType === 'decision' && item?.recommendation && (
-            <p className="mt-1 text-xs text-indigo-700">Recommended: {item.recommendation}</p>
+            <p className="mt-1 text-xs text-[#6E6A60]">Recommended: {item.recommendation}</p>
           )}
           <SubItemList subItems={item.subItems || []} />
         </div>
