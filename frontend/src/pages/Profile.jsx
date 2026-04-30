@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, User, Loader2, Save } from 'lucide-react';
+import { User, Loader2, Save } from 'lucide-react';
 import { toast } from 'sonner';
 import { Card } from '../components/ui/card';
 import { Button } from '../components/ui/button';
@@ -9,6 +9,7 @@ import { Label } from '../components/ui/label';
 import { userApi } from '../api/userApi';
 import ProfileMenu from '../components/ProfileMenu';
 import ContentContainer from '@/components/ui/ContentContainer';
+import AppHeader from '@/components/AppHeader';
 import AppLayout from '@/layout/AppLayout';
 
 const Profile = () => {
@@ -64,30 +65,7 @@ const Profile = () => {
   }
 
   return (
-    <AppLayout headerContent={
-      <div className="px-4 py-4" style={{background: 'var(--card)'}}>
-        <ContentContainer>
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <button
-                onClick={() => navigate(-1)}
-                className="p-2 -ml-2 rounded-lg touch-target"
-                style={{background: 'transparent', border: 'none'}}
-                onMouseOver={(e) => e.currentTarget.style.background = 'var(--border)'}
-                onMouseOut={(e) => e.currentTarget.style.background = 'transparent'}
-              >
-                <ArrowLeft className="h-5 w-5" style={{color: 'var(--t2)'}} />
-              </button>
-              <div>
-                <h1 className="text-xl font-semibold" style={{fontFamily: "'Lora', serif", color: 'var(--t1)'}}>My Profile</h1>
-                <p className="text-sm" style={{color: 'var(--t2)'}}>Manage your personal information</p>
-              </div>
-            </div>
-            <ProfileMenu />
-          </div>
-        </ContentContainer>
-      </div>
-    }>
+    <AppLayout headerContent={<AppHeader title="My Profile" rightContent={<ProfileMenu />} />}>
 
       <ContentContainer className="py-8">
         <Card className="p-6 space-y-6">
