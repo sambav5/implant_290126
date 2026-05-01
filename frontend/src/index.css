@@ -233,3 +233,34 @@
     }
   }
 }
+
+
+/* Remove ALL white backgrounds from UI components */
+.card,
+.list-group-item,
+.list-group,
+.table,
+.modal-content,
+.dropdown-menu,
+input,
+textarea,
+select {
+  background-color: transparent !important;
+}
+
+/* Prevent browser default white */
+div {
+  background-color: transparent;
+}
+
+.surface-soft {
+  background-color: #F4EFE3;
+}
+
+.surface-active {
+  background-color: #E8DFC8;
+}
+
+input[type="checkbox"] {
+  background-color: transparent;
+}
