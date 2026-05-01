@@ -1,12 +1,6 @@
 import { Checkbox } from '@/components/ui/checkbox';
 import SubItemList from './SubItemList';
 
-const severityStyles = {
-  critical: 'border-[#D9D2C2] bg-[#F4EFE3]',
-  warning: 'border-[#D9D2C2] bg-[#F4EFE3]',
-  normal: 'border-[#D9D2C2] bg-[#F4EFE3]',
-};
-
 const uiTypeStyles = {
   alert: 'ring-1 ring-red-200',
   action: '',
@@ -21,7 +15,7 @@ export default function ChecklistItem({ item, completed, canEdit, onToggle }) {
 
   return (
     <div
-      className={`rounded-lg border p-3 shadow-none ${severityStyles[severity] || severityStyles.normal} ${uiTypeStyles[uiType] || ''} ${completed ? 'bg-[#E8DFC8]' : ''}`}
+      className={`border border-[#D9D2C2] rounded-md px-4 py-3 shadow-none ${completed ? 'surface-active' : 'surface-soft'} ${uiTypeStyles[uiType] || ''}`}
     >
       <div className="flex items-start justify-between gap-3">
         {showCheckbox && (

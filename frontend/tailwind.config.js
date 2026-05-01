@@ -18,6 +18,9 @@ module.exports = {
 			charcoal: '#1A1A1A',
 			warmgray: '#6E6A60',
 			divider: '#D9D2C2',
+			surface: '#F4EFE3',
+			surfaceSoft: '#F4EFE3',
+			surfaceActive: '#E8DFC8',
 			background: 'hsl(var(--background))',
   			foreground: 'hsl(var(--foreground))',
   			card: {
