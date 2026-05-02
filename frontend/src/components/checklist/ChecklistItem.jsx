@@ -2,7 +2,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import SubItemList from './SubItemList';
 
 const uiTypeStyles = {
-  alert: 'ring-1 ring-red-200',
+  alert: '',
   action: '',
   guidance: 'text-[#6E6A60]',
   decision: '',
@@ -14,9 +14,7 @@ export default function ChecklistItem({ item, completed, canEdit, onToggle }) {
   const showCheckbox = uiType !== 'guidance';
 
   return (
-    <div
-      className={`border border-[#D9D2C2] rounded-md px-4 py-3 shadow-none ${completed ? 'surface-active' : 'surface-soft'} ${uiTypeStyles[uiType] || ''}`}
-    >
+    <div className={`flex items-start justify-between py-3 border-b border-[#D9D2C2] ${completed ? 'opacity-60' : ''} ${uiTypeStyles[uiType] || ''}`}>
       <div className="flex items-start justify-between gap-3">
         {showCheckbox && (
           <Checkbox
