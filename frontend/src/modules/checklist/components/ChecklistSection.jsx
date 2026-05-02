@@ -8,9 +8,9 @@ const labels = {
 
 export default function ChecklistSection({ section, items, responses, inlineWarnings, editableForItem, onChange }) {
   return (
-    <details open className="rounded-lg border border-[#D9D2C2] bg-[#F4EFE3] px-4 py-3 shadow-none">
-      <summary className="cursor-pointer font-medium text-[#1A1A1A]">{labels[section] || section}</summary>
-      <div className="mt-2 space-y-2">
+    <details open className="mt-4">
+      <summary className="cursor-pointer text-sm text-[#6E6A60]">▼ {labels[section] || section}</summary>
+      <div className="mt-2">
         {items.map((item) => (
           <ChecklistItem
             key={item.id}
