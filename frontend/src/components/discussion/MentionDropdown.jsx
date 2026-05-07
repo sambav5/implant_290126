@@ -2,11 +2,11 @@ export default function MentionDropdown({ open, people = [], roles = [], activeI
   if (!open) return null;
   const items = [...people, ...roles];
   if (!items.length) {
-    return <div className="absolute bottom-14 left-2 right-2 z-20 rounded-lg p-3 text-sm" style={{ background: 'var(--card)', border: '1px solid var(--border)', color: 'var(--t2)' }}>No matches found</div>;
+    return <div className="absolute left-0 right-0 bottom-[calc(100%+8px)] z-50 rounded-lg p-3 text-sm shadow-lg" style={{ background: 'var(--card)', border: '1px solid var(--border)', color: 'var(--t2)' }}>No matches found</div>;
   }
   let idx = -1;
   return (
-    <div role="listbox" className="absolute bottom-14 left-2 right-2 max-h-56 overflow-auto z-20 rounded-lg p-1" style={{ background: 'var(--card)', border: '1px solid var(--border)' }}>
+    <div role="listbox" className="absolute left-0 right-0 bottom-[calc(100%+8px)] max-h-56 overflow-auto z-50 rounded-lg p-1 shadow-lg" style={{ background: 'var(--card)', border: '1px solid var(--border)' }}>
       {!!people.length && <div className="px-2 py-1 text-xs font-semibold" style={{ color: 'var(--t2)' }}>People</div>}
       {people.map((item) => {
         idx += 1;
