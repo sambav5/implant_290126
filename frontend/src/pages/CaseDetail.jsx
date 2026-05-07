@@ -48,15 +48,15 @@ import ContentContainer from '@/components/ui/ContentContainer';
 import AppLayout from '@/layout/AppLayout';
 
 const statusConfig = {
-  planning: { label: 'Planning', className: 'status-planning px-2 py-1 text-xs rounded-md border mono', icon: FileText },
-  in_progress: { label: 'In Progress', className: 'status-in-progress px-2 py-1 text-xs rounded-md border mono', icon: Play },
-  completed: { label: 'Completed', className: 'status-completed px-2 py-1 text-xs rounded-md border mono', icon: CheckCircle2 },
+  planning: { label: 'Planning', className: 'bg-blue-100 text-blue-800', icon: FileText },
+  in_progress: { label: 'In Progress', className: 'bg-amber-100 text-amber-800', icon: Play },
+  completed: { label: 'Completed', className: 'bg-green-100 text-green-800', icon: CheckCircle2 },
 };
 
 const riskConfig = {
-  low: { label: 'Low Risk', className: 'risk-badge-low', color: 'var(--green)' },
-  moderate: { label: 'Moderate', className: 'risk-badge-moderate', color: 'var(--amber)' },
-  high: { label: 'High Risk', className: 'risk-badge-high', color: 'var(--red)' },
+  low: { label: 'Low Risk', className: 'bg-green-50 text-green-700 border-green-200', color: '#15803d' },
+  moderate: { label: 'Moderate', className: 'bg-amber-50 text-amber-700 border-amber-200', color: '#b45309' },
+  high: { label: 'High Risk', className: 'bg-red-50 text-red-700 border-red-200', color: '#b91c1c' },
 };
 
 
@@ -238,74 +238,71 @@ export default function CaseDetail() {
   return (
     <AppLayout
       headerContent={
-        <div className="px-4 py-4" style={{background: 'var(--card)'}}>
-        <ContentContainer>
-          <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between w-full">
+          <div className="flex items-center gap-4">
+            <button
+              onClick={() => navigate('/')}
+              className="p-2 -ml-2 rounded-lg text-[#6B7280] hover:bg-[#F3F4F6] hover:text-[#1A1A1A] transition-colors"
+              data-testid="back-btn"
+            >
+              <ArrowLeft className="h-5 w-5" />
+            </button>
             <div className="flex items-center gap-3">
-              <button
-                onClick={() => navigate('/')}
-                className="p-2 -ml-2 rounded-lg touch-target"
-                style={{background: 'transparent', border: 'none'}}
-                onMouseOver={(e) => e.currentTarget.style.background = 'var(--border)'}
-                onMouseOut={(e) => e.currentTarget.style.background = 'transparent'}
-                data-testid="back-btn"
-              >
-                <ArrowLeft className="h-5 w-5" style={{color: 'var(--t2)'}} />
-              </button>
-              <div className="min-w-0">
-                <h1 className="text-xl font-semibold truncate" style={{fontFamily: "'Lora', serif", color: 'var(--t1)'}}>{caseData.caseName}</h1>
-                <p className="text-sm mono" style={{color: 'var(--t2)'}}>Tooth #{caseData.toothNumber}</p>
-              </div>
+              <h1 className="text-xl font-bold text-[#1A1A1A] tracking-tight">{caseData.caseName}</h1>
+              <span className="px-2.5 py-0.5 rounded-full bg-[#F3F4F6] text-[#4B5563] text-sm font-medium">
+                Tooth {caseData.toothNumber}
+              </span>
             </div>
-            
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" data-testid="case-menu-btn">
-                  <MoreVertical className="h-5 w-5" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem onClick={() => handleDownloadPDF('dentist')}>
-                  <Download className="h-4 w-4 mr-2" />
-                  Download Dentist Copy
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => handleDownloadPDF('lab')}>
-                  <Download className="h-4 w-4 mr-2" />
-                  Download Lab Copy
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem 
-                  onClick={() => setDeleteDialogOpen(true)}
-                  className="text-destructive"
-                >
-                  <Trash2 className="h-4 w-4 mr-2" />
-                  Delete Case
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
           </div>
-        </ContentContainer>
-      </div>
+          
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon" className="text-[#6B7280] hover:bg-[#F3F4F6]" data-testid="case-menu-btn">
+                <MoreVertical className="h-5 w-5" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-48">
+              <DropdownMenuItem onClick={() => handleDownloadPDF('dentist')} className="cursor-pointer">
+                <Download className="h-4 w-4 mr-2" />
+                Dentist Copy
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => handleDownloadPDF('lab')} className="cursor-pointer">
+                <Download className="h-4 w-4 mr-2" />
+                Lab Copy
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem 
+                onClick={() => setDeleteDialogOpen(true)}
+                className="text-red-600 focus:text-red-600 focus:bg-red-50 cursor-pointer"
+              >
+                <Trash2 className="h-4 w-4 mr-2" />
+                Delete Case
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
       }
     >
       <ContentContainer className="py-6 space-y-6">
-        <div className="flex gap-2 overflow-x-auto pb-1">
+        <div className="flex gap-6 border-b border-[#E5E7EB] mb-6">
           {['Overview', 'Notes', 'Files', 'Social Media Post', 'Discussion', 'Reflection'].map((tab) => {
             const key = tab.toLowerCase().replace(/\s+/g, '-');
             const isActive = (activeTab === 'overview' && key === 'overview') || (activeTab === 'files' && key === 'files') || (activeTab === 'social-media-post' && key === 'social-media-post') || (activeTab === 'discussion' && key === 'discussion') || (activeTab === 'reflection' && key === 'reflection');
             if (key === 'social-media-post' && activeRole === ROLES.ASSISTANT) return null;
             return (
-              <Button
+              <button
                 key={key}
-                variant={isActive ? 'default' : 'outline'}
-                size="sm"
                 onClick={() => {
-                  if (key === 'overview' || key === 'files' || key === 'social-media-post' || key === 'discussion' || key === 'reflection') setActiveTab(key);
+                  if (['overview', 'files', 'social-media-post', 'discussion', 'reflection'].includes(key)) setActiveTab(key);
                   else toast.info(`${tab} tab is unchanged in this release.`);
                 }}
+                className={`pb-3 text-sm font-medium transition-colors relative ${isActive ? 'text-[#1F7A63]' : 'text-[#6B7280] hover:text-[#1A1A1A]'}`}
               >
                 {tab}
-              </Button>
+                {isActive && (
+                  <span className="absolute bottom-0 left-0 w-full h-0.5 bg-[#1F7A63] rounded-t-full" />
+                )}
+              </button>
             );
           })}
         </div>
@@ -321,89 +318,84 @@ export default function CaseDetail() {
         ) : (
           <>
         {/* Status & Risk Banner */}
-        <div className="card-clinical animate-slide-up">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-2">
-              <div className="flex items-center justify-center w-10 h-10 rounded-lg font-semibold text-sm" 
-                   style={{
-                     background: 'var(--green-1)', 
-                     color: 'var(--green)', 
-                     border: '1.5px solid var(--green-b)',
-                     fontFamily: "'Lora', serif"
-                   }}>
+        <div className="card-clinical">
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center gap-3">
+              <div className="flex items-center justify-center w-12 h-12 rounded-xl bg-[#F3F4F6] text-[#1A1A1A] font-semibold text-lg border border-[#E5E7EB]">
                 {caseData.toothNumber}
               </div>
-              <div>
-                <Badge className={status.className}>{status.label}</Badge>
-                {risk && (
-                  <Badge variant="outline" className={`ml-2 ${risk.className}`}>
-                    {risk.label}
-                  </Badge>
-                )}
+              <div className="flex flex-col gap-1">
+                <span className="text-sm text-[#6B7280] uppercase tracking-wider font-medium">Status</span>
+                <div className="flex items-center gap-2">
+                  <span className={`px-2.5 py-0.5 rounded-md text-sm font-medium ${status.className}`}>
+                    {status.label}
+                  </span>
+                  {risk && (
+                    <span className={`px-2.5 py-0.5 rounded-md text-sm font-medium border ${risk.className}`}>
+                      {risk.label}
+                    </span>
+                  )}
+                </div>
               </div>
             </div>
           </div>
           
           {/* Quick Info */}
-          <div className="grid grid-cols-2 gap-4 text-sm">
+          <div className="grid grid-cols-3 gap-6 text-sm bg-[#F9FAFB] p-4 rounded-lg border border-[#E5E7EB]">
             {caseData.optionalAge && (
               <div>
-                <span className="label-endo">Age:</span>
-                <span className="ml-2 font-medium" style={{color: 'var(--t1)'}}>{caseData.optionalAge} years</span>
+                <span className="text-[#6B7280] block mb-1">Age</span>
+                <span className="font-medium text-[#1A1A1A]">{caseData.optionalAge} years</span>
               </div>
             )}
             {caseData.optionalSex && (
               <div>
-                <span className="label-endo">Sex:</span>
-                <span className="ml-2 font-medium capitalize" style={{color: 'var(--t1)'}}>{caseData.optionalSex}</span>
+                <span className="text-[#6B7280] block mb-1">Sex</span>
+                <span className="font-medium text-[#1A1A1A] capitalize">{caseData.optionalSex}</span>
               </div>
             )}
             <div>
-              <span className="label-endo">Created:</span>
-              <span className="ml-2 font-medium" style={{color: 'var(--t1)'}}>
+              <span className="text-[#6B7280] block mb-1">Created</span>
+              <span className="font-medium text-[#1A1A1A]">
                 {new Date(caseData.createdAt).toLocaleDateString()}
               </span>
             </div>
           </div>
           
           {/* Status Change Buttons */}
-          <div className="flex gap-2 mt-4 pt-4" style={{borderTop: '1px solid var(--border)'}}>
+          <div className="flex gap-3 mt-6 pt-6 border-t border-[#E5E7EB]">
             {caseData.status === 'planning' && (
-              <Button
-                variant="outline"
-                size="sm"
+              <button
                 onClick={() => handleStatusChange('in_progress')}
-                className="flex-1 btn-clinical btn-secondary-endo"
+                className="flex-1 inline-flex justify-center items-center gap-2 bg-[#1F7A63] text-white py-2 px-4 rounded-lg font-medium hover:bg-[#17604D] transition-colors"
                 data-testid="start-treatment-btn"
               >
-                <Play className="h-4 w-4 mr-2" />
+                <Play className="h-4 w-4" />
                 Start Treatment
-              </Button>
+              </button>
             )}
             {caseData.status === 'in_progress' && (
-              <Button
-                variant="outline"
-                size="sm"
+              <button
                 onClick={() => handleStatusChange('completed')}
-                className="flex-1 btn-clinical btn-green-endo"
+                className="flex-1 inline-flex justify-center items-center gap-2 bg-white text-[#1F7A63] border border-[#1F7A63] py-2 px-4 rounded-lg font-medium hover:bg-[#1F7A63]/5 transition-colors"
                 data-testid="complete-case-btn"
               >
-                <CheckCircle2 className="h-4 w-4 mr-2" />
+                <CheckCircle2 className="h-4 w-4" />
                 Mark Complete
-              </Button>
+              </button>
             )}
             {caseData.status === 'completed' && caseData.feedback?.reflectionCompletedAt && (
-              <div className="flex items-center gap-2 text-sm" style={{color: 'var(--green)'}}>
+              <div className="flex items-center gap-2 text-sm text-green-600 bg-green-50 px-3 py-2 rounded-lg border border-green-200">
                 <CheckCircle2 className="h-4 w-4" />
-                <span className="mono" style={{fontSize: '10px', textTransform: 'uppercase'}}>Learning reflection completed</span>
+                <span className="font-medium">Learning reflection completed</span>
               </div>
             )}
           </div>
         </div>
 
-        <div className="card-clinical animate-slide-up stagger-1" data-testid="case-workflow-timeline">
-          <div className="flex items-center justify-between mb-3">
-            <h3 className="font-semibold" style={{ color: 'var(--t1)', fontFamily: "'Lora', serif" }}>Your Team</h3>
+        <div className="card-clinical" data-testid="case-workflow-timeline">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="font-semibold text-lg text-[#1A1A1A]">Your Team</h3>
             {activeRole === ROLES.CLINICIAN && !workflowEditMode && (
               <Button type="button" variant="outline" size="sm" onClick={handleStartWorkflowEdit}>
                 Edit Team
@@ -476,10 +468,10 @@ export default function CaseDetail() {
 
         {/* Risk Assessment (if available) */}
         {caseData.riskAssessment && (
-          <div className="card-clinical animate-slide-up stagger-1">
+          <div className="card-clinical bg-red-50/30 border-red-100">
             <div className="flex items-center gap-2 mb-3">
-              <Activity className="h-5 w-5" style={{color: risk.color}} />
-              <h3 className="font-semibold" style={{color: 'var(--t1)', fontFamily: "'Lora', serif"}}>Risk Assessment</h3>
+              <Activity className="h-5 w-5 text-red-600" />
+              <h3 className="font-semibold text-lg text-[#1A1A1A]">Risk Assessment</h3>
             </div>
             <p className="text-sm mb-3" style={{color: 'var(--t2)'}}>
               {caseData.riskAssessment.plainLanguageSummary}
@@ -497,24 +489,23 @@ export default function CaseDetail() {
           </div>
         )}
         
-        {/* Action Cards */}
-        <div className="space-y-3">
+        <div className="space-y-4">
           <button
             onClick={() => navigate(`/case/${id}/gate`)}
-            className="card-clinical-interactive w-full animate-slide-up stagger-2"
+            className="card-clinical-interactive w-full text-left"
             data-testid="gate-flow-btn"
           >
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-lg flex items-center justify-center" style={{background: 'var(--blue-1)'}}>
-                  <FileText className="h-5 w-5" style={{color: 'var(--blue)'}} />
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-xl flex items-center justify-center bg-blue-50 border border-blue-100">
+                  <FileText className="h-6 w-6 text-blue-600" />
                 </div>
-                <div className="text-left">
-                  <h3 className="font-semibold" style={{color: 'var(--t1)'}}>Case Intelligence</h3>
-                  <p className="text-sm" style={{color: 'var(--t2)'}}>Patient brief + adaptive checklist</p>
+                <div>
+                  <h3 className="font-semibold text-lg text-[#1A1A1A]">Case Intelligence</h3>
+                  <p className="text-sm text-[#6B7280]">Patient brief + adaptive checklist</p>
                 </div>
               </div>
-              <ChevronRight className="h-5 w-5" style={{color: 'var(--t3)'}} />
+              <ChevronRight className="h-5 w-5 text-[#9CA3AF]" />
             </div>
           </button>
 
@@ -546,32 +537,32 @@ export default function CaseDetail() {
           {caseData.timeline?.length > 0 && (
             <button
               onClick={() => setActivityModalOpen(true)}
-              className="card-clinical-interactive w-full animate-slide-up stagger-5"
+              className="card-clinical-interactive w-full text-left"
               data-testid="recent-activity-btn"
             >
               <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-lg flex items-center justify-center" style={{background: 'var(--card)', border: '1.5px solid var(--border)'}}>
-                    <Clock className="h-5 w-5" style={{color: 'var(--t2)'}} />
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 rounded-xl flex items-center justify-center bg-[#F3F4F6] border border-[#E5E7EB]">
+                    <Clock className="h-6 w-6 text-[#6B7280]" />
                   </div>
-                  <div className="text-left">
-                    <h3 className="font-semibold" style={{color: 'var(--t1)'}}>Recent Activity</h3>
-                    <p className="text-sm" style={{color: 'var(--t2)'}}>
+                  <div>
+                    <h3 className="font-semibold text-lg text-[#1A1A1A]">Recent Activity</h3>
+                    <p className="text-sm text-[#6B7280]">
                       {caseData.timeline.length} logged {caseData.timeline.length === 1 ? 'event' : 'events'}
                     </p>
                   </div>
                 </div>
-                <ChevronRight className="h-5 w-5" style={{color: 'var(--t3)'}} />
+                <ChevronRight className="h-5 w-5 text-[#9CA3AF]" />
               </div>
             </button>
           )}
         </div>
         
         {/* Disclaimer */}
-        <div className="p-4 rounded-lg" style={{background: 'var(--card)', border: '1.5px solid var(--border)'}}>
+        <div className="p-4 rounded-xl bg-gray-50 border border-gray-200">
           <div className="flex items-start gap-2">
-            <AlertTriangle className="h-4 w-4 shrink-0 mt-0.5" style={{color: 'var(--t3)'}} />
-            <p className="disclaimer-text">
+            <AlertTriangle className="h-5 w-5 shrink-0 mt-0.5 text-gray-400" />
+            <p className="text-sm text-gray-500">
               Seamless amplifies your judgment. You're always the operator.
             </p>
           </div>
@@ -585,43 +576,39 @@ export default function CaseDetail() {
         <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center">
           {/* Backdrop */}
           <div 
-            className="absolute inset-0"
-            style={{background: 'rgba(26, 25, 23, 0.6)'}}
+            className="absolute inset-0 bg-black/40 backdrop-blur-sm"
             onClick={() => setActivityModalOpen(false)}
           />
           
           {/* Modal Content */}
-          <div 
-            className="relative w-full sm:max-w-lg max-h-[80vh] overflow-hidden rounded-t-2xl sm:rounded-2xl animate-slide-up "
-            style={{background: '#FAFAF8', border: '1.5px solid var(--border)'}}
-          >
+          <div className="relative w-full sm:max-w-lg max-h-[80vh] overflow-hidden rounded-t-2xl sm:rounded-2xl bg-white shadow-xl animate-slide-up">
             {/* Header */}
-            <div className="sticky top-0 z-10 flex items-center justify-between p-4" style={{background: '#FAFAF8', borderBottom: '1px solid var(--border)'}}>
-              <div className="flex items-center gap-2">
-                <Clock className="h-5 w-5" style={{color: 'var(--t2)'}} />
-                <h2 className="text-lg font-semibold" style={{fontFamily: "'Lora', serif", color: 'var(--t1)'}}>Recent Activity</h2>
+            <div className="sticky top-0 z-10 flex items-center justify-between p-4 bg-white border-b border-[#E5E7EB]">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-[#F3F4F6] rounded-lg">
+                  <Clock className="h-5 w-5 text-[#6B7280]" />
+                </div>
+                <h2 className="text-lg font-semibold text-[#1A1A1A]">Recent Activity</h2>
               </div>
               <button
                 onClick={() => setActivityModalOpen(false)}
-                className="p-2 rounded-lg touch-target"
-                style={{background: 'transparent'}}
-                onMouseOver={(e) => e.currentTarget.style.background = 'var(--border)'}
-                onMouseOut={(e) => e.currentTarget.style.background = 'transparent'}
+                className="p-2 rounded-lg text-[#6B7280] hover:bg-[#F3F4F6] transition-colors"
               >
-                <X className="h-5 w-5" style={{color: 'var(--t2)'}} />
+                <X className="h-5 w-5" />
               </button>
             </div>
             
             {/* Activity List */}
-            <div className="p-4 overflow-y-auto" style={{maxHeight: 'calc(80vh - 64px)', background: '#FAFAF8'}}>
+            <div className="p-4 overflow-y-auto" style={{maxHeight: 'calc(80vh - 73px)'}}>
               <div className="space-y-4">
                 {caseData.timeline.slice().reverse().map((entry) => (
-                  <div key={entry.id} className="timeline-entry">
-                    <p className="text-sm font-medium" style={{color: 'var(--t1)'}}>{entry.action}</p>
+                  <div key={entry.id} className="relative pl-6 pb-4 border-l-2 border-[#E5E7EB] last:border-transparent last:pb-0">
+                    <div className="absolute w-3 h-3 bg-[#E5E7EB] rounded-full -left-[7px] top-1.5 border-2 border-white" />
+                    <p className="text-sm font-medium text-[#1A1A1A]">{entry.action}</p>
                     {entry.details && (
-                      <p className="text-xs" style={{color: 'var(--t2)'}}>{entry.details}</p>
+                      <p className="text-sm text-[#6B7280] mt-1 bg-[#F9FAFB] p-2 rounded-md">{entry.details}</p>
                     )}
-                    <p className="text-xs mono mt-1" style={{color: 'var(--t3)'}}>
+                    <p className="text-xs text-[#9CA3AF] mt-2">
                       {new Date(entry.timestamp).toLocaleString()}
                     </p>
                   </div>

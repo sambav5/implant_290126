@@ -28,6 +28,10 @@ class DiscussionService:
         # Support BOTH old and new case structures
         members = set()
         
+        # Clinic owners always have access to cases in their clinic
+        if case.get("clinic_id") == user_id:
+            return case
+            
         # New structure: Uses ID fields
         if "created_by_clinician_id" in case:
             print(f"[DEBUG] Using NEW structure")
@@ -38,6 +42,14 @@ class DiscussionService:
                 members.add(case.get("assigned_prosthodontist_id"))
             if case.get("assigned_assistant_id"):
                 members.add(case.get("assigned_assistant_id"))
+            if case.get("assigned_periodontist_id"):
+                members.add(case.get("assigned_periodontist_id"))
+            
+            # Check stage assignments
+            stage_assignments = await self.db.case_stage_assignments.find({"case_id": case_id}).to_list(length=100)
+            for assignment in stage_assignments:
+                members.add(assignment.get("user_id"))
+                
             print(f"[DEBUG] Members: {members}")
         
         # Old structure: caseTeam with names - anyone with valid auth can access
@@ -51,8 +63,21 @@ class DiscussionService:
         # Remove None/empty values
         members.discard(None)
         members.discard("")
+
+        # Get all IDs associated with this user
+        user_ids = {user_id}
+        user = await self.users.find_one({"id": user_id}, {"_id": 0})
+        if user and user.get("mobile_number"):
+            mobile = user.get("mobile_number")
+            clean_number = mobile.lstrip('+').lstrip('91') if mobile.startswith('+91') else mobile
+            team_members = await self.team_members.find(
+                {"mobile_number": {"$regex": f"{clean_number}$"}},
+                {"_id": 0, "id": 1}
+            ).to_list(length=100)
+            for tm in team_members:
+                user_ids.add(tm["id"])
         
-        if user_id not in members:
+        if not user_ids.intersection(members):
             # If user is not in members but case uses old structure, allow access
             if "caseTeam" in case and "created_by_clinician_id" not in case:
                 print(f"[DEBUG] Fallback: OLD structure detected - allowing access")

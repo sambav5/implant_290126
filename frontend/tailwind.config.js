@@ -13,47 +13,47 @@ module.exports = {
   			sm: 'calc(var(--radius) - 4px)'
   		},
   		colors: {
-			forest: '#183328',
-			champagne: '#E8DFC8',
-			charcoal: '#1A1A1A',
-			warmgray: '#6E6A60',
-			divider: '#D9D2C2',
-			surface: '#F4EFE3',
-			surfaceSoft: '#F4EFE3',
-			surfaceActive: '#E8DFC8',
-			background: 'hsl(var(--background))',
-  			foreground: 'hsl(var(--foreground))',
+			forest: '#1F7A63', /* Mapped old primary to new primary */
+			champagne: '#F7F9F8', /* Mapped old bg to new bg */
+			charcoal: '#1A1A1A', /* Mapped old text to new text */
+			warmgray: '#6B7280', /* Mapped old muted to new muted */
+			divider: '#E5E7EB', /* Softer borders */
+			surface: '#FFFFFF',
+			surfaceSoft: '#F9FAFB',
+			surfaceActive: '#F3F4F6',
+			background: '#F7F9F8',
+  			foreground: '#1A1A1A',
   			card: {
-  				DEFAULT: 'hsl(var(--card))',
-  				foreground: 'hsl(var(--card-foreground))'
+  				DEFAULT: '#FFFFFF',
+  				foreground: '#1A1A1A'
   			},
   			popover: {
-  				DEFAULT: 'hsl(var(--popover))',
-  				foreground: 'hsl(var(--popover-foreground))'
+  				DEFAULT: '#FFFFFF',
+  				foreground: '#1A1A1A'
   			},
   			primary: {
-  				DEFAULT: 'hsl(var(--primary))',
-  				foreground: 'hsl(var(--primary-foreground))'
+  				DEFAULT: '#1F7A63',
+  				foreground: '#FFFFFF'
   			},
   			secondary: {
-  				DEFAULT: 'hsl(var(--secondary))',
-  				foreground: 'hsl(var(--secondary-foreground))'
+  				DEFAULT: '#F3F4F6',
+  				foreground: '#111827'
   			},
   			muted: {
-  				DEFAULT: 'hsl(var(--muted))',
-  				foreground: 'hsl(var(--muted-foreground))'
+  				DEFAULT: '#F3F4F6',
+  				foreground: '#6B7280'
   			},
   			accent: {
-  				DEFAULT: 'hsl(var(--accent))',
-  				foreground: 'hsl(var(--accent-foreground))'
+  				DEFAULT: '#F3F4F6',
+  				foreground: '#111827'
   			},
   			destructive: {
-  				DEFAULT: 'hsl(var(--destructive))',
-  				foreground: 'hsl(var(--destructive-foreground))'
+  				DEFAULT: '#EF4444',
+  				foreground: '#FFFFFF'
   			},
-  			border: 'hsl(var(--border))',
-  			input: 'hsl(var(--input))',
-  			ring: 'hsl(var(--ring))',
+  			border: '#E5E7EB',
+  			input: '#E5E7EB',
+  			ring: '#1F7A63',
   			chart: {
   				'1': 'hsl(var(--chart-1))',
   				'2': 'hsl(var(--chart-2))',
@@ -63,7 +63,7 @@ module.exports = {
   			}
   		},
   		fontFamily: {
-			serif: ['Libre Baskerville', 'serif'],
+			serif: ['Inter', 'sans-serif'], /* Force sans everywhere */
 			sans: ['Inter', 'sans-serif']
 		},
 		keyframes: {

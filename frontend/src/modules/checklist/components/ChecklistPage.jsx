@@ -96,26 +96,30 @@ export default function ChecklistPage({ state, dispatch, totalVisits = 4, active
           role={state.role}
           completedItems={completedItems}
           onToggleItem={onResponse}
+          activePhase={state.activePhase}
+          myTasksOnly={state.myTasksOnly}
         />
 
-        <div className="mt-8 flex flex-col items-stretch gap-3 border-t border-divider pt-6 sm:flex-row sm:items-center sm:justify-between">
-          {currentVisitNumber > 1 ? (
-            <Button className="w-full sm:w-auto" variant="outline" onClick={() => goToVisit(currentVisitNumber - 1)}>
-              ← Previous Visit
-            </Button>
-          ) : (
-            <div />
-          )}
+        <div className="fixed bottom-0 left-0 right-0 z-20 bg-white border-t border-[#E5E7EB] p-4 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] md:pl-64">
+          <div className="max-w-6xl mx-auto w-full flex items-center justify-between">
+            {currentVisitNumber > 1 ? (
+              <Button className="w-full sm:w-auto" variant="outline" onClick={() => goToVisit(currentVisitNumber - 1)}>
+                ← Previous Visit
+              </Button>
+            ) : (
+              <div />
+            )}
 
-          {currentVisitNumber < totalVisits ? (
-            <Button className="w-full sm:w-auto" onClick={() => goToVisit(currentVisitNumber + 1)}>
-              Next Visit →
-            </Button>
-          ) : (
-            <Button className="w-full sm:w-auto" onClick={onCompleteCase}>
-              Complete Treatment
-            </Button>
-          )}
+            {currentVisitNumber < totalVisits ? (
+              <Button className="w-full sm:w-auto bg-[#1F7A63] hover:bg-[#17604D] text-white" onClick={() => goToVisit(currentVisitNumber + 1)}>
+                Next Visit →
+              </Button>
+            ) : (
+              <Button className="w-full sm:w-auto bg-[#1F7A63] hover:bg-[#17604D] text-white" onClick={onCompleteCase}>
+                Complete Treatment
+              </Button>
+            )}
+          </div>
         </div>
 
       </div>

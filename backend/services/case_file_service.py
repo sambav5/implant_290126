@@ -51,16 +51,41 @@ class CaseFileService:
         if not case:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Case not found")
 
+        # Clinic owners always have access to cases in their clinic
+        if case.get("clinic_id") == user_id:
+            return case
+
         assigned_ids = {
             case.get("created_by_clinician_id"),
             case.get("assigned_implantologist_id"),
             case.get("assigned_prosthodontist_id"),
             case.get("assigned_assistant_id"),
+            case.get("assigned_periodontist_id"),
         }
+        
+        # Check stage assignments
+        stage_assignments = await self.db.case_stage_assignments.find({"case_id": case_id}).to_list(length=100)
+        for assignment in stage_assignments:
+            assigned_ids.add(assignment.get("user_id"))
+            
         assigned_ids.discard(None)
+        assigned_ids.discard("")
+
+        # Get all possible IDs for the user
+        user_ids = {user_id}
+        user = await self.db.users.find_one({"id": user_id}, {"_id": 0})
+        if user and user.get("mobile_number"):
+            mobile = user.get("mobile_number")
+            clean_number = mobile.lstrip('+').lstrip('91') if mobile.startswith('+91') else mobile
+            team_members = await self.db.team_members.find(
+                {"mobile_number": {"$regex": f"{clean_number}$"}},
+                {"_id": 0, "id": 1}
+            ).to_list(length=100)
+            for tm in team_members:
+                user_ids.add(tm["id"])
 
         # Backward compatibility: legacy cases may not carry assignment metadata.
-        if assigned_ids and user_id not in assigned_ids:
+        if assigned_ids and not user_ids.intersection(assigned_ids):
             raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Access denied for this case")
 
         return case

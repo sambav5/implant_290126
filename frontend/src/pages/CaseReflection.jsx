@@ -93,28 +93,25 @@ export default function CaseReflection() {
   return (
     <AppLayout
       headerContent={
-        <div className="px-4 py-4" style={{ background: 'var(--card)' }}>
-          <ContentContainer>
-            <div className="flex items-center gap-3">
-              <button
-                onClick={() => navigate(`/case/${caseId}`)}
-                className="p-2 -ml-2 rounded-lg touch-target"
-                style={{ background: 'transparent', border: 'none' }}
-              >
-                <ArrowLeft className="h-5 w-5" style={{ color: 'var(--t2)' }} />
-              </button>
-              <div>
-                <h1 className="text-xl font-semibold" style={{ fontFamily: "'Lora', serif", color: 'var(--t1)' }}>Case Reflection</h1>
-                <p className="text-sm" style={{ color: 'var(--t2)' }}>Capture insights to improve future outcomes</p>
-              </div>
+        <div className="flex items-center justify-between px-6 py-4 bg-white border-b border-[#E5E7EB]">
+          <div className="flex items-center gap-4">
+            <button
+              onClick={() => navigate(`/case/${caseId}`)}
+              className="p-2 -ml-2 rounded-lg text-[#6B7280] hover:bg-[#F3F4F6] hover:text-[#1A1A1A] transition-colors"
+            >
+              <ArrowLeft className="h-5 w-5" />
+            </button>
+            <div>
+              <h1 className="text-xl font-bold text-[#1A1A1A] tracking-tight">Case Reflection</h1>
+              <p className="text-sm text-[#6B7280]">Capture insights to improve future outcomes</p>
             </div>
-          </ContentContainer>
+          </div>
         </div>
       }
       footerActions={
         canEdit ? (
           <ContentContainer>
-            <Button onClick={handleSave} disabled={saving} className="w-full btn-clinical btn-primary-endo min-h-[44px]">
+            <Button onClick={handleSave} disabled={saving} className="w-full bg-[#1F7A63] hover:bg-[#17604D] text-white min-h-[44px]">
               {saving ? 'Saving...' : 'Save Reflection'}
             </Button>
           </ContentContainer>
@@ -123,34 +120,37 @@ export default function CaseReflection() {
     >
       <ContentContainer className="py-6 space-y-6">
         {!isCaseCompleted && (
-          <div className="p-3 rounded-lg text-sm" style={{ background: 'var(--amber-1)', color: 'var(--amber)' }}>
-            Reflection unlocks after case completion.
+          <div className="p-4 rounded-xl bg-amber-50 text-amber-800 border border-amber-200">
+            <p className="text-sm font-medium">Reflection unlocks after case completion.</p>
           </div>
         )}
 
         {!isClinician && (
-          <div className="p-3 rounded-lg text-sm" style={{ background: 'var(--blue-1)', color: 'var(--blue)' }}>
-            Read-only view: only clinicians can edit this reflection.
+          <div className="p-4 rounded-xl bg-blue-50 text-blue-800 border border-blue-200">
+            <p className="text-sm font-medium">Read-only view: only clinicians can edit this reflection.</p>
           </div>
         )}
 
-        {[
-          ['wentWell', '1. What went well?'],
-          ['issues', '2. What did not go as expected?'],
-          ['improvements', '3. What could have been done better?'],
-          ['keyLearning', '4. Key clinical learning (optional structured checklist)'],
-          ['repeatChange', '5. Would you change your plan if repeating this case? (Yes/No + text)'],
-        ].map(([key, label]) => (
-          <div className="space-y-2" key={key}>
-            <Label className="text-sm font-medium" style={{ color: 'var(--t1)' }}>{label}</Label>
-            <Textarea
-              value={reflection[key]}
-              onChange={(e) => setReflection((prev) => ({ ...prev, [key]: e.target.value }))}
-              className="min-h-[110px] input-clinical"
-              disabled={!canEdit}
-            />
-          </div>
-        ))}
+        <div className="card-clinical space-y-6">
+          {[
+            ['wentWell', '1. What went well?'],
+            ['issues', '2. What did not go as expected?'],
+            ['improvements', '3. What could have been done better?'],
+            ['keyLearning', '4. Key clinical learning'],
+            ['repeatChange', '5. Would you change your plan if repeating this case?'],
+          ].map(([key, label]) => (
+            <div className="space-y-2" key={key}>
+              <Label className="text-sm font-semibold text-[#1A1A1A]">{label}</Label>
+              <Textarea
+                value={reflection[key]}
+                onChange={(e) => setReflection((prev) => ({ ...prev, [key]: e.target.value }))}
+                className="min-h-[110px] bg-[#F9FAFB] border-[#E5E7EB] focus:bg-white focus:border-[#1F7A63] focus:ring-[#1F7A63]"
+                disabled={!canEdit}
+                placeholder={canEdit ? 'Type your response here...' : 'No response provided.'}
+              />
+            </div>
+          ))}
+        </div>
       </ContentContainer>
     </AppLayout>
   );

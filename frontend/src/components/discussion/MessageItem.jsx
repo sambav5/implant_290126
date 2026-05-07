@@ -27,17 +27,17 @@ function renderMentions(text, mentions = []) {
 
 export default function MessageItem({ message, showSender, onReply, onReact, onDelete, canDelete }) {
   return (
-    <div className="px-4 py-2">
+    <div className="px-6 py-3 hover:bg-[#F9FAFB] transition-colors group">
       {showSender && (
-        <div className="text-xs mb-1" style={{ color: 'var(--t2)' }}>
-          <span className="font-semibold" style={{ color: 'var(--t1)' }}>{message.sender_name}</span> ({message.sender_role}) • {new Date(message.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+        <div className="text-xs mb-1 text-[#6B7280]">
+          <span className="font-semibold text-[#1A1A1A]">{message.sender_name}</span> ({message.sender_role}) • {new Date(message.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
         </div>
       )}
-      <div className="text-sm" style={{ color: 'var(--t1)' }}>{message.deleted ? <i>{message.message}</i> : renderMentions(message.message, message.mention_entities || message.mentions)}</div>
-      <div className="flex items-center gap-3 mt-1 text-xs" style={{ color: 'var(--t2)' }}>
-        <button onClick={onReply}>Reply</button>
-        {!!message.reply_count && <button onClick={onReply}>{message.reply_count} replies</button>}
-        {canDelete && !message.deleted && <button onClick={onDelete}>Delete</button>}
+      <div className="text-sm text-[#1A1A1A]">{message.deleted ? <i className="text-[#9CA3AF]">This message was deleted</i> : renderMentions(message.message, message.mention_entities || message.mentions)}</div>
+      <div className="flex items-center gap-4 mt-2 text-xs font-medium text-[#6B7280] opacity-0 group-hover:opacity-100 transition-opacity">
+        <button className="hover:text-[#1A1A1A] transition-colors" onClick={onReply}>Reply</button>
+        {!!message.reply_count && <button className="hover:text-[#1A1A1A] transition-colors" onClick={onReply}>{message.reply_count} replies</button>}
+        {canDelete && !message.deleted && <button className="hover:text-red-600 transition-colors" onClick={onDelete}>Delete</button>}
       </div>
       <ReactionBar reactions={message.reactions} onReact={onReact} />
     </div>

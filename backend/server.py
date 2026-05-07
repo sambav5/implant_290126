@@ -28,6 +28,15 @@ db = client[os.environ['DB_NAME']]
 # Create the main app
 app = FastAPI()
 
+# Add CORS middleware
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Update this to specific origins in production
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 # Store database in app state for auth routes to access
 app.state.db = db
 

@@ -53,214 +53,53 @@
 
 @layer components {
   .app-shell {
-    @apply grid;
-    grid-template-columns: 240px minmax(0, 1fr);
-    min-height: 100vh;
-    background: var(--color-champagne);
+    @apply flex h-screen bg-[#F7F9F8] overflow-hidden w-full;
   }
 
   .app-sidebar {
-    width: 240px;
-    background: var(--color-forest);
-    color: var(--color-champagne);
-    padding: 32px 24px;
-    position: relative;
-    z-index: 1000;
+    @apply w-64 bg-[#F7F9F8] border-r border-[#E5E7EB] flex-shrink-0 flex flex-col h-full z-10;
   }
 
-  .app-shell-content {
-    padding: 96px 32px;
-    width: 100%;
-  }
-
-  .app-layout {
-    display: flex;
-    flex-direction: column;
-    height: 100dvh;
-    min-height: 100vh;
-    overflow: hidden;
-    background: var(--bg);
-    width: 100%;
+  .app-main {
+    @apply flex-1 flex flex-col min-w-0 h-full overflow-hidden relative bg-[#FFFFFF] sm:bg-[#F7F9F8];
   }
 
   .app-header {
-    position: sticky;
-    top: 0;
-    z-index: 100;
-    background: var(--card);
-    border-bottom: 1px solid var(--border);
+    @apply h-16 border-b border-[#E5E7EB] bg-[#FFFFFF] flex items-center justify-between px-6 flex-shrink-0 sticky top-0 z-10;
   }
 
   .app-content {
-    flex: 1;
-    min-height: 0;
-    overflow-y: auto;
-    overflow-x: hidden;
-    padding: 16px;
-    width: 100%;
+    @apply flex-1 overflow-y-auto px-4 py-6 sm:px-8 sm:py-8;
   }
 
-  .app-footer {
-    position: sticky;
-    bottom: 0;
-    z-index: 100;
-    background: var(--card);
-    border-top: 1px solid var(--border);
-    padding: 12px 16px calc(12px + env(safe-area-inset-bottom));
-  }
-
-  .app-layout.has-footer .app-content {
-    padding-bottom: calc(16px + env(safe-area-inset-bottom));
-  }
-
-  .mobile-menu-button {
-    border: 1px solid var(--color-divider);
-    background: var(--color-champagne);
-    color: var(--color-charcoal);
-    border-radius: 2px;
-    font-size: 24px;
-    line-height: 1;
-    width: 44px;
-    height: 44px;
-  }
-
-  .sidebar-overlay {
-    position: fixed;
-    inset: 0;
-    background: rgba(0, 0, 0, 0.3);
-    z-index: 900;
-  }
-
-  .wordmark {
-    font-family: var(--font-sans);
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    font-size: 13px;
-  }
-
+  /* Typography utilities */
   .type-hero {
-    font-size: 48px;
-    line-height: 1.2;
-    max-width: 720px;
-  }
-
-  .type-section {
-    font-size: 32px;
-    line-height: 1.25;
+    @apply text-3xl font-semibold text-[#1A1A1A] tracking-tight;
   }
 
   .type-subhead {
-    font-size: 20px;
-    line-height: 1.5;
+    @apply text-lg font-medium text-[#1A1A1A];
   }
 
   .type-body {
-    font-size: 16px;
-    line-height: 1.7;
-    font-weight: 400;
+    @apply text-base text-[#1A1A1A] leading-relaxed;
   }
 
   .type-caption {
-    font-size: 13px;
-    letter-spacing: 0.04em;
+    @apply text-sm text-[#6B7280];
   }
 
-  .type-button {
-    font-size: 12px;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-  }
-
-  .page-section {
-    padding-top: 96px;
-    padding-bottom: 96px;
-  }
-
-  .section-gap {
-    margin-top: 120px;
-  }
-
-  .text-stack-24 > * + * {
-    margin-top: 24px;
-  }
-
-  .paragraph-stack > * + * {
-    margin-top: 16px;
-  }
-
+  /* Card utilities */
   .surface-panel {
-    border: 1px solid var(--color-divider);
-    padding: 32px;
-    background: var(--color-champagne);
-    border-radius: 2px;
+    @apply bg-white border border-[#E5E7EB] rounded-xl p-6 shadow-sm;
   }
-
-  @media (max-width: 767px) {
-    .app-shell {
-      grid-template-columns: 1fr;
-    }
-
-    .app-sidebar {
-      position: fixed;
-      left: -240px;
-      top: 0;
-      height: 100%;
-      transition: left 0.3s ease;
-    }
-
-    .app-sidebar.open {
-      left: 0;
-    }
-
-    .app-shell-content {
-      width: 100%;
-      padding: 24px 16px 96px;
-    }
-
-    .app-content {
-      padding: 16px;
-    }
+  
+  .card-clinical {
+    @apply bg-white border border-[#E5E7EB] rounded-xl p-5 shadow-sm;
   }
-
-  @media (min-width: 768px) {
-    .app-content {
-      padding: 24px;
-    }
-
-    .app-footer {
-      padding-left: 24px;
-      padding-right: 24px;
-    }
+  
+  .card-clinical-interactive {
+    @apply bg-white border border-[#E5E7EB] rounded-xl p-4 shadow-sm transition-all hover:shadow-md hover:border-[#1F7A63]/30 cursor-pointer;
   }
 }
 
-
-/* Remove ALL white backgrounds from UI components */
-.card,
-.list-group-item,
-.list-group,
-.table,
-.modal-content,
-.dropdown-menu,
-input,
-textarea,
-select {
-  background-color: transparent !important;
-}
-
-/* Prevent browser default white */
-div {
-  background-color: transparent;
-}
-
-.surface-soft {
-  background-color: #F4EFE3;
-}
-
-.surface-active {
-  background-color: #E8DFC8;
-}
-
-input[type="checkbox"] {
-  background-color: transparent;
-}

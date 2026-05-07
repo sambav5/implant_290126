@@ -70,7 +70,6 @@ export default function DiscussionTab({ caseId, activeRole, caseData }) {
       await discussionApi.sendMessage(caseId, {
         message, 
         mentions: toLegacyMentionArray(mentions),
-        mention_entities: mentions,
         parent_message_id: parentId || null 
       });
       // Immediately fetch new messages after sending
@@ -127,18 +126,18 @@ export default function DiscussionTab({ caseId, activeRole, caseData }) {
 
   if (loading && messages.length === 0) {
     return (
-      <div className="rounded-xl p-8 flex items-center justify-center" style={{ background: 'var(--card)', border: '1px solid var(--border)' }}>
-        <div className="text-sm" style={{ color: 'var(--t2)' }}>Loading messages...</div>
+      <div className="rounded-xl p-8 flex items-center justify-center bg-white border border-[#E5E7EB]">
+        <div className="text-sm text-[#6B7280]">Loading messages...</div>
       </div>
     );
   }
 
   return (
-    <div className="rounded-xl" style={{ background: 'var(--card)', border: '1px solid var(--border)' }}>
+    <div className="rounded-xl bg-white border border-[#E5E7EB] overflow-hidden flex flex-col h-[600px]">
       <DiscussionHeader />
       
       {error && (
-        <div className="mx-4 mt-3 p-2 rounded text-sm" style={{ background: 'var(--destructive)', color: 'white' }}>
+        <div className="mx-4 mt-3 p-3 rounded-lg text-sm bg-red-50 text-red-600 border border-red-100">
           {error}
         </div>
       )}
@@ -151,7 +150,7 @@ export default function DiscussionTab({ caseId, activeRole, caseData }) {
         canDelete={canDelete} 
       />
       
-      <div className="p-3" style={{ borderTop: '1px solid var(--border)' }}>
+      <div className="p-4 bg-[#F9FAFB] border-t border-[#E5E7EB]">
         <MessageInput
           mentionables={mentionables}
           onSend={(message, mentions) => sendMessage(message, mentions)}

@@ -1,10 +1,17 @@
 :root {
-  --color-forest: #183328;
-  --color-forest-hover: #142A22;
-  --color-champagne: #E8DFC8;
+  --color-forest: #1F7A63;
+  --color-forest-hover: #17604D;
+  --color-champagne: #F7F9F8;
   --color-charcoal: #1A1A1A;
-  --color-warm-gray: #6E6A60;
-  --color-divider: #D9D2C2;
-  --font-serif: "Libre Baskerville", serif;
+  --color-warm-gray: #6B7280;
+  --color-divider: #E5E7EB;
+  --font-serif: "Inter", sans-serif;
   --font-sans: "Inter", sans-serif;
+  
+  --bg: #F7F9F8;
+  --card: #FFFFFF;
+  --border: #E5E7EB;
+  --t1: #1A1A1A;
+  --t2: #6B7280;
+  --t3: #9CA3AF;
 }

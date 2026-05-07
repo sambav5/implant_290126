@@ -3,19 +3,24 @@ import ChecklistItem from './ChecklistItem';
 import { filterChecklist, groupChecklistByPhaseSection } from '@/utils/checklistEngine';
 
 function PhaseSection({ phase, sections, completedItems, canEditItem, onToggleItem }) {
-  const [openSections, setOpenSections] = useState(() => Object.keys(sections || {}).reduce((acc, key) => ({ ...acc, [key]: true }), {}));
+  const [openSections, setOpenSections] = useState({});
 
   return (
-    <section id={`phase-${phase}`} className="space-y-2">
-      <h2 className="sticky top-0 z-10 bg-[#F4EFE3]/95 py-2 text-lg font-semibold capitalize text-[#1A1A1A] backdrop-blur">{phase.replace('_', ' ')}</h2>
+    <section id={`phase-${phase}`} className="space-y-6">
+      <h2 className="text-xl font-semibold capitalize text-[#1A1A1A]">{phase.replace('_', ' ')}</h2>
       {Object.entries(sections).map(([section, items]) => (
-        <div key={section} className="mt-4">
-          <button type="button" className="mb-2 flex w-full items-center justify-between text-left" onClick={() => setOpenSections((prev) => ({ ...prev, [section]: !prev[section] }))}>
-            <span className="text-sm text-[#6E6A60]">▼ {section.replace('_', '-')}</span>
-            <span className="text-xs text-[#6E6A60]">{openSections[section] ? 'Hide' : 'Show'}</span>
+        <div key={section} className="bg-white rounded-xl border border-[#E5E7EB] shadow-sm overflow-hidden">
+          <button 
+            type="button" 
+            className="w-full flex items-center justify-between p-4 bg-[#F9FAFB] hover:bg-[#F3F4F6] transition-colors" 
+            onClick={() => setOpenSections((prev) => ({ ...prev, [section]: !prev[section] }))}
+          >
+            <span className="font-medium text-[#1A1A1A] capitalize">{section.replace('_', ' ')}</span>
+            <span className="text-sm font-medium text-[#6B7280]">{openSections[section] ? 'Hide' : 'Show'}</span>
           </button>
+          
           {openSections[section] && (
-            <div>
+            <div className="divide-y divide-[#E5E7EB]">
               {items.map((item) => (
                 <ChecklistItem
                   key={item.id}
@@ -33,38 +38,63 @@ function PhaseSection({ phase, sections, completedItems, canEditItem, onToggleIt
   );
 }
 
-export default function ChecklistContainer({ checklist = [], caseContext, activeVisit, role, completedItems, onToggleItem }) {
-  const filteredItems = useMemo(() => filterChecklist(checklist, caseContext, activeVisit), [checklist, caseContext, activeVisit]);
-  const grouped = useMemo(() => groupChecklistByPhaseSection(filteredItems), [filteredItems]);
+export default function ChecklistContainer({ checklist = [], caseContext, activeVisit, role, completedItems, onToggleItem, activePhase, myTasksOnly }) {
+  const displayedItems = useMemo(() => {
+    let items = filterChecklist(checklist, caseContext, activeVisit);
+    if (myTasksOnly) {
+      if (role !== 'clinician') {
+        items = items.filter(item => item.assignedRole === role);
+      } else {
+        items = items.filter(item => item.assignedRole === role);
+      }
+    }
+    return items;
+  }, [checklist, caseContext, activeVisit, myTasksOnly, role]);
 
-  const total = filteredItems.length;
-  const done = filteredItems.filter((item) => completedItems[item.id]).length;
+  const grouped = useMemo(() => groupChecklistByPhaseSection(displayedItems), [displayedItems]);
+
+  const total = displayedItems.length;
+  const done = displayedItems.filter((item) => completedItems[item.id]).length;
   const progress = total ? Math.round((done / total) * 100) : 0;
-  const canEditItem = (item) => role === 'clinician' || role === 'implantologist' || item.assignedRole === role;
+  const canEditItem = (item) => role === 'clinician' || item.assignedRole === role;
 
   return (
     <div className="space-y-6">
-      <div className="p-2">
-        <div className="mb-2 flex items-center justify-between text-xs text-[#6E6A60]">
-          <span>Progress</span><span>{done}/{total}</span>
+      <div className="bg-white rounded-xl border border-[#E5E7EB] p-4 shadow-sm mb-6">
+        <div className="mb-3 flex items-center justify-between text-sm font-medium text-[#1A1A1A]">
+          <span>Phase Progress</span>
+          <span className="text-[#6B7280]">{done} of {total} completed</span>
         </div>
-        <div className="h-2 w-full overflow-hidden rounded-full bg-[#F4EFE3]">
-          <div className="h-full bg-forest transition-all" style={{ width: `${progress}%` }} />
+        <div className="h-2.5 w-full overflow-hidden rounded-full bg-[#E5E7EB]">
+          <div className="h-full bg-[#1F7A63] transition-all duration-500 ease-in-out" style={{ width: `${progress}%` }} />
         </div>
       </div>
 
-      {!filteredItems.length && <p className="text-sm text-[#6E6A60]">No checklist items for this visit.</p>}
+      {!displayedItems.length && <p className="text-sm text-[#6E6A60]">No checklist items for this view.</p>}
 
-      {Object.entries(grouped).map(([phase, sections]) => (
+      {activePhase && grouped[activePhase] ? (
         <PhaseSection
-          key={phase}
-          phase={phase}
-          sections={sections}
+          key={activePhase}
+          phase={activePhase}
+          sections={grouped[activePhase]}
           completedItems={completedItems}
           canEditItem={canEditItem}
           onToggleItem={onToggleItem}
         />
-      ))}
+      ) : activePhase ? (
+        <p className="text-sm text-[#6E6A60] mt-4">No checklist items found for the {activePhase} phase.</p>
+      ) : (
+        Object.entries(grouped).map(([phase, sections]) => (
+          <PhaseSection
+            key={phase}
+            phase={phase}
+            sections={sections}
+            completedItems={completedItems}
+            canEditItem={canEditItem}
+            onToggleItem={onToggleItem}
+          />
+        ))
+      )}
     </div>
   );
 }

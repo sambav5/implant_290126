@@ -143,7 +143,7 @@ export default function CaseFilesTab({ caseId, canDeleteFiles }) {
             <select
               value={selectedCategory}
               onChange={(e) => setSelectedCategory(e.target.value)}
-              className="px-3 py-2 border rounded-md bg-background"
+              className="px-3 py-2 border border-[#E5E7EB] rounded-md bg-white text-[#1A1A1A] text-sm focus:outline-none focus:ring-2 focus:ring-[#1F7A63]"
             >
               {CATEGORIES.map((c) => <option key={c.value} value={c.value}>{c.label}</option>)}
             </select>
@@ -163,28 +163,31 @@ export default function CaseFilesTab({ caseId, canDeleteFiles }) {
         <div
           onDrop={onDrop}
           onDragOver={(e) => e.preventDefault()}
-          className="mt-4 border-2 border-dashed rounded-lg p-6 text-center"
-          style={{ borderColor: 'var(--border)' }}
+          className="mt-4 border-2 border-dashed border-[#E5E7EB] rounded-xl p-8 text-center bg-[#F9FAFB] hover:bg-[#F3F4F6] transition-colors"
         >
-          Drag & drop files here, or use Upload button (max 50MB per file)
+          <div className="flex flex-col items-center justify-center gap-2">
+            <Upload className="h-8 w-8 text-[#9CA3AF]" />
+            <p className="text-sm font-medium text-[#4B5563]">Drag & drop files here, or use Upload button</p>
+            <p className="text-xs text-[#9CA3AF]">Maximum file size: 50MB</p>
+          </div>
         </div>
       </div>
 
       {CATEGORIES.map((category) => (
         <div key={category.value} className="card-clinical">
-          <h4 className="font-semibold mb-3">{category.label}</h4>
+          <h4 className="font-semibold text-lg text-[#1A1A1A] mb-4">{category.label}</h4>
           {(allGroups[category.value] || []).length === 0 ? (
-            <p className="text-sm" style={{ color: 'var(--t3)' }}>No files uploaded.</p>
+            <p className="text-sm text-[#9CA3AF]">No files uploaded.</p>
           ) : (
-            <div className="space-y-2">
+            <div className="space-y-3">
               {allGroups[category.value].map((item) => {
                 const lowerType = (item.fileType || '').toLowerCase();
                 const canPreviewImage = PREVIEWABLE_IMAGES.includes(lowerType);
                 return (
-                  <div key={item.id} className="p-3 rounded-lg border flex flex-wrap items-center justify-between gap-3" style={{ borderColor: 'var(--border)' }}>
+                  <div key={item.id} className="p-4 rounded-xl border border-[#E5E7EB] flex flex-wrap items-center justify-between gap-4 bg-white hover:border-[#D1D5DB] transition-colors">
                     <div className="min-w-0">
-                      <div className="font-medium truncate">{item.fileName}</div>
-                      <div className="text-xs" style={{ color: 'var(--t3)' }}>
+                      <div className="font-medium text-[#1A1A1A] truncate">{item.fileName}</div>
+                      <div className="text-xs text-[#6B7280] mt-1">
                         {new Date(item.uploadedAt).toLocaleString()} • {item.uploadedByName} • {formatBytes(item.fileSize)}
                       </div>
                     </div>
@@ -216,23 +219,23 @@ export default function CaseFilesTab({ caseId, canDeleteFiles }) {
       ))}
 
       {previewUrl && (
-        <div className="fixed inset-0 bg-charcoal/80 flex items-center justify-center z-50">
-          <button className="absolute top-6 right-6 text-champagne" onClick={() => setPreviewUrl(null)}>
-            <X className="h-6 w-6" />
+        <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50">
+          <button className="absolute top-6 right-6 text-white hover:text-gray-300 transition-colors" onClick={() => setPreviewUrl(null)}>
+            <X className="h-8 w-8" />
           </button>
-          <img src={previewUrl} alt="preview" className="max-h-[90vh] max-w-[90vw] object-contain" />
+          <img src={previewUrl} alt="preview" className="max-h-[90vh] max-w-[90vw] object-contain rounded-lg shadow-2xl" />
         </div>
       )}
 
       {/* Delete Confirmation Dialog */}
       {deleteConfirmOpen && (
-        <div className="fixed inset-0 bg-charcoal/50 flex items-center justify-center z-50">
-          <div className="bg-champagne rounded-lg p-6 max-w-md w-full mx-4 ">
-            <h3 className="text-lg font-semibold mb-2">Delete File?</h3>
-            <p className="text-sm text-gray-600 mb-4">
-              Are you sure you want to delete <strong>{fileToDelete?.fileName}</strong>? This action cannot be undone.
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl p-6 max-w-md w-full mx-4 shadow-xl">
+            <h3 className="text-xl font-semibold text-[#1A1A1A] mb-2">Delete File?</h3>
+            <p className="text-sm text-[#6B7280] mb-6">
+              Are you sure you want to delete <strong className="text-[#1A1A1A] font-medium">{fileToDelete?.fileName}</strong>? This action cannot be undone.
             </p>
-            <div className="flex gap-2 justify-end">
+            <div className="flex gap-3 justify-end">
               <Button 
                 variant="outline" 
                 onClick={() => {
@@ -243,7 +246,7 @@ export default function CaseFilesTab({ caseId, canDeleteFiles }) {
                 Cancel
               </Button>
               <Button 
-                variant="destructive" 
+                className="bg-red-600 hover:bg-red-700 text-white" 
                 onClick={deleteFile}
               >
                 Delete File
