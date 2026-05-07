@@ -3,6 +3,9 @@ import axios from 'axios';
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || '';
 const API = BACKEND_URL ? `${BACKEND_URL}/api` : '/api';
 
+// Set global base URL for axios so that relative paths in other files work correctly
+axios.defaults.baseURL = BACKEND_URL;
+
 // Axios interceptor for JWT authentication
 axios.interceptors.request.use(
   (config) => {

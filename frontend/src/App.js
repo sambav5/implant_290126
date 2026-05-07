@@ -1,4 +1,5 @@
 import "@/App.css";
+import "@/services/api"; // Ensure global axios interceptors and baseURL are configured
 import { BrowserRouter, Routes, Route, useLocation, Navigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { Toaster } from "@/components/ui/sonner";
