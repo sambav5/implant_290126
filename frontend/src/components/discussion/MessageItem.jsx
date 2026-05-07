@@ -1,14 +1,15 @@
 import ReactionBar from './ReactionBar';
+import { normalizeMentionLabel } from './mentionUtils';
 
 function renderMentions(text, mentions = []) {
-  const chunks = text.split(/(\s+)/);
-  return chunks.map((chunk, idx) => {
-    const clean = chunk.replace(/^@/, '').replace(/[^a-zA-Z0-9_-]/g, '').toLowerCase();
-    const highlighted = mentions.some((m) => m.toLowerCase() === clean);
-    if (chunk.startsWith('@') && highlighted) {
-      return <span key={idx} className="px-1 rounded" style={{ background: 'var(--blue-1)', color: 'var(--blue)' }}>{chunk}</span>;
-    }
-    return <span key={idx}>{chunk}</span>;
+  const mentionList = mentions.map((m) => typeof m === 'string' ? { label: m } : m);
+  const labelSet = new Set(mentionList.map((m) => normalizeMentionLabel(m.label || m.id).toLowerCase()));
+  return text.split(/(\s+)/).map((chunk, idx) => {
+    const raw = chunk.startsWith('@') ? normalizeMentionLabel(chunk.slice(1).replace(/[,.!?;:]+$/, '')) : '';
+    const highlighted = raw && labelSet.has(raw.toLowerCase());
+    if (!highlighted) return <span key={idx}>{chunk}</span>;
+    const suffix = chunk.match(/[,.!?;:]+$/)?.[0] || '';
+    return <span key={idx}><span className="inline-block" style={{ background: 'rgba(15, 60, 40, 0.12)', color: '#0f3c28', borderRadius: 6, padding: '1px 6px', fontWeight: 500 }}>@{raw}</span>{suffix}</span>;
   });
 }
 
