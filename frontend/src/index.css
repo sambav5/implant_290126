@@ -57,7 +57,7 @@
   }
 
   .app-sidebar {
-    @apply w-64 bg-[#F7F9F8] border-r border-[#E5E7EB] flex-shrink-0 flex flex-col h-full z-10;
+    @apply bg-[#F7F9F8] border-r border-[#E5E7EB] flex-shrink-0 flex flex-col h-full z-10 transition-all duration-300 relative;
   }
 
   .app-main {
