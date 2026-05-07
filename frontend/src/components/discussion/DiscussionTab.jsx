@@ -5,6 +5,7 @@ import MessageInput from './MessageInput';
 import ThreadPanel from './ThreadPanel';
 import DiscussionHeader from './DiscussionHeader';
 import TypingIndicator from './TypingIndicator';
+import { buildMentionables, toLegacyMentionArray } from './mentionUtils';
 
 export default function DiscussionTab({ caseId, activeRole, caseData }) {
   const [messages, setMessages] = useState([]);
@@ -15,13 +16,7 @@ export default function DiscussionTab({ caseId, activeRole, caseData }) {
 
   const canDelete = activeRole === 'clinician';
 
-  const mentionables = useMemo(() => {
-    const roles = ['everyone', 'clinician', 'implantologist', 'prostho', 'assistant'];
-    const users = [caseData?.clinician?.name, caseData?.implantologist?.name, caseData?.prosthodontist?.name, caseData?.assistant?.name]
-      .filter(Boolean)
-      .map((name) => name.replace(/\s+/g, '').toLowerCase());
-    return [...roles, ...users];
-  }, [caseData]);
+  const mentionables = useMemo(() => buildMentionables(caseData), [caseData]);
 
   // Initial load of messages
   const loadMessages = useCallback(async () => {
@@ -69,12 +64,13 @@ export default function DiscussionTab({ caseId, activeRole, caseData }) {
     return () => clearInterval(timer);
   }, [caseId]);
 
-  const sendMessage = async (message, mentions, parentId) => {
+  const sendMessage = async (message, mentions = [], parentId) => {
     if (!message?.trim()) return;
     try {
-      await discussionApi.sendMessage(caseId, { 
+      await discussionApi.sendMessage(caseId, {
         message, 
-        mentions, 
+        mentions: toLegacyMentionArray(mentions),
+        mention_entities: mentions,
         parent_message_id: parentId || null 
       });
       // Immediately fetch new messages after sending
