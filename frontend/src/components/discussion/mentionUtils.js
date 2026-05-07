@@ -6,18 +6,24 @@ export function buildMentionables(caseData) {
   const roleSet = new Set(['everyone', 'clinician', 'implantologist', 'prosthodontist', 'assistant']);
   const people = [];
 
+  const stageAssignedUsers = (caseData?.stageAssignments || []).map((assignment) => assignment?.user).filter(Boolean);
+
   const teamEntries = [
     { id: 'clinician', name: caseData?.clinician?.name, role: 'clinician' },
     { id: 'implantologist', name: caseData?.implantologist?.name, role: 'implantologist' },
     { id: 'prosthodontist', name: caseData?.prosthodontist?.name, role: 'prosthodontist' },
     { id: 'assistant', name: caseData?.assistant?.name, role: 'assistant' },
+    ...stageAssignedUsers,
     ...(caseData?.teamList || []),
+    ...(caseData?.teamMembers || []),
+    ...(caseData?.team || []),
   ];
 
   for (const user of teamEntries) {
     if (!user?.name) continue;
-    people.push({ id: user.id || normalizeMentionLabel(user.name).toLowerCase(), label: user.name, type: 'user', role: user.role || null });
-    if (user.role) roleSet.add(normalizeMentionLabel(user.role).toLowerCase());
+    const normalizedRole = normalizeMentionLabel(user.role || user.specialty || user.userRole || '').toLowerCase();
+    people.push({ id: user.id || normalizeMentionLabel(user.name).toLowerCase(), label: user.name, type: 'user', role: normalizedRole || null });
+    if (normalizedRole) roleSet.add(normalizedRole);
   }
 
   const dedupedPeople = Array.from(new Map(people.map((p) => [p.label.toLowerCase(), p])).values());
