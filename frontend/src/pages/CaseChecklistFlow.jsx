@@ -9,6 +9,7 @@ import { useChecklist } from '@/modules/checklist/hooks/useChecklist';
 import { caseApi } from '@/services/api';
 import { userApi } from '@/api/userApi';
 import { deriveCaseContext, getRoutingVariant } from '@/lib/caseContext';
+import VoiceAssistant from '@/components/VoiceAssistant';
 
 const getStorageKey = (caseId) => `case_gate_data_${caseId}`;
 const getChecklistStorageKey = (caseId) => `case_checklist_progress_${caseId}`;
@@ -265,6 +266,18 @@ export default function CaseChecklistFlow() {
           />
         </ChecklistProvider>
       </ContentContainer>
+      <VoiceAssistant
+        onRecordingStarted={() => {
+          // Hook for future: e.g., analytics, UI hints. No-op for now.
+        }}
+        onRecordingStopped={(audioBlob) => {
+          // Audio kept in memory only — speech-to-text will be wired up later.
+          console.log('Voice recording captured', {
+            size: audioBlob?.size,
+            type: audioBlob?.type,
+          });
+        }}
+      />
     </AppLayout>
   );
 }
