@@ -56,8 +56,12 @@ class _NamedBytesIO(io.BytesIO):
         self.name = name
 
 
-def _resolve_extension(filename: str, content_type: Optional[str]) -> str:
-    """Pick a Whisper-friendly extension based on filename / MIME type."""
+def _resolve_extension(filename: str, content_type: Optional[str]) -> Optional[str]:
+    """Pick a Whisper-friendly extension based on filename / MIME type.
+
+    Returns None when neither filename nor content type clearly indicates an
+    audio container we support. The caller turns that into a 415 response.
+    """
     # 1) try filename extension
     if filename and "." in filename:
         ext = filename.rsplit(".", 1)[-1].lower()
@@ -69,9 +73,12 @@ def _resolve_extension(filename: str, content_type: Optional[str]) -> str:
         primary = content_type.split(";", 1)[0].strip().lower()
         if primary in _MIME_TO_EXT:
             return _MIME_TO_EXT[primary]
+        # Generic audio/* from MediaRecorder — assume webm (the browser default).
+        if primary.startswith("audio/"):
+            return "webm"
 
-    # 3) MediaRecorder default is webm — safe fallback
-    return "webm"
+    # Not enough signal to call this an audio container we support.
+    return None
 
 
 class OpenAIWhisperProvider(SpeechToTextProvider):
@@ -126,9 +133,9 @@ class OpenAIWhisperProvider(SpeechToTextProvider):
             )
 
         ext = _resolve_extension(filename, content_type)
-        if ext not in _WHISPER_EXTENSIONS:
+        if ext is None or ext not in _WHISPER_EXTENSIONS:
             raise UnsupportedAudioFormatError(
-                f"Unsupported audio format: {ext}. Allowed: {sorted(_WHISPER_EXTENSIONS)}."
+                f"Unsupported audio format. Allowed: {sorted(_WHISPER_EXTENSIONS)}."
             )
 
         # Build an in-memory file-like object so we never touch disk.
