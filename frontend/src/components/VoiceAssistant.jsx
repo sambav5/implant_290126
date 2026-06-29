@@ -9,29 +9,35 @@ const IS_DEV = process.env.NODE_ENV === 'development';
  * VoiceAssistant — PURE UI component.
  *
  * Records audio with MediaRecorder and manages local UI state
- * (idle / starting / recording / transcribing). All network/provider work is
- * delegated to the parent via the `transcribeAudio` callback. No API calls,
- * no provider-specific code, no checklist logic lives here.
+ * (idle / starting / recording / processing). All network/provider work is
+ * delegated to the parent via the `processVoice` callback. No API calls,
+ * no provider-specific code, no business logic lives here.
  *
  * Props:
- *   - transcribeAudio?: (audioBlob: Blob, meta: { recordingMs: number }) =>
- *       Promise<{ transcript: string } | string>
+ *   - processVoice?: (audioBlob: Blob, meta: { recordingMs: number })
+ *       => Promise<{
+ *            transcript: string,
+ *            intent: string,
+ *            confidence: number,
+ *            entity: string|null,
+ *            parameters: Object,
+ *          }>
  *   - onRecordingStarted?: () => void
  *   - onRecordingStopped?: (audioBlob: Blob) => void
- *   - onTranscriptReady?: (transcript: string, audioBlob: Blob) => void
+ *   - onIntentReady?: (result, audioBlob) => void
  *   - onError?: (error: Error) => void
  *   - className?: string
  */
 export default function VoiceAssistant({
-  transcribeAudio,
+  processVoice,
   onRecordingStarted,
   onRecordingStopped,
-  onTranscriptReady,
+  onIntentReady,
   onError,
   className,
 }) {
-  const [status, setStatus] = useState('idle'); // 'idle' | 'starting' | 'recording' | 'transcribing'
-  const [transcript, setTranscript] = useState(null);
+  const [status, setStatus] = useState('idle'); // 'idle' | 'starting' | 'recording' | 'processing'
+  const [intentResult, setIntentResult] = useState(null);
 
   const mediaRecorderRef = useRef(null);
   const audioChunksRef = useRef([]);
@@ -40,7 +46,7 @@ export default function VoiceAssistant({
   const cancelRequestedRef = useRef(false);
   const isUnmountedRef = useRef(false);
 
-  // ----- Resource management -------------------------------------------------
+  // ----- Resource management ------------------------------------------------
   const releaseMediaStream = useCallback(() => {
     if (mediaStreamRef.current) {
       try {
@@ -61,8 +67,6 @@ export default function VoiceAssistant({
     const recorder = mediaRecorderRef.current;
     if (recorder) {
       try {
-        // Detach event handlers BEFORE stopping so a late onstop callback
-        // can't touch unmounted-component state.
         recorder.ondataavailable = null;
         recorder.onstop = null;
         recorder.onerror = null;
@@ -77,7 +81,6 @@ export default function VoiceAssistant({
     audioChunksRef.current = [];
   }, []);
 
-  // Always release resources on unmount.
   useEffect(() => {
     return () => {
       isUnmountedRef.current = true;
@@ -86,9 +89,6 @@ export default function VoiceAssistant({
     };
   }, [disposeRecorder, releaseMediaStream]);
 
-  // Safety: also release if the page becomes hidden during a long recording.
-  // The browser will release the mic on unload, but explicit cleanup avoids
-  // lingering active tracks during background tab transitions.
   useEffect(() => {
     const onPageHide = () => {
       try {
@@ -102,44 +102,57 @@ export default function VoiceAssistant({
     return () => window.removeEventListener('pagehide', onPageHide);
   }, [disposeRecorder, releaseMediaStream]);
 
-  // ----- Transcription delegate ---------------------------------------------
-  const runTranscription = useCallback(
+  // ----- Voice processing delegate ------------------------------------------
+  const runProcessing = useCallback(
     async (audioBlob, recordingMs) => {
-      if (typeof transcribeAudio !== 'function') {
-        // Recording works on its own; transcription is optional.
+      if (typeof processVoice !== 'function') {
+        // Recording works on its own; intent processing is optional.
         return;
       }
-      setStatus('transcribing');
+      setStatus('processing');
       try {
-        const result = await transcribeAudio(audioBlob, { recordingMs });
+        const result = await processVoice(audioBlob, { recordingMs });
         if (isUnmountedRef.current) return;
 
-        const text =
-          typeof result === 'string' ? result : (result?.transcript || '').trim();
+        // Defensive: result must at least have a transcript & intent string.
+        const transcript = (result?.transcript || '').trim();
+        const intent =
+          typeof result?.intent === 'string' && result.intent ? result.intent : 'UNKNOWN';
+        const confidence =
+          typeof result?.confidence === 'number'
+            ? Math.max(0, Math.min(1, result.confidence))
+            : 0;
+        const entity = typeof result?.entity === 'string' ? result.entity : null;
+        const parameters =
+          result?.parameters && typeof result.parameters === 'object'
+            ? result.parameters
+            : {};
 
-        if (!text) {
+        if (!transcript && intent === 'UNKNOWN') {
           toast.message('No speech detected. Please try again.');
           setStatus('idle');
           return;
         }
 
-        setTranscript(text);
+        const normalised = { transcript, intent, confidence, entity, parameters };
+        setIntentResult(normalised);
         setStatus('idle');
-        if (typeof onTranscriptReady === 'function') {
-          onTranscriptReady(text, audioBlob);
+
+        if (typeof onIntentReady === 'function') {
+          onIntentReady(normalised, audioBlob);
         }
       } catch (error) {
         if (isUnmountedRef.current) return;
         setStatus('idle');
         const message =
-          error?.message || 'We couldn\u2019t transcribe that recording. Please try again.';
+          error?.message || 'We couldn\u2019t process that recording. Please try again.';
         toast.error(message);
         if (typeof onError === 'function') {
           onError(error);
         }
       }
     },
-    [onError, onTranscriptReady, transcribeAudio],
+    [onError, onIntentReady, processVoice],
   );
 
   // ----- Recording lifecycle ------------------------------------------------
@@ -152,14 +165,13 @@ export default function VoiceAssistant({
     }
 
     setStatus('starting');
-    setTranscript(null);
+    setIntentResult(null);
     cancelRequestedRef.current = false;
 
     let stream = null;
     try {
       stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       if (isUnmountedRef.current) {
-        // Component went away while the permission prompt was open.
         stream.getTracks().forEach((t) => t.stop());
         return;
       }
@@ -177,7 +189,6 @@ export default function VoiceAssistant({
       recorder.onstop = () => {
         const mimeType = recorder.mimeType || 'audio/webm';
         const audioBlob = new Blob(audioChunksRef.current, { type: mimeType });
-        // Free chunk references promptly so the GC can reclaim memory.
         audioChunksRef.current = [];
         releaseMediaStream();
 
@@ -193,7 +204,6 @@ export default function VoiceAssistant({
         }
 
         if (IS_DEV) {
-           
           console.debug('[VoiceAssistant] recording stopped', {
             sizeBytes: audioBlob.size,
             recordingMs,
@@ -213,7 +223,7 @@ export default function VoiceAssistant({
           return;
         }
 
-        runTranscription(audioBlob, recordingMs);
+        runProcessing(audioBlob, recordingMs);
       };
 
       recorder.onerror = () => {
@@ -232,7 +242,6 @@ export default function VoiceAssistant({
         onRecordingStarted();
       }
     } catch (error) {
-      // Always free a partial stream on failure.
       if (stream) {
         try {
           stream.getTracks().forEach((t) => t.stop());
@@ -251,7 +260,7 @@ export default function VoiceAssistant({
             : 'Unable to access microphone.';
       toast.error(message);
     }
-  }, [onRecordingStarted, onRecordingStopped, releaseMediaStream, runTranscription, status]);
+  }, [onRecordingStarted, onRecordingStopped, releaseMediaStream, runProcessing, status]);
 
   const stopRecording = useCallback(() => {
     const recorder = mediaRecorderRef.current;
@@ -276,16 +285,16 @@ export default function VoiceAssistant({
     }
   }, [status, startRecording, stopRecording]);
 
-  // ----- Render --------------------------------------------------------------
+  // ----- Render -------------------------------------------------------------
   const isRecording = status === 'recording';
-  const isTranscribing = status === 'transcribing';
+  const isProcessing = status === 'processing';
   const isStarting = status === 'starting';
-  const isBusy = isStarting || isTranscribing;
+  const isBusy = isStarting || isProcessing;
 
   const buttonAriaLabel = isRecording
     ? 'Stop voice recording'
-    : isTranscribing
-      ? 'Transcribing audio'
+    : isProcessing
+      ? 'Processing audio'
       : 'Start voice recording';
 
   return (
@@ -297,32 +306,14 @@ export default function VoiceAssistant({
       )}
       style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
     >
-      {transcript && (
-        <div
-          role="region"
-          aria-label="Transcript"
-          className="w-[min(360px,calc(100vw-3rem))] rounded-[2px] border border-divider bg-champagne p-4 shadow-lg"
-        >
-          <div className="mb-2 flex items-center justify-between">
-            <span className="text-[11px] uppercase tracking-[0.12em] text-warm-gray">
-              Transcript
-            </span>
-            <button
-              type="button"
-              aria-label="Dismiss transcript"
-              onClick={() => setTranscript(null)}
-              className="rounded-[2px] p-1 text-warm-gray hover:bg-divider hover:text-charcoal focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-forest"
-            >
-              <X className="h-3.5 w-3.5" />
-            </button>
-          </div>
-          <p className="text-sm leading-relaxed text-charcoal whitespace-pre-wrap">
-            {transcript}
-          </p>
-        </div>
+      {intentResult && (
+        <IntentPanel
+          result={intentResult}
+          onDismiss={() => setIntentResult(null)}
+        />
       )}
 
-      {(isRecording || isTranscribing) && (
+      {(isRecording || isProcessing) && (
         <div
           role="status"
           aria-live="polite"
@@ -342,7 +333,7 @@ export default function VoiceAssistant({
             <>
               <Loader2 className="h-3.5 w-3.5 animate-spin text-forest" />
               <span className="text-[12px] uppercase tracking-[0.12em] text-charcoal">
-                Transcribing…
+                Processing…
               </span>
             </>
           )}
@@ -354,13 +345,13 @@ export default function VoiceAssistant({
         onClick={handleToggle}
         disabled={isBusy}
         aria-pressed={isRecording}
-        aria-busy={isTranscribing}
+        aria-busy={isProcessing}
         aria-label={buttonAriaLabel}
         title={
           isRecording
             ? 'Stop recording'
-            : isTranscribing
-              ? 'Transcribing…'
+            : isProcessing
+              ? 'Processing…'
               : 'Start voice recording'
         }
         className={cn(
@@ -370,7 +361,7 @@ export default function VoiceAssistant({
           'disabled:cursor-not-allowed',
           isRecording
             ? 'bg-red-600 text-white hover:bg-red-700'
-            : isTranscribing
+            : isProcessing
               ? 'bg-forest text-champagne opacity-80'
               : 'bg-forest text-champagne hover:bg-[#142A22]',
         )}
@@ -384,13 +375,126 @@ export default function VoiceAssistant({
         <span className="relative flex items-center justify-center">
           {isRecording ? (
             <Square className="h-5 w-5" fill="currentColor" />
-          ) : isTranscribing ? (
+          ) : isProcessing ? (
             <Loader2 className="h-6 w-6 animate-spin" />
           ) : (
             <Mic className="h-6 w-6" />
           )}
         </span>
       </button>
+    </div>
+  );
+}
+
+/**
+ * Temporary diagnostic panel used during Step 3.
+ * Will be removed once Step 4 wires up real checklist actions.
+ */
+function IntentPanel({ result, onDismiss }) {
+  const { transcript, intent, confidence, entity, parameters } = result;
+  const confidencePct = `${Math.round((confidence || 0) * 100)}%`;
+  const noteText =
+    parameters && typeof parameters.note === 'string' ? parameters.note : null;
+  const otherParamKeys = parameters
+    ? Object.keys(parameters).filter((k) => k !== 'note' && k !== 'error')
+    : [];
+
+  return (
+    <div
+      role="region"
+      aria-label="Detected intent"
+      className="w-[min(360px,calc(100vw-3rem))] rounded-[2px] border border-divider bg-champagne p-4 shadow-lg"
+    >
+      <div className="mb-3 flex items-center justify-between">
+        <span className="text-[11px] uppercase tracking-[0.12em] text-warm-gray">
+          Voice Intent
+        </span>
+        <button
+          type="button"
+          aria-label="Dismiss intent panel"
+          onClick={onDismiss}
+          className="rounded-[2px] p-1 text-warm-gray hover:bg-divider hover:text-charcoal focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-forest"
+        >
+          <X className="h-3.5 w-3.5" />
+        </button>
+      </div>
+
+      <dl className="space-y-2 text-sm text-charcoal">
+        <div>
+          <dt className="text-[11px] uppercase tracking-[0.12em] text-warm-gray">
+            Transcript
+          </dt>
+          <dd className="mt-0.5 whitespace-pre-wrap">
+            {transcript || <span className="text-warm-gray italic">(empty)</span>}
+          </dd>
+        </div>
+
+        <div>
+          <dt className="text-[11px] uppercase tracking-[0.12em] text-warm-gray">
+            Intent
+          </dt>
+          <dd className="mt-0.5 font-medium">{intent}</dd>
+        </div>
+
+        {entity && (
+          <div>
+            <dt className="text-[11px] uppercase tracking-[0.12em] text-warm-gray">
+              Entity
+            </dt>
+            <dd className="mt-0.5">{entity}</dd>
+          </div>
+        )}
+
+        {noteText && (
+          <div>
+            <dt className="text-[11px] uppercase tracking-[0.12em] text-warm-gray">
+              Note
+            </dt>
+            <dd className="mt-0.5 whitespace-pre-wrap">{noteText}</dd>
+          </div>
+        )}
+
+        {otherParamKeys.length > 0 && (
+          <div>
+            <dt className="text-[11px] uppercase tracking-[0.12em] text-warm-gray">
+              Parameters
+            </dt>
+            <dd className="mt-0.5 font-mono text-xs">
+              {JSON.stringify(
+                otherParamKeys.reduce((acc, key) => {
+                  acc[key] = parameters[key];
+                  return acc;
+                }, {}),
+              )}
+            </dd>
+          </div>
+        )}
+
+        <div>
+          <dt className="text-[11px] uppercase tracking-[0.12em] text-warm-gray">
+            Confidence
+          </dt>
+          <dd className="mt-0.5">
+            <ConfidenceBar value={confidence} label={confidencePct} />
+          </dd>
+        </div>
+      </dl>
+    </div>
+  );
+}
+
+function ConfidenceBar({ value, label }) {
+  const pct = Math.max(0, Math.min(1, value || 0)) * 100;
+  const tone = pct >= 75 ? 'bg-forest' : pct >= 40 ? 'bg-amber-500' : 'bg-red-500';
+  return (
+    <div className="flex items-center gap-2">
+      <div className="h-1.5 flex-1 overflow-hidden rounded-[2px] bg-divider">
+        <div
+          className={cn('h-full transition-all', tone)}
+          style={{ width: `${pct}%` }}
+        />
+      </div>
+      <span className="text-xs tabular-nums text-charcoal">{label}</span>
     </div>
   );
 }

@@ -52,7 +52,16 @@ function normalizeCaseContext(caseContextValue) {
   return deriveCaseContext({}, { legacyCaseType: legacyVariant });
 }
 
-function ChecklistFlowScreen({ gateData, caseData, visit, onVisitChange, onEditGate, onChangeVisit, onCompleteCase }) {
+function ChecklistFlowScreen({
+  caseId,
+  gateData,
+  caseData,
+  visit,
+  onVisitChange,
+  onEditGate,
+  onChangeVisit,
+  onCompleteCase,
+}) {
   const { state, dispatch } = useChecklist();
 
   useEffect(() => {
@@ -103,6 +112,43 @@ function ChecklistFlowScreen({ gateData, caseData, visit, onVisitChange, onEditG
     }
   }, [visit]);
 
+  // Build a minimal procedure context for the Intent Engine. Intentionally
+  // tiny: just the active phase's checklist for the current visit, split
+  // into pending/completed using the existing responses map. No patient data.
+  const voiceContext = useMemo(() => {
+    const activeVisit = visit || state.activeVisit;
+    const activePhase = state.activePhase;
+    const responses = state.responses || {};
+    const filtered = (state.checklist || []).filter(
+      (item) =>
+        (!activeVisit || item.visit === activeVisit) &&
+        (!activePhase || item.phase === activePhase),
+    );
+    const pendingItems = filtered.filter((i) => !responses[i.id]).map((i) => i.text);
+    const completedItems = filtered.filter((i) => !!responses[i.id]).map((i) => i.text);
+    const currentStep = pendingItems[0] || null;
+
+    const visitLabels = {
+      v1: 'Visit 1 — Surgery',
+      v2: 'Visit 2 — Impression',
+      v3: 'Visit 3 — Delivery',
+      v4: 'Visit 4 — Maintenance',
+    };
+    const caseName = caseData?.caseName || 'Implant Procedure';
+    const procedureName = activeVisit
+      ? `${caseName} — ${visitLabels[activeVisit] || activeVisit}`
+      : caseName;
+
+    return { procedureName, currentStep, pendingItems, completedItems };
+  }, [
+    visit,
+    state.activeVisit,
+    state.activePhase,
+    state.checklist,
+    state.responses,
+    caseData?.caseName,
+  ]);
+
   return (
     <div className="space-y-4">
       <div className="flex justify-end gap-2">
@@ -117,6 +163,31 @@ function ChecklistFlowScreen({ gateData, caseData, visit, onVisitChange, onEditG
         onVisitChange={onVisitChange}
         onChangeVisit={(visitNumber) => onChangeVisit(visitNumber, state)}
         onCompleteCase={() => onCompleteCase(state)}
+      />
+
+      <VoiceAssistant
+        processVoice={(audioBlob, meta) =>
+          // VoiceAssistant stays a pure UI component. All network + provider
+          // work lives in voiceService.processVoice. The minimal procedure
+          // context is computed here from local state — no patient record
+          // is ever sent.
+          voiceService.processVoice(
+            audioBlob,
+            {
+              procedureId: caseId,
+              context: voiceContext,
+              recordingMs: meta?.recordingMs,
+            },
+          )
+        }
+        onIntentReady={(result) => {
+          // Step 3: intent is shown in the UI panel only. Step 4 will hand
+          // this to the Checklist Action Engine.
+          console.log('Intent ready', result);
+        }}
+        onError={(error) => {
+          console.warn('Voice processing failed', error);
+        }}
       />
     </div>
   );
@@ -248,6 +319,7 @@ export default function CaseChecklistFlow() {
       <ContentContainer className="py-4">
         <ChecklistProvider initialState={initialState}>
           <ChecklistFlowScreen
+            caseId={id}
             gateData={gateData}
             caseData={{ ...caseData, selectedCaseContext }}
             visit={visit}
@@ -267,28 +339,6 @@ export default function CaseChecklistFlow() {
           />
         </ChecklistProvider>
       </ContentContainer>
-      <VoiceAssistant
-        transcribeAudio={async (audioBlob, meta) => {
-          // VoiceAssistant stays a pure UI component — all network/provider
-          // logic lives in voiceService. When we later switch to
-          // `processVoice(audio)` (STT → Intent → Checklist), only this
-          // line changes.
-          return voiceService.transcribeWithMetrics(audioBlob, meta);
-        }}
-        onRecordingStarted={() => {
-          // Hook for future: e.g., analytics, UI hints. No-op for now.
-        }}
-        onRecordingStopped={(audioBlob) => {
-          // Audio kept in memory only — no persistence.
-          console.log('Voice recording captured', {
-            size: audioBlob?.size,
-            type: audioBlob?.type,
-          });
-        }}
-        onTranscriptReady={(transcript) => {
-          console.log('Transcript ready', transcript);
-        }}
-      />
     </AppLayout>
   );
 }

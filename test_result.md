@@ -195,6 +195,138 @@ backend:
             EMERGENT_LLM_KEY is properly configured. All error handling paths tested.
             Endpoint is production-ready.
 
+  - task: "POST /api/voice/process with IntentEngine abstraction (OpenAI Intent impl)"
+    implemented: true
+    working: true
+    file: "backend/routes/voice_routes.py, backend/services/intent_engine/*, backend/tests/test_intent_engine.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: |
+            Step 3 — Intent Engine added.
+
+            New backend modules:
+              - services/intent_engine/base.py: IntentEngine ABC, IntentResult,
+                IntentKind (closed set of 6 intents: UPDATE_CHECKLIST, ADD_NOTE,
+                READ_NEXT_STEP, REPEAT_STEP, FINISH_PROCEDURE, UNKNOWN),
+                ProcedureContext, exceptions. IntentResult.__post_init__
+                clamps confidence to [0.0, 1.0] and coerces unknown intent
+                strings to UNKNOWN.
+              - services/intent_engine/openai_intent_engine.py:
+                OpenAIIntentEngine using emergentintegrations LlmChat with
+                INTENT_ENGINE_MODEL (default 'gpt-5.4'). Strict JSON-only
+                system prompt; parser strips markdown fences and falls back
+                to UNKNOWN on any malformed reply. NEVER raises for
+                parsing/upstream/timeout — returns UNKNOWN instead.
+              - services/intent_engine/factory.py: env-driven engine
+                selection (INTENT_ENGINE), cached singleton.
+
+            Route additions (routes/voice_routes.py):
+              - POST /api/voice/process. Multipart fields:
+                  audio       (file, required)
+                  procedureId (str,  required)
+                  context     (str,  optional, JSON-encoded)
+                The endpoint depends ONLY on SpeechToTextProvider and
+                IntentEngine via FastAPI Depends. No OpenAI/whisper/LlmChat
+                imports in the controller (verified with grep).
+                Pipeline: read upload -> STT -> IntentEngine ->
+                ProcessVoiceResponse. Returns:
+                  { success, transcript, intent, confidence, entity,
+                    parameters,
+                    metrics: { stt_ms, intent_ms, server_total_ms,
+                               upload_read_ms, size_bytes } }
+                Audio is read into memory and `del`'d after STT — never
+                persisted. No DB writes. No checklist/note mutations.
+                Logs include stt_ms, intent_ms, total_ms, intent, confidence.
+
+            Env (.env):
+              INTENT_ENGINE=openai
+              INTENT_ENGINE_PROVIDER=openai
+              INTENT_ENGINE_MODEL=gpt-5.4
+              INTENT_ENGINE_TIMEOUT_SECONDS=15
+
+            Unit tests (backend/tests/test_intent_engine.py): 21 tests, all
+            passing locally. Covers each of the 6 intents, markdown-fenced
+            JSON, prose-prefixed JSON, garbage, empty, missing fields,
+            unknown intent value, out-of-range confidence, non-numeric
+            confidence, non-dict parameters, empty-string entity, prompt
+            building, context truncation.
+
+            Live verification with real LLM (gpt-5.4) for 6 sample commands
+            returned correct intents with confidences 0.96–0.99 (and 0.01
+            for an out-of-domain command — UNKNOWN).
+        - working: true
+          agent: "testing"
+          comment: |
+            Comprehensive backend testing completed. All 12 test scenarios PASSED:
+            
+            API Tests (11/11):
+            ✅ Test 1 - Happy path: Valid audio + procedureId + context returns HTTP 200 
+               with correct structure. Response includes: success=true, transcript="you", 
+               intent=UNKNOWN, confidence=0.020 (expected for silent audio), entity=None, 
+               parameters={}, metrics={stt_ms, intent_ms, server_total_ms, upload_read_ms, 
+               size_bytes}. All required fields present and properly typed.
+            
+            ✅ Test 2 - Missing procedureId: Returns HTTP 422 (FastAPI validation error).
+            
+            ✅ Test 3 - Missing audio: Returns HTTP 422 (FastAPI validation error).
+            
+            ✅ Test 4 - Empty audio (0 bytes): Returns HTTP 400 with message 
+               "No audio was received. Please try recording again."
+            
+            ✅ Test 5 - Unsupported format (.txt file): Returns HTTP 415 (format rejected).
+            
+            ✅ Test 6 - Too large file (>25MB): Returns HTTP 413 with message 
+               "Audio is too large. Please record a shorter clip."
+            
+            ✅ Test 7 - context omitted: Returns HTTP 200. Engine handles missing context 
+               gracefully, returns intent=UNKNOWN with low confidence.
+            
+            ✅ Test 8 - Malformed context JSON: Returns HTTP 200. Engine tolerates bad 
+               context (malformed JSON string "not-a-json{"), treats it as empty context, 
+               returns intent=UNKNOWN.
+            
+            ✅ Test 9 - No persistence: Verified no files created in /app/backend/uploads/ 
+               and no audio/intent-related documents in MongoDB. Audio is processed 
+               in-memory only.
+            
+            ✅ Test 10 - Logs verification: Found expected log lines in backend.err.log 
+               with all required fields: "voice.process completed stt_provider=openai_whisper 
+               intent_engine=openai_intent_engine procedure_id=... size_bytes=... upload_ms=... 
+               stt_ms=... intent_ms=... total_ms=... transcript_chars=... intent=UNKNOWN 
+               confidence=0.020 entity=None"
+            
+            ✅ Test 11 - Abstraction check: Code review confirms voice_routes.py only 
+               imports from services.speech_to_text and services.intent_engine abstractions. 
+               No direct imports of emergentintegrations, openai, whisper, LlmChat, or 
+               OpenAISpeechToText in the controller.
+            
+            Unit Tests (21/21):
+            ✅ Test 12 - pytest tests: All 21 unit tests in tests/test_intent_engine.py 
+               passed successfully. Tests cover:
+               - All 6 intent types (UPDATE_CHECKLIST, ADD_NOTE, READ_NEXT_STEP, 
+                 REPEAT_STEP, FINISH_PROCEDURE, UNKNOWN)
+               - Markdown-fenced JSON unwrapping
+               - JSON with leading prose
+               - Garbage response handling
+               - Empty response handling
+               - Missing fields defaulting to UNKNOWN
+               - Unknown intent value coercion
+               - Confidence clamping (above 1.0, below 0.0, non-numeric)
+               - Parameters validation (must be dict)
+               - Empty string entity handling
+               - IntentResult.to_dict() shape
+               - IntentKind.coerce() normalization
+               - User prompt building with minimal context
+               - Procedure context truncation for long lists
+            
+            OpenAI Intent Engine integration is working correctly via emergentintegrations.
+            EMERGENT_LLM_KEY is properly configured. All error handling paths tested.
+            Endpoint is production-ready.
+
 frontend:
   - task: "VoiceAssistant (pure UI) + VoiceService + checklist page integration"
     implemented: true
@@ -266,15 +398,58 @@ frontend:
               6. Browser refresh while recording: browser releases media tracks on
                  unload; `pagehide` listener also explicitly stops everything.
 
+frontend:
+  - task: "Pure UI VoiceAssistant + voiceService.processVoice + Intent panel (Step 3)"
+    implemented: true
+    working: "NA"
+    file: "frontend/src/components/VoiceAssistant.jsx, frontend/src/services/voiceService.js, frontend/src/pages/CaseChecklistFlow.jsx"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: false
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: |
+            Step 3 frontend:
+              - voiceService.processVoice(audioBlob, { procedureId, context,
+                recordingMs }) now hits POST /api/voice/process. Returns
+                { transcript, intent, confidence, entity, parameters,
+                  durations: { uploadMs, sttMs, intentMs, totalMs } }.
+                Defensive payload validation. Retries once on 5xx/network;
+                honours AbortSignal; 35s timeout.
+              - VoiceAssistant remains a PURE UI component. Prop renamed
+                `transcribeAudio` -> `processVoice`. Renders the temporary
+                "Voice Intent" panel: Transcript, Intent, Entity, Note (if
+                any), other parameters, Confidence bar.
+              - CaseChecklistFlow builds the MINIMAL context (procedure
+                name, current step, pending items, completed items) from
+                local checklist state and passes it through. No patient
+                fields. Voice button only renders while a procedure is
+                active.
+              - Dev-mode logVoiceMetrics block adds "Intent Engine" line +
+                detected intent + confidence.
+
+  - task: "VoiceAssistant Step 2 (transcribe-only) — superseded by Step 3"
+    implemented: true
+    working: true
+    file: "frontend/src/components/VoiceAssistant.jsx"
+    stuck_count: 0
+    priority: "low"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "main"
+          comment: "Step 2 UI replaced by Step 3 intent panel. Step 2 internals untouched apart from the prop rename + processing label."
+
 metadata:
   created_by: "main_agent"
-  version: "1.2"
-  test_sequence: 2
+  version: "1.3"
+  test_sequence: 3
   run_ui: false
 
 test_plan:
   current_focus:
-    - "POST /api/voice/transcribe with SpeechToTextProvider abstraction (OpenAI Whisper impl)"
+    - "POST /api/voice/process with IntentEngine abstraction (OpenAI Intent impl)"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
@@ -282,7 +457,71 @@ test_plan:
 agent_communication:
     - agent: "main"
       message: |
-        Please test ONLY the backend endpoint POST /api/voice/transcribe.
+        Please test ONLY the backend endpoint POST /api/voice/process.
+
+        URL: ${REACT_APP_BACKEND_URL}/api/voice/process (inside the container
+        http://localhost:8001/api/voice/process also works).
+        Method: POST, Content-Type: multipart/form-data.
+
+        Form fields:
+          - audio        (file, required)        — short wav/webm/mp3
+          - procedureId  (str,  required)        — any non-empty string
+          - context      (str,  optional)        — JSON-encoded:
+              {
+                "procedureName": "Root Canal",
+                "currentStep":   "Working Length",
+                "pendingItems":   ["Working Length","Canal Preparation",
+                                   "Irrigation","Obturation"],
+                "completedItems": ["Consent","Anesthesia","Access Opening"]
+              }
+
+        Test scenarios (please run all):
+          1. Happy path — POST with a small silent wav (already generated at
+             /tmp/silence.wav, or create one) + procedureId + context. Expect
+             HTTP 200 with JSON of shape:
+               { success: true, transcript: <str>, intent: <one of
+                 UPDATE_CHECKLIST|ADD_NOTE|READ_NEXT_STEP|REPEAT_STEP|
+                 FINISH_PROCEDURE|UNKNOWN>,
+                 confidence: <number in [0,1]>, entity: <str|null>,
+                 parameters: <object>,
+                 metrics: { stt_ms, intent_ms, server_total_ms,
+                            upload_read_ms, size_bytes } }.
+             For a silent recording, intent should be UNKNOWN with low
+             confidence. Verify `confidence` is always a number in [0, 1].
+          2. Missing procedureId — HTTP 422 (FastAPI validation).
+          3. Missing audio — HTTP 422.
+          4. Empty audio file (0 bytes) — HTTP 400.
+          5. Unsupported format (e.g. .txt) — HTTP 415.
+          6. Audio larger than SPEECH_TO_TEXT_MAX_BYTES — HTTP 413.
+          7. context omitted — endpoint still returns 200 (engine uses
+             minimal context with procedureId only).
+          8. Malformed context JSON — endpoint still returns 200 (engine
+             tolerates it; treats context as empty).
+          9. Verify no rows are written to mongo and nothing new is left in
+             /app/backend/uploads after the calls.
+         10. Logs check: /var/log/supervisor/backend.out.log (or backend.err.log)
+             should contain a line beginning with
+             `voice.process completed stt_provider=… intent_engine=… …
+             intent=… confidence=…` after each successful call.
+         11. Abstraction respect — confirm by reading
+             /app/backend/routes/voice_routes.py that it does NOT import
+             emergentintegrations / openai / whisper / LlmChat /
+             OpenAISpeechToText. It should import only from
+             services.speech_to_text and services.intent_engine.
+         12. Unit tests — also run pytest:
+               cd /app/backend && python -m pytest tests/test_intent_engine.py \
+                 -v -c tests/pytest.ini
+             Expect 21 tests passing.
+
+        DO NOT test the existing /api/voice/transcribe endpoint (already
+        green). DO NOT test the frontend.
+
+        Auth: endpoint does NOT require auth right now.
+
+    - agent: "main"
+      message: |
+        Step 2 backend (transcribe) was previously verified by testing
+        agent on 8/8 scenarios — still green and unchanged.
 
         URL: ${REACT_APP_BACKEND_URL}/api/voice/transcribe (or localhost:8001 inside container)
         Method: POST, Content-Type: multipart/form-data, field name: `audio`
@@ -327,6 +566,31 @@ agent_communication:
         
         OpenAI Whisper integration via emergentintegrations is working correctly.
         EMERGENT_LLM_KEY is properly configured. Endpoint is production-ready.
+
+    - agent: "testing"
+      message: |
+        Backend testing for POST /api/voice/process completed successfully. 
+        All 12 test scenarios PASSED (11 API tests + 21 unit tests).
+        
+        Test Results Summary:
+        ✅ All 11 API endpoint tests passed (happy path, missing fields, empty audio, 
+           unsupported format, too large, context omitted, malformed context, no 
+           persistence, logs verification, abstraction check)
+        ✅ All 21 pytest unit tests passed (intent classification, JSON parsing, 
+           confidence clamping, error handling)
+        
+        Key Findings:
+        - Happy path returns correct structure with intent=UNKNOWN and confidence=0.020 
+          for silent audio (expected behavior)
+        - All error codes correct: 422 (missing fields), 400 (empty), 415 (unsupported), 
+          413 (too large)
+        - Engine gracefully handles missing/malformed context (returns 200 with UNKNOWN intent)
+        - No persistence: verified no files or DB entries created
+        - Logs contain all required fields: stt_provider, intent_engine, intent, confidence
+        - Abstraction respected: controller only imports from services abstractions
+        - OpenAI Intent Engine integration working correctly via emergentintegrations
+        
+        Endpoint is production-ready. No issues found.
 
 user_problem_statement: "Test the new Voice Assistant component on the Seamless app's procedure (checklist) page"
 

@@ -92,18 +92,25 @@ export function formatDuration(ms) {
  */
 export function logVoiceMetrics(metrics = {}) {
   if (!IS_DEV) return;
-  const { recordingMs, uploadMs, sttMs, totalMs } = metrics;
-   
-  console.log(
-    [
-      'Voice Metrics',
-      '-------------',
-      `Recording:      ${formatDuration(recordingMs)}`,
-      `Upload:         ${formatDuration(uploadMs)}`,
-      `Speech-to-Text: ${formatDuration(sttMs)}`,
-      `Total:          ${formatDuration(totalMs)}`,
-    ].join('\n'),
-  );
+  const { recordingMs, uploadMs, sttMs, intentMs, totalMs, intent, confidence } =
+    metrics;
+  const lines = [
+    'Voice Metrics',
+    '-------------',
+    `Recording:      ${formatDuration(recordingMs)}`,
+    `Upload:         ${formatDuration(uploadMs)}`,
+    `Speech-to-Text: ${formatDuration(sttMs)}`,
+  ];
+  if (intentMs != null) {
+    lines.push(`Intent Engine:  ${formatDuration(intentMs)}`);
+  }
+  lines.push(`Total:          ${formatDuration(totalMs)}`);
+  if (intent) {
+    const conf =
+      typeof confidence === 'number' ? ` (${Math.round(confidence * 100)}%)` : '';
+    lines.push(`Intent:         ${intent}${conf}`);
+  }
+  console.log(lines.join('\n'));
 }
 
 /**
@@ -291,22 +298,184 @@ export async function transcribeWithMetrics(audioBlob, meta = {}, options = {}) 
 }
 
 /**
- * Future-compatible API.
+ * Future-compatible API — Step 3 implementation.
  *
- * Today: equivalent to `transcribe`.
- * Tomorrow: single entry-point for STT → Intent Detection → Checklist Update.
+ * Calls POST /api/voice/process to perform STT → Intent classification
+ * server-side and returns an `IntentResult` plus latency metrics.
  *
- * Callers should prefer this name in new code; UI depends on
- * `voiceService.processVoice` so we can grow the pipeline without UI churn.
+ * In Step 4 the backend will additionally apply checklist actions, but
+ * this signature stays the same: the UI never has to change.
+ *
+ * @param {Blob} audioBlob
+ * @param {Object} args
+ * @param {string} args.procedureId            - identifier of the active procedure
+ * @param {Object} [args.context]              - minimal procedure context (NOT a patient record)
+ * @param {string} [args.context.procedureName]
+ * @param {string} [args.context.currentStep]
+ * @param {string[]} [args.context.pendingItems]
+ * @param {string[]} [args.context.completedItems]
+ * @param {number} [args.recordingMs]          - for dev-mode metrics block
+ * @param {Object} [options]                   - { timeoutMs, retries, signal }
+ * @returns {Promise<{
+ *   transcript: string,
+ *   intent: string,
+ *   confidence: number,
+ *   entity: string|null,
+ *   parameters: Object,
+ *   durations: { uploadMs:number, sttMs:number|null, intentMs:number|null, totalMs:number }
+ * }>}
  */
-export async function processVoice(audioBlob, options = {}) {
-  const { transcript, durations } = await transcribe(audioBlob, options);
-  return {
-    transcript,
-    intent: null,
-    checklistUpdate: null,
-    durations,
+export async function processVoice(audioBlob, args = {}, options = {}) {
+  const procedureId = args.procedureId;
+  if (!procedureId) {
+    throw new VoiceServiceError('UNKNOWN', 'processVoice requires a procedureId.');
+  }
+  if (!audioBlob || !(audioBlob instanceof Blob) || audioBlob.size === 0) {
+    throw new VoiceServiceError('EMPTY_AUDIO', ERROR_MESSAGES.EMPTY_AUDIO);
+  }
+
+  const timeoutMs = options.timeoutMs ?? DEFAULT_TIMEOUT_MS;
+  const retries = Math.max(0, options.retries ?? DEFAULT_RETRIES);
+  const filename = pickFilename(audioBlob);
+  const totalStart = performance.now();
+
+  // Build the multipart body once per call (we re-create FormData per
+  // attempt because some browsers consume the body on the first try).
+  const buildForm = () => {
+    const form = new FormData();
+    form.append('audio', audioBlob, filename);
+    form.append('procedureId', procedureId);
+    if (args.context && typeof args.context === 'object') {
+      form.append('context', JSON.stringify(args.context));
+    }
+    return form;
   };
+
+  let attempt = 0;
+  let lastError = null;
+
+  while (attempt <= retries) {
+    const attemptStart = performance.now();
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+
+    const onExternalAbort = () => controller.abort();
+    if (options.signal) {
+      if (options.signal.aborted) controller.abort();
+      else options.signal.addEventListener('abort', onExternalAbort, { once: true });
+    }
+
+    try {
+      const headers = {};
+      const auth = getAuthHeader();
+      if (auth) headers.Authorization = auth;
+
+      const response = await fetch(`${API_BASE}/voice/process`, {
+        method: 'POST',
+        body: buildForm(),
+        headers,
+        signal: controller.signal,
+      });
+
+      let payload = null;
+      try {
+        payload = await response.json();
+      } catch {
+        /* non-JSON */
+      }
+
+      if (!response.ok) {
+        const code = statusToCode(response.status);
+        const detail =
+          (payload && (payload.detail || payload.error || payload.message)) ||
+          ERROR_MESSAGES[code];
+        throw new VoiceServiceError(code, detail, { status: response.status });
+      }
+
+      // Defensive shape validation. The endpoint should always return these
+      // fields, but if it doesn't we degrade to UNKNOWN rather than crash.
+      const transcript = typeof payload?.transcript === 'string' ? payload.transcript : '';
+      const intent = typeof payload?.intent === 'string' ? payload.intent : 'UNKNOWN';
+      const confidence =
+        typeof payload?.confidence === 'number'
+          ? Math.max(0, Math.min(1, payload.confidence))
+          : 0;
+      const entity = typeof payload?.entity === 'string' ? payload.entity : null;
+      const parameters =
+        payload?.parameters && typeof payload.parameters === 'object'
+          ? payload.parameters
+          : {};
+
+      const roundTripMs = Math.round(performance.now() - attemptStart);
+      const totalMs = Math.round(performance.now() - totalStart);
+      const sttMs =
+        typeof payload?.metrics?.stt_ms === 'number' ? payload.metrics.stt_ms : null;
+      const intentMs =
+        typeof payload?.metrics?.intent_ms === 'number' ? payload.metrics.intent_ms : null;
+      const serverMs = (sttMs ?? 0) + (intentMs ?? 0);
+      const uploadMs =
+        sttMs != null || intentMs != null
+          ? Math.max(0, roundTripMs - serverMs)
+          : roundTripMs;
+
+      logVoiceMetrics({
+        recordingMs: args.recordingMs,
+        uploadMs,
+        sttMs,
+        intentMs,
+        totalMs,
+        intent,
+        confidence,
+      });
+
+      return {
+        transcript,
+        intent,
+        confidence,
+        entity,
+        parameters,
+        durations: { uploadMs, sttMs, intentMs, totalMs },
+      };
+    } catch (rawError) {
+      clearTimeout(timeoutId);
+      if (options.signal) {
+        options.signal.removeEventListener('abort', onExternalAbort);
+      }
+
+      let error = rawError;
+      if (rawError?.name === 'AbortError') {
+        if (options.signal?.aborted) {
+          throw new VoiceServiceError('UNKNOWN', 'Recording cancelled.', { cause: rawError });
+        }
+        error = new VoiceServiceError('TIMEOUT', ERROR_MESSAGES.TIMEOUT, { cause: rawError });
+      } else if (!(rawError instanceof VoiceServiceError)) {
+        error = new VoiceServiceError('UPLOAD_FAILED', ERROR_MESSAGES.UPLOAD_FAILED, {
+          cause: rawError,
+        });
+      }
+      lastError = error;
+
+      if (IS_DEV) {
+        console.warn('[voiceService.processVoice] attempt failed', {
+          attempt: attempt + 1,
+          code: error.code,
+          status: error.status,
+          message: error.message,
+        });
+      }
+
+      if (attempt < retries && shouldRetry(error)) {
+        await delay(400 * (attempt + 1));
+        attempt += 1;
+        continue;
+      }
+      throw error;
+    } finally {
+      clearTimeout(timeoutId);
+    }
+  }
+
+  throw lastError || new VoiceServiceError('UNKNOWN', ERROR_MESSAGES.UNKNOWN);
 }
 
 const voiceService = {
