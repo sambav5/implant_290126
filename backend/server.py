@@ -1490,6 +1490,7 @@ from routes.team_routes import router as team_router
 from routes.case_routes import router as case_router
 from routes.clinic_routes import router as clinic_router
 from routes.discussion_routes import router as discussion_router
+from routes.voice_routes import router as voice_router
 
 api_router.include_router(auth_router)  # Include WhatsApp auth routes
 api_router.include_router(user_router)  # Include user management routes
@@ -1497,6 +1498,7 @@ api_router.include_router(team_router)  # Include team management routes
 api_router.include_router(case_router)  # Include case management routes
 api_router.include_router(clinic_router)  # Include clinic settings routes
 api_router.include_router(discussion_router)  # Include discussion routes
+api_router.include_router(voice_router)  # Include voice / speech-to-text routes
 app.include_router(api_router)
 
 # CORS Configuration - Read from environment

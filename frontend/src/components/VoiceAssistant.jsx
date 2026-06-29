@@ -1,37 +1,53 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { Mic, Square } from 'lucide-react';
+import { Mic, Square, X, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 
 /**
- * VoiceAssistant
- * ---------------
- * Floating microphone control that records audio from the user's microphone
- * using the browser's MediaRecorder API. Audio is kept in memory only — it is
- * never persisted or sent to any backend. The component is intentionally
- * isolated so it can be reused on any screen.
+ * VoiceAssistant — PURE UI component.
+ *
+ * It records audio with MediaRecorder, manages local UI state (idle /
+ * listening / transcribing / showing transcript), and delegates the actual
+ * transcription work to the parent through the `transcribeAudio` callback.
+ *
+ * No API calls, no provider-specific logic, no network code lives here.
  *
  * Props:
+ *   - transcribeAudio?: (audioBlob: Blob, meta: { recordingMs: number }) => Promise<{ transcript: string }>
+ *       Provided by the parent. Returns the transcribed text. If omitted,
+ *       the component still records but won't show a transcript card.
  *   - onRecordingStarted?: () => void
- *       Called once recording successfully starts.
  *   - onRecordingStopped?: (audioBlob: Blob) => void
- *       Called when recording stops, with the captured audio Blob.
+ *   - onTranscriptReady?: (transcript: string, audioBlob: Blob) => void
+ *   - onError?: (error: Error) => void
  *   - className?: string
- *       Optional extra classes for the floating wrapper.
  */
 export default function VoiceAssistant({
+  transcribeAudio,
   onRecordingStarted,
   onRecordingStopped,
+  onTranscriptReady,
+  onError,
   className,
 }) {
-  const [isRecording, setIsRecording] = useState(false);
-  const [isStarting, setIsStarting] = useState(false);
+  // Mutually-exclusive UI status drives all visuals.
+  const [status, setStatus] = useState('idle'); // 'idle' | 'starting' | 'recording' | 'transcribing'
+  const [transcript, setTranscript] = useState(null);
 
   const mediaRecorderRef = useRef(null);
   const audioChunksRef = useRef([]);
   const mediaStreamRef = useRef(null);
+  const recordingStartedAtRef = useRef(null);
+  const cancelRequestedRef = useRef(false);
 
-  // Always release the mic stream on unmount.
+  const stopMediaStream = useCallback(() => {
+    if (mediaStreamRef.current) {
+      mediaStreamRef.current.getTracks().forEach((track) => track.stop());
+      mediaStreamRef.current = null;
+    }
+  }, []);
+
+  // Clean up on unmount.
   useEffect(() => {
     return () => {
       stopMediaStream();
@@ -43,24 +59,56 @@ export default function VoiceAssistant({
         }
       }
     };
-  }, []);
+  }, [stopMediaStream]);
 
-  const stopMediaStream = () => {
-    if (mediaStreamRef.current) {
-      mediaStreamRef.current.getTracks().forEach((track) => track.stop());
-      mediaStreamRef.current = null;
-    }
-  };
+  const runTranscription = useCallback(
+    async (audioBlob, recordingMs) => {
+      if (typeof transcribeAudio !== 'function') {
+        // Recording works on its own; transcription is optional.
+        return;
+      }
+      setStatus('transcribing');
+      try {
+        const result = await transcribeAudio(audioBlob, { recordingMs });
+        const text =
+          typeof result === 'string' ? result : (result?.transcript || '').trim();
+
+        if (!text) {
+          toast.message('No speech detected. Please try again.');
+          setStatus('idle');
+          return;
+        }
+
+        setTranscript(text);
+        setStatus('idle');
+        if (typeof onTranscriptReady === 'function') {
+          onTranscriptReady(text, audioBlob);
+        }
+      } catch (error) {
+        setStatus('idle');
+        const message =
+          error?.message || 'We couldn\u2019t transcribe that recording. Please try again.';
+        toast.error(message);
+        if (typeof onError === 'function') {
+          onError(error);
+        }
+      }
+    },
+    [onError, onTranscriptReady, transcribeAudio],
+  );
 
   const startRecording = useCallback(async () => {
-    if (isRecording || isStarting) return;
+    if (status !== 'idle') return;
 
     if (typeof navigator === 'undefined' || !navigator.mediaDevices?.getUserMedia) {
       toast.error('Microphone is not supported in this browser.');
       return;
     }
 
-    setIsStarting(true);
+    setStatus('starting');
+    setTranscript(null);
+    cancelRequestedRef.current = false;
+
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       mediaStreamRef.current = stream;
@@ -79,38 +127,61 @@ export default function VoiceAssistant({
         const audioBlob = new Blob(audioChunksRef.current, { type: mimeType });
         audioChunksRef.current = [];
         stopMediaStream();
-        setIsRecording(false);
+
+        const startedAt = recordingStartedAtRef.current;
+        const recordingMs =
+          typeof startedAt === 'number' ? Math.round(performance.now() - startedAt) : 0;
+        recordingStartedAtRef.current = null;
 
         if (typeof onRecordingStopped === 'function') {
           onRecordingStopped(audioBlob);
         }
-        toast.success('Voice recording captured.');
+         
+        console.info('[VoiceAssistant] recording stopped', {
+          sizeBytes: audioBlob.size,
+          recordingMs,
+          mimeType,
+        });
+
+        if (cancelRequestedRef.current) {
+          cancelRequestedRef.current = false;
+          setStatus('idle');
+          return;
+        }
+
+        if (!audioBlob.size) {
+          toast.error('No audio was captured. Please try again.');
+          setStatus('idle');
+          return;
+        }
+
+        runTranscription(audioBlob, recordingMs);
       };
 
       recorder.onerror = () => {
         stopMediaStream();
-        setIsRecording(false);
+        setStatus('idle');
         toast.error('Recording failed. Please try again.');
       };
 
       mediaRecorderRef.current = recorder;
       recorder.start();
-      setIsRecording(true);
+      recordingStartedAtRef.current = performance.now();
+      setStatus('recording');
 
       if (typeof onRecordingStarted === 'function') {
         onRecordingStarted();
       }
     } catch (error) {
       stopMediaStream();
+      setStatus('idle');
       const message =
         error?.name === 'NotAllowedError'
           ? 'Microphone permission denied.'
           : 'Unable to access microphone.';
       toast.error(message);
-    } finally {
-      setIsStarting(false);
     }
-  }, [isRecording, isStarting, onRecordingStarted, onRecordingStopped]);
+  }, [onRecordingStarted, onRecordingStopped, runTranscription, status, stopMediaStream]);
 
   const stopRecording = useCallback(() => {
     const recorder = mediaRecorderRef.current;
@@ -119,21 +190,32 @@ export default function VoiceAssistant({
         recorder.stop();
       } catch {
         stopMediaStream();
-        setIsRecording(false);
+        setStatus('idle');
       }
     } else {
       stopMediaStream();
-      setIsRecording(false);
+      setStatus('idle');
     }
-  }, []);
+  }, [stopMediaStream]);
 
   const handleToggle = useCallback(() => {
-    if (isRecording) {
+    if (status === 'recording') {
       stopRecording();
-    } else {
+    } else if (status === 'idle') {
       startRecording();
     }
-  }, [isRecording, startRecording, stopRecording]);
+  }, [status, startRecording, stopRecording]);
+
+  const isRecording = status === 'recording';
+  const isTranscribing = status === 'transcribing';
+  const isStarting = status === 'starting';
+  const isBusy = isStarting || isTranscribing;
+
+  const buttonAriaLabel = isRecording
+    ? 'Stop voice recording'
+    : isTranscribing
+      ? 'Transcribing audio'
+      : 'Start voice recording';
 
   return (
     <div
@@ -144,37 +226,85 @@ export default function VoiceAssistant({
       )}
       style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
     >
-      {isRecording && (
+      {/* Transcript floating card (shown after a successful transcription) */}
+      {transcript && (
+        <div
+          role="region"
+          aria-label="Transcript"
+          className="w-[min(360px,calc(100vw-3rem))] rounded-[2px] border border-divider bg-champagne p-4 shadow-lg"
+        >
+          <div className="mb-2 flex items-center justify-between">
+            <span className="text-[11px] uppercase tracking-[0.12em] text-warm-gray">
+              Transcript
+            </span>
+            <button
+              type="button"
+              aria-label="Dismiss transcript"
+              onClick={() => setTranscript(null)}
+              className="rounded-[2px] p-1 text-warm-gray hover:bg-divider hover:text-charcoal focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-forest"
+            >
+              <X className="h-3.5 w-3.5" />
+            </button>
+          </div>
+          <p className="text-sm leading-relaxed text-charcoal whitespace-pre-wrap">
+            {transcript}
+          </p>
+        </div>
+      )}
+
+      {/* Status card: Listening / Transcribing */}
+      {(isRecording || isTranscribing) && (
         <div
           role="status"
           aria-live="polite"
           className="flex items-center gap-2 rounded-[2px] border border-divider bg-champagne px-3 py-2 shadow-md"
         >
-          <span className="relative flex h-2.5 w-2.5">
-            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-500 opacity-75" />
-            <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-red-600" />
-          </span>
-          <span className="text-[12px] uppercase tracking-[0.12em] text-charcoal">
-            Listening…
-          </span>
+          {isRecording ? (
+            <>
+              <span className="relative flex h-2.5 w-2.5">
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-500 opacity-75" />
+                <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-red-600" />
+              </span>
+              <span className="text-[12px] uppercase tracking-[0.12em] text-charcoal">
+                Listening…
+              </span>
+            </>
+          ) : (
+            <>
+              <Loader2 className="h-3.5 w-3.5 animate-spin text-forest" />
+              <span className="text-[12px] uppercase tracking-[0.12em] text-charcoal">
+                Transcribing…
+              </span>
+            </>
+          )}
         </div>
       )}
 
+      {/* Mic button */}
       <button
         type="button"
         onClick={handleToggle}
-        disabled={isStarting}
+        disabled={isBusy}
         aria-pressed={isRecording}
-        aria-label={isRecording ? 'Stop voice recording' : 'Start voice recording'}
-        title={isRecording ? 'Stop recording' : 'Start voice recording'}
+        aria-busy={isTranscribing}
+        aria-label={buttonAriaLabel}
+        title={
+          isRecording
+            ? 'Stop recording'
+            : isTranscribing
+              ? 'Transcribing…'
+              : 'Start voice recording'
+        }
         className={cn(
           'group relative inline-flex h-14 w-14 items-center justify-center rounded-full',
           'shadow-lg transition-all duration-200 ease-out',
           'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-forest',
-          'disabled:opacity-60 disabled:cursor-not-allowed',
+          'disabled:cursor-not-allowed',
           isRecording
             ? 'bg-red-600 text-white hover:bg-red-700'
-            : 'bg-forest text-champagne hover:bg-[#142A22]',
+            : isTranscribing
+              ? 'bg-forest text-champagne opacity-80'
+              : 'bg-forest text-champagne hover:bg-[#142A22]',
         )}
       >
         {isRecording && (
@@ -186,6 +316,8 @@ export default function VoiceAssistant({
         <span className="relative flex items-center justify-center">
           {isRecording ? (
             <Square className="h-5 w-5" fill="currentColor" />
+          ) : isTranscribing ? (
+            <Loader2 className="h-6 w-6 animate-spin" />
           ) : (
             <Mic className="h-6 w-6" />
           )}

@@ -10,6 +10,7 @@ import { caseApi } from '@/services/api';
 import { userApi } from '@/api/userApi';
 import { deriveCaseContext, getRoutingVariant } from '@/lib/caseContext';
 import VoiceAssistant from '@/components/VoiceAssistant';
+import voiceService from '@/services/voiceService';
 
 const getStorageKey = (caseId) => `case_gate_data_${caseId}`;
 const getChecklistStorageKey = (caseId) => `case_checklist_progress_${caseId}`;
@@ -267,15 +268,25 @@ export default function CaseChecklistFlow() {
         </ChecklistProvider>
       </ContentContainer>
       <VoiceAssistant
+        transcribeAudio={async (audioBlob, meta) => {
+          // VoiceAssistant stays a pure UI component — all network/provider
+          // logic lives in voiceService. When we later switch to
+          // `processVoice(audio)` (STT → Intent → Checklist), only this
+          // line changes.
+          return voiceService.transcribeWithMetrics(audioBlob, meta);
+        }}
         onRecordingStarted={() => {
           // Hook for future: e.g., analytics, UI hints. No-op for now.
         }}
         onRecordingStopped={(audioBlob) => {
-          // Audio kept in memory only — speech-to-text will be wired up later.
+          // Audio kept in memory only — no persistence.
           console.log('Voice recording captured', {
             size: audioBlob?.size,
             type: audioBlob?.type,
           });
+        }}
+        onTranscriptReady={(transcript) => {
+          console.log('Transcript ready', transcript);
         }}
       />
     </AppLayout>
