@@ -3,19 +3,19 @@ import { Mic, Square, X, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 
+const IS_DEV = process.env.NODE_ENV === 'development';
+
 /**
  * VoiceAssistant — PURE UI component.
  *
- * It records audio with MediaRecorder, manages local UI state (idle /
- * listening / transcribing / showing transcript), and delegates the actual
- * transcription work to the parent through the `transcribeAudio` callback.
- *
- * No API calls, no provider-specific logic, no network code lives here.
+ * Records audio with MediaRecorder and manages local UI state
+ * (idle / starting / recording / transcribing). All network/provider work is
+ * delegated to the parent via the `transcribeAudio` callback. No API calls,
+ * no provider-specific code, no checklist logic lives here.
  *
  * Props:
- *   - transcribeAudio?: (audioBlob: Blob, meta: { recordingMs: number }) => Promise<{ transcript: string }>
- *       Provided by the parent. Returns the transcribed text. If omitted,
- *       the component still records but won't show a transcript card.
+ *   - transcribeAudio?: (audioBlob: Blob, meta: { recordingMs: number }) =>
+ *       Promise<{ transcript: string } | string>
  *   - onRecordingStarted?: () => void
  *   - onRecordingStopped?: (audioBlob: Blob) => void
  *   - onTranscriptReady?: (transcript: string, audioBlob: Blob) => void
@@ -30,7 +30,6 @@ export default function VoiceAssistant({
   onError,
   className,
 }) {
-  // Mutually-exclusive UI status drives all visuals.
   const [status, setStatus] = useState('idle'); // 'idle' | 'starting' | 'recording' | 'transcribing'
   const [transcript, setTranscript] = useState(null);
 
@@ -39,28 +38,71 @@ export default function VoiceAssistant({
   const mediaStreamRef = useRef(null);
   const recordingStartedAtRef = useRef(null);
   const cancelRequestedRef = useRef(false);
+  const isUnmountedRef = useRef(false);
 
-  const stopMediaStream = useCallback(() => {
+  // ----- Resource management -------------------------------------------------
+  const releaseMediaStream = useCallback(() => {
     if (mediaStreamRef.current) {
-      mediaStreamRef.current.getTracks().forEach((track) => track.stop());
-      mediaStreamRef.current = null;
+      try {
+        mediaStreamRef.current.getTracks().forEach((track) => {
+          try {
+            track.stop();
+          } catch {
+            /* no-op */
+          }
+        });
+      } finally {
+        mediaStreamRef.current = null;
+      }
     }
   }, []);
 
-  // Clean up on unmount.
+  const disposeRecorder = useCallback(() => {
+    const recorder = mediaRecorderRef.current;
+    if (recorder) {
+      try {
+        // Detach event handlers BEFORE stopping so a late onstop callback
+        // can't touch unmounted-component state.
+        recorder.ondataavailable = null;
+        recorder.onstop = null;
+        recorder.onerror = null;
+        if (recorder.state !== 'inactive') {
+          recorder.stop();
+        }
+      } catch {
+        /* no-op */
+      }
+      mediaRecorderRef.current = null;
+    }
+    audioChunksRef.current = [];
+  }, []);
+
+  // Always release resources on unmount.
   useEffect(() => {
     return () => {
-      stopMediaStream();
-      if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
-        try {
-          mediaRecorderRef.current.stop();
-        } catch {
-          /* no-op */
-        }
+      isUnmountedRef.current = true;
+      disposeRecorder();
+      releaseMediaStream();
+    };
+  }, [disposeRecorder, releaseMediaStream]);
+
+  // Safety: also release if the page becomes hidden during a long recording.
+  // The browser will release the mic on unload, but explicit cleanup avoids
+  // lingering active tracks during background tab transitions.
+  useEffect(() => {
+    const onPageHide = () => {
+      try {
+        disposeRecorder();
+        releaseMediaStream();
+      } catch {
+        /* no-op */
       }
     };
-  }, [stopMediaStream]);
+    window.addEventListener('pagehide', onPageHide);
+    return () => window.removeEventListener('pagehide', onPageHide);
+  }, [disposeRecorder, releaseMediaStream]);
 
+  // ----- Transcription delegate ---------------------------------------------
   const runTranscription = useCallback(
     async (audioBlob, recordingMs) => {
       if (typeof transcribeAudio !== 'function') {
@@ -70,6 +112,8 @@ export default function VoiceAssistant({
       setStatus('transcribing');
       try {
         const result = await transcribeAudio(audioBlob, { recordingMs });
+        if (isUnmountedRef.current) return;
+
         const text =
           typeof result === 'string' ? result : (result?.transcript || '').trim();
 
@@ -85,6 +129,7 @@ export default function VoiceAssistant({
           onTranscriptReady(text, audioBlob);
         }
       } catch (error) {
+        if (isUnmountedRef.current) return;
         setStatus('idle');
         const message =
           error?.message || 'We couldn\u2019t transcribe that recording. Please try again.';
@@ -97,6 +142,7 @@ export default function VoiceAssistant({
     [onError, onTranscriptReady, transcribeAudio],
   );
 
+  // ----- Recording lifecycle ------------------------------------------------
   const startRecording = useCallback(async () => {
     if (status !== 'idle') return;
 
@@ -109,8 +155,14 @@ export default function VoiceAssistant({
     setTranscript(null);
     cancelRequestedRef.current = false;
 
+    let stream = null;
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      if (isUnmountedRef.current) {
+        // Component went away while the permission prompt was open.
+        stream.getTracks().forEach((t) => t.stop());
+        return;
+      }
       mediaStreamRef.current = stream;
 
       const recorder = new MediaRecorder(stream);
@@ -125,23 +177,29 @@ export default function VoiceAssistant({
       recorder.onstop = () => {
         const mimeType = recorder.mimeType || 'audio/webm';
         const audioBlob = new Blob(audioChunksRef.current, { type: mimeType });
+        // Free chunk references promptly so the GC can reclaim memory.
         audioChunksRef.current = [];
-        stopMediaStream();
+        releaseMediaStream();
 
         const startedAt = recordingStartedAtRef.current;
         const recordingMs =
           typeof startedAt === 'number' ? Math.round(performance.now() - startedAt) : 0;
         recordingStartedAtRef.current = null;
 
+        if (isUnmountedRef.current) return;
+
         if (typeof onRecordingStopped === 'function') {
           onRecordingStopped(audioBlob);
         }
-         
-        console.info('[VoiceAssistant] recording stopped', {
-          sizeBytes: audioBlob.size,
-          recordingMs,
-          mimeType,
-        });
+
+        if (IS_DEV) {
+           
+          console.debug('[VoiceAssistant] recording stopped', {
+            sizeBytes: audioBlob.size,
+            recordingMs,
+            mimeType,
+          });
+        }
 
         if (cancelRequestedRef.current) {
           cancelRequestedRef.current = false;
@@ -159,7 +217,8 @@ export default function VoiceAssistant({
       };
 
       recorder.onerror = () => {
-        stopMediaStream();
+        releaseMediaStream();
+        if (isUnmountedRef.current) return;
         setStatus('idle');
         toast.error('Recording failed. Please try again.');
       };
@@ -173,15 +232,26 @@ export default function VoiceAssistant({
         onRecordingStarted();
       }
     } catch (error) {
-      stopMediaStream();
+      // Always free a partial stream on failure.
+      if (stream) {
+        try {
+          stream.getTracks().forEach((t) => t.stop());
+        } catch {
+          /* no-op */
+        }
+      }
+      releaseMediaStream();
+      if (isUnmountedRef.current) return;
       setStatus('idle');
       const message =
         error?.name === 'NotAllowedError'
-          ? 'Microphone permission denied.'
-          : 'Unable to access microphone.';
+          ? 'Microphone permission denied. Enable mic access in your browser to use voice.'
+          : error?.name === 'NotFoundError'
+            ? 'No microphone was found on this device.'
+            : 'Unable to access microphone.';
       toast.error(message);
     }
-  }, [onRecordingStarted, onRecordingStopped, runTranscription, status, stopMediaStream]);
+  }, [onRecordingStarted, onRecordingStopped, releaseMediaStream, runTranscription, status]);
 
   const stopRecording = useCallback(() => {
     const recorder = mediaRecorderRef.current;
@@ -189,14 +259,14 @@ export default function VoiceAssistant({
       try {
         recorder.stop();
       } catch {
-        stopMediaStream();
+        releaseMediaStream();
         setStatus('idle');
       }
     } else {
-      stopMediaStream();
+      releaseMediaStream();
       setStatus('idle');
     }
-  }, [stopMediaStream]);
+  }, [releaseMediaStream]);
 
   const handleToggle = useCallback(() => {
     if (status === 'recording') {
@@ -206,6 +276,7 @@ export default function VoiceAssistant({
     }
   }, [status, startRecording, stopRecording]);
 
+  // ----- Render --------------------------------------------------------------
   const isRecording = status === 'recording';
   const isTranscribing = status === 'transcribing';
   const isStarting = status === 'starting';
@@ -226,7 +297,6 @@ export default function VoiceAssistant({
       )}
       style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
     >
-      {/* Transcript floating card (shown after a successful transcription) */}
       {transcript && (
         <div
           role="region"
@@ -252,7 +322,6 @@ export default function VoiceAssistant({
         </div>
       )}
 
-      {/* Status card: Listening / Transcribing */}
       {(isRecording || isTranscribing) && (
         <div
           role="status"
@@ -280,7 +349,6 @@ export default function VoiceAssistant({
         </div>
       )}
 
-      {/* Mic button */}
       <button
         type="button"
         onClick={handleToggle}

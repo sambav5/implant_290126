@@ -33,9 +33,17 @@ logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/voice", tags=["voice"])
 
 
+class TranscriptionMetrics(BaseModel):
+    stt_ms: int
+    server_total_ms: int
+    upload_read_ms: int
+    size_bytes: int
+
+
 class TranscriptionResponse(BaseModel):
     success: bool
     transcript: str
+    metrics: Optional[TranscriptionMetrics] = None
 
 
 class TranscriptionErrorResponse(BaseModel):
@@ -130,4 +138,13 @@ async def transcribe_voice(
     # Discard the bytes — we never persist audio or transcripts.
     del audio_bytes
 
-    return TranscriptionResponse(success=True, transcript=transcript)
+    return TranscriptionResponse(
+        success=True,
+        transcript=transcript,
+        metrics=TranscriptionMetrics(
+            stt_ms=stt_ms,
+            server_total_ms=total_ms,
+            upload_read_ms=upload_ms,
+            size_bytes=size_bytes,
+        ),
+    )

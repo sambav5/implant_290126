@@ -4,30 +4,31 @@
  * Single source of truth for voice-related API calls. The React UI must
  * never call /api directly — it should depend on this module.
  *
- * Today: transcribe(audioBlob) → { transcript, ... }
+ * Today: transcribe(audioBlob) → { transcript, durations, ... }
  * Tomorrow: processVoice(audioBlob) → { transcript, intent, checklistUpdate }
  *
- * The UI calls a stable method (e.g. `transcribeAudio`) which can be remapped
- * to `processVoice` later without any UI changes.
+ * The UI calls a stable method (e.g. `transcribeAudio` prop) which can be
+ * remapped to `processVoice` later without any UI changes.
  */
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || '';
 const API_BASE = BACKEND_URL ? `${BACKEND_URL}/api` : '/api';
 
-const DEFAULT_TIMEOUT_MS = 35_000; // a bit larger than backend's 30s STT timeout
+const DEFAULT_TIMEOUT_MS = 35_000; // > backend's 30s STT timeout
 const DEFAULT_RETRIES = 1;
 const DEFAULT_FILENAME = 'recording.webm';
+const IS_DEV = process.env.NODE_ENV === 'development';
 
 /**
- * Public error class. UI components can switch on `error.code` to render
+ * Public error class. UI components switch on `error.code` to render
  * messages without coupling to provider internals.
  */
 export class VoiceServiceError extends Error {
   constructor(code, message, { status, cause } = {}) {
     super(message);
     this.name = 'VoiceServiceError';
-    this.code = code;       // EMPTY_AUDIO | UPLOAD_FAILED | TIMEOUT | STT_FAILED | UNSUPPORTED | TOO_LARGE | NOT_CONFIGURED | UNKNOWN
-    this.status = status;   // HTTP status if available
+    this.code = code;
+    this.status = status;
     if (cause) this.cause = cause;
   }
 }
@@ -77,6 +78,35 @@ function pickFilename(blob) {
 }
 
 /**
+ * Format a millisecond number for log lines: "145ms" or "2.80s" or "1.05s".
+ */
+export function formatDuration(ms) {
+  if (ms == null || Number.isNaN(ms)) return 'n/a';
+  if (ms < 1000) return `${Math.round(ms)}ms`;
+  return `${(ms / 1000).toFixed(2)}s`;
+}
+
+/**
+ * Print the formatted "Voice Metrics" block in DEV mode only.
+ * Safe to call with partial data — missing fields render as "n/a".
+ */
+export function logVoiceMetrics(metrics = {}) {
+  if (!IS_DEV) return;
+  const { recordingMs, uploadMs, sttMs, totalMs } = metrics;
+   
+  console.log(
+    [
+      'Voice Metrics',
+      '-------------',
+      `Recording:      ${formatDuration(recordingMs)}`,
+      `Upload:         ${formatDuration(uploadMs)}`,
+      `Speech-to-Text: ${formatDuration(sttMs)}`,
+      `Total:          ${formatDuration(totalMs)}`,
+    ].join('\n'),
+  );
+}
+
+/**
  * Low-level upload with timeout. Single attempt; retry handled by caller.
  */
 async function uploadOnce(audioBlob, { signal, filename }) {
@@ -98,7 +128,7 @@ async function uploadOnce(audioBlob, { signal, filename }) {
   try {
     payload = await response.json();
   } catch {
-    // non-JSON response; we'll fall back to status-based error mapping
+    // non-JSON response; fall back to status-based error mapping
   }
 
   if (!response.ok) {
@@ -135,7 +165,14 @@ function delay(ms) {
  * @param {number} [options.timeoutMs=35000]
  * @param {number} [options.retries=1]
  * @param {AbortSignal} [options.signal]
- * @returns {Promise<{ transcript: string, durations: { uploadMs: number, totalMs: number, recordingMs?: number } }>}
+ * @returns {Promise<{
+ *   transcript: string,
+ *   durations: {
+ *     uploadMs: number,    // network + server overhead (excludes STT compute)
+ *     sttMs: number|null,  // provider-reported speech-to-text time
+ *     totalMs: number,     // request fired → response received
+ *   }
+ * }>}
  */
 export async function transcribe(audioBlob, options = {}) {
   const timeoutMs = options.timeoutMs ?? DEFAULT_TIMEOUT_MS;
@@ -155,7 +192,6 @@ export async function transcribe(audioBlob, options = {}) {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
 
-    // Allow external cancellation to also abort the in-flight request.
     const onExternalAbort = () => controller.abort();
     if (options.signal) {
       if (options.signal.aborted) controller.abort();
@@ -168,22 +204,29 @@ export async function transcribe(audioBlob, options = {}) {
         filename,
       });
 
-      const uploadMs = Math.round(performance.now() - attemptStart);
+      const roundTripMs = Math.round(performance.now() - attemptStart);
       const totalMs = Math.round(performance.now() - totalStart);
+      const sttMs =
+        typeof payload?.metrics?.stt_ms === 'number' ? payload.metrics.stt_ms : null;
+      // "Upload" = everything that isn't STT compute (network + server overhead).
+      const uploadMs =
+        sttMs != null ? Math.max(0, roundTripMs - sttMs) : roundTripMs;
 
-      // Logging hook for latency optimization (recording duration is added
-      // by the caller — see `transcribeWithMetrics`).
-       
-      console.info('[voiceService.transcribe] success', {
-        attempt: attempt + 1,
-        sizeBytes: audioBlob.size,
-        uploadMs,
-        totalMs,
-      });
+      if (IS_DEV) {
+         
+        console.debug('[voiceService.transcribe] success', {
+          attempt: attempt + 1,
+          sizeBytes: audioBlob.size,
+          roundTripMs,
+          uploadMs,
+          sttMs,
+          totalMs,
+        });
+      }
 
       return {
         transcript: (payload.transcript || '').trim(),
-        durations: { uploadMs, totalMs },
+        durations: { uploadMs, sttMs, totalMs },
       };
     } catch (rawError) {
       clearTimeout(timeoutId);
@@ -204,13 +247,15 @@ export async function transcribe(audioBlob, options = {}) {
       }
       lastError = error;
 
-       
-      console.warn('[voiceService.transcribe] attempt failed', {
-        attempt: attempt + 1,
-        code: error.code,
-        status: error.status,
-        message: error.message,
-      });
+      if (IS_DEV) {
+         
+        console.warn('[voiceService.transcribe] attempt failed', {
+          attempt: attempt + 1,
+          code: error.code,
+          status: error.status,
+          message: error.message,
+        });
+      }
 
       if (attempt < retries && shouldRetry(error)) {
         await delay(400 * (attempt + 1));
@@ -223,24 +268,23 @@ export async function transcribe(audioBlob, options = {}) {
     }
   }
 
-  // Should never reach here, but keep TypeScript-style safety.
   throw lastError || new VoiceServiceError('UNKNOWN', ERROR_MESSAGES.UNKNOWN);
 }
 
 /**
  * Convenience wrapper used by callers that know how long the user recorded.
- * Logs recording + upload + total durations together for latency analysis.
+ * Emits a single formatted dev-only metrics block.
  *
  * @param {Blob} audioBlob
  * @param {{ recordingMs?: number }} [meta]
- * @param {Object} [options] - forwarded to transcribe()
+ * @param {Object} [options]
  */
 export async function transcribeWithMetrics(audioBlob, meta = {}, options = {}) {
   const result = await transcribe(audioBlob, options);
-   
-  console.info('[voiceService.transcribeWithMetrics] timings', {
-    recordingMs: meta.recordingMs ?? null,
+  logVoiceMetrics({
+    recordingMs: meta.recordingMs,
     uploadMs: result.durations.uploadMs,
+    sttMs: result.durations.sttMs,
     totalMs: result.durations.totalMs,
   });
   return result;
@@ -250,18 +294,17 @@ export async function transcribeWithMetrics(audioBlob, meta = {}, options = {}) 
  * Future-compatible API.
  *
  * Today: equivalent to `transcribe`.
- * Tomorrow: this is the single entry-point that will run
- *   Speech-to-Text → Intent Detection → Checklist Update.
+ * Tomorrow: single entry-point for STT → Intent Detection → Checklist Update.
  *
- * Callers should prefer this name in new code; UI should depend on
- * `voiceService.processVoice` so we can grow the pipeline without churn.
+ * Callers should prefer this name in new code; UI depends on
+ * `voiceService.processVoice` so we can grow the pipeline without UI churn.
  */
 export async function processVoice(audioBlob, options = {}) {
   const { transcript, durations } = await transcribe(audioBlob, options);
   return {
     transcript,
-    intent: null,             // placeholder — populated by future intent step
-    checklistUpdate: null,    // placeholder — populated by future checklist step
+    intent: null,
+    checklistUpdate: null,
     durations,
   };
 }
@@ -270,6 +313,8 @@ const voiceService = {
   transcribe,
   transcribeWithMetrics,
   processVoice,
+  logVoiceMetrics,
+  formatDuration,
   VoiceServiceError,
   ERROR_MESSAGES,
 };

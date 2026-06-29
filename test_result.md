@@ -135,11 +135,27 @@ backend:
                   EmptyAudioError -> 400, AudioTooLargeError -> 413,
                   UnsupportedAudioFormatError -> 415, ProviderTimeoutError -> 504,
                   ProviderConfigurationError -> 503, ProviderUpstreamError -> 502.
-                Returns {"success": true, "transcript": "..."}. Audio never persisted.
-                Logs upload_ms, stt_ms, total_ms, size_bytes for latency analysis.
+                Returns {"success": true, "transcript": "...", "metrics": {...}}.
+                Audio never persisted. Logs upload_ms, stt_ms, total_ms, size_bytes.
             Router registered in server.py. backend/.env updated with EMERGENT_LLM_KEY +
             SPEECH_TO_TEXT_* env vars. emergentintegrations added to requirements.txt.
-            Smoke-tested locally with a tiny silent wav: 200 OK, valid response shape.
+        - working: true
+          agent: "testing"
+          comment: |
+            All 8 scenarios PASS: happy path (200), missing field (422), empty (400),
+            unsupported format (415 after fix), too large (413), no persistence,
+            timing logs present, controller imports only from services.speech_to_text.
+        - working: "NA"
+          agent: "main"
+          comment: |
+            Step 2 polish:
+              - Tightened _resolve_extension to return None when neither filename nor
+                MIME indicates a supported audio container -> route now returns 415
+                (was 502 via Whisper) for clearly non-audio uploads.
+              - Backend response now also includes a `metrics` object
+                ({ stt_ms, server_total_ms, upload_read_ms, size_bytes }) so the
+                client can split "Speech-to-Text" from "Upload" latency.
+            No architectural change; provider abstraction still respected.
         - working: true
           agent: "testing"
           comment: |
@@ -197,18 +213,58 @@ frontend:
               retry on 5xx/network, AbortSignal support, and maps backend
               statuses to VoiceServiceError codes
               (EMPTY_AUDIO/UPLOAD_FAILED/TIMEOUT/STT_FAILED/UNSUPPORTED/
-               TOO_LARGE/NOT_CONFIGURED/UNKNOWN). Logs upload/total durations.
-              Sends Authorization header from clinician_auth_session if present.
-            - VoiceAssistant.jsx: refactored to remain a PURE UI component.
-              No fetch calls. Accepts transcribeAudio prop; manages internal
-              status state (idle/starting/recording/transcribing). Shows
-              "Listening…" while recording (red pulse), disables the mic and
-              shows "Transcribing…" while awaiting result, then renders a
-              floating transcript card with dismiss button. Error → toast.
+               TOO_LARGE/NOT_CONFIGURED/UNKNOWN). Sends Authorization header
+              from clinician_auth_session if present.
+            - VoiceAssistant.jsx: PURE UI component. No fetch calls. Accepts
+              transcribeAudio prop; manages internal status state
+              (idle/starting/recording/transcribing). Shows "Listening…"
+              while recording (red pulse), disables mic + shows "Transcribing…"
+              while awaiting result, then renders a floating transcript card
+              with dismiss button. Errors -> toast.
             - CaseChecklistFlow.jsx: passes
                 transcribeAudio={(blob, meta) =>
                   voiceService.transcribeWithMetrics(blob, meta)}
-              so swapping to processVoice() later requires a one-line change.
+              so swapping to processVoice() later is a one-line change.
+        - working: "NA"
+          agent: "main"
+          comment: |
+            Step 2 polish:
+              - Performance logging: voiceService.logVoiceMetrics emits a single
+                formatted "Voice Metrics" block in NODE_ENV=development only,
+                covering Recording / Upload / Speech-to-Text / Total.
+                  Recording   = local timer in VoiceAssistant (recorder start -> stop)
+                  Upload      = roundTripMs - stt_ms (network + server overhead)
+                  STT         = backend-reported metrics.stt_ms
+                  Total       = client-side time from request fired -> response received
+              - Cleanup hardening in VoiceAssistant:
+                  * isUnmountedRef guards all setState calls in async paths
+                  * disposeRecorder() nulls ondataavailable/onstop/onerror BEFORE
+                    stopping so stale callbacks can't touch an unmounted component
+                  * releaseMediaStream() is idempotent and called on:
+                      onstop, onerror, getUserMedia catch, stopRecording fallback,
+                      unmount, and `pagehide` event (background tab safety)
+                  * audioChunksRef is reset to [] immediately after building the
+                    Blob so chunk memory is freed promptly
+                  * If getUserMedia resolves AFTER unmount, the tracks are stopped
+                    immediately and the component exits without state mutation.
+              - Architecture preserved end-to-end:
+                  VoiceAssistant (UI only) -> voiceService -> /api/voice/transcribe
+                  -> SpeechToTextProvider -> OpenAIWhisperProvider
+                Verified VoiceAssistant.jsx has zero `fetch`/`axios`/`api`
+                imports, and voice_routes.py has zero provider-specific imports.
+            Code-level review against the 6 manual scenarios:
+              1. Happy path: record -> blob -> transcribe -> transcript card + dev
+                 metrics block.
+              2. Empty recording: onstop catches blob.size === 0 -> toast, no card.
+                 Whisper returning empty string -> "No speech detected" toast.
+              3. Long voice command: streams until stop. Backend enforces 25MB cap
+                 (SPEECH_TO_TEXT_MAX_BYTES) -> 413 -> "Recording is too long".
+              4. Multiple consecutive recordings: setTranscript(null) on each
+                 start; chunks/refs reset; previous stream released in onstop.
+              5. Mic permission denied: NotAllowedError -> stream released ->
+                 user-friendly toast; status returns to idle.
+              6. Browser refresh while recording: browser releases media tracks on
+                 unload; `pagehide` listener also explicitly stops everything.
 
 metadata:
   created_by: "main_agent"
