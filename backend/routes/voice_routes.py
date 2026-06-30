@@ -21,10 +21,11 @@ from __future__ import annotations
 
 import json
 import logging
+import os
 import time
 from typing import Any, Dict, List, Optional
 
-from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile
+from fastapi import APIRouter, Depends, File, Form, HTTPException, Request, UploadFile
 from pydantic import BaseModel, Field
 
 from services.speech_to_text import (
@@ -46,9 +47,16 @@ from services.intent_engine import (
     ProcedureContext,
     get_intent_engine,
 )
+from services.voice_orchestrator import (
+    ActionResult,
+    VoiceCommandOrchestrator,
+    get_voice_orchestrator,
+)
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/voice", tags=["voice"])
+
+_IS_DEV = os.environ.get("APP_ENV", "development").lower() in {"dev", "development", "local"}
 
 
 # --------------------------------------------------------------------------- #
@@ -70,12 +78,19 @@ class TranscriptionResponse(BaseModel):
 class ProcessVoiceMetrics(BaseModel):
     stt_ms: int
     intent_ms: int
+    orchestrator_ms: int = 0
     server_total_ms: int
     upload_read_ms: int
     size_bytes: int
 
 
+class VoiceActionPayload(BaseModel):
+    type: str = "none"
+    data: Dict[str, Any] = Field(default_factory=dict)
+
+
 class ProcessVoiceResponse(BaseModel):
+    # ----- legacy Step 3 fields (preserved verbatim) -----
     success: bool
     transcript: str
     intent: str
@@ -83,6 +98,11 @@ class ProcessVoiceResponse(BaseModel):
     entity: Optional[str] = None
     parameters: Dict[str, Any] = Field(default_factory=dict)
     metrics: Optional[ProcessVoiceMetrics] = None
+    # ----- Step 4 additions (additive only) --------------
+    requiresConfirmation: bool = False
+    message: Optional[str] = None
+    action: Optional[VoiceActionPayload] = None
+    threshold: Optional[float] = None
 
 
 # --------------------------------------------------------------------------- #
@@ -102,6 +122,32 @@ def _intent_engine_dependency() -> IntentEngine:
     except IntentEngineConfigurationError as exc:
         logger.error("Intent engine not configured: %s", exc)
         raise HTTPException(status_code=503, detail=exc.user_message) from exc
+
+
+def _voice_orchestrator_dependency(request: Request) -> VoiceCommandOrchestrator:
+    """Resolve the orchestrator using the Motor DB stored at app startup.
+
+    The orchestrator owns NO state - it's a thin dispatcher over the
+    three domain services. We never expose the DB to the route directly.
+    """
+    db = getattr(request.app.state, "db", None)
+    if db is None:
+        raise HTTPException(
+            status_code=503,
+            detail="Database is not available. Try again shortly.",
+        )
+    return get_voice_orchestrator(db)
+
+
+def _current_user_optional(request: Request) -> Optional[Dict[str, Any]]:
+    """Best-effort user resolution from the request state.
+
+    Voice endpoints are intentionally open for MVP; if your auth
+    middleware ever sets `request.state.user`, the orchestrator will
+    pick it up and stamp writes with the user's identity.
+    """
+    user = getattr(request.state, "user", None)
+    return user if isinstance(user, dict) else None
 
 
 # --------------------------------------------------------------------------- #
@@ -257,24 +303,34 @@ async def transcribe_voice(
 
 @router.post("/process", response_model=ProcessVoiceResponse)
 async def process_voice(
+    request: Request,
     audio: UploadFile = File(..., description="Audio blob (webm/mp3/m4a/wav/...)"),
     procedureId: str = Form(..., description="Identifier of the active procedure."),
     context: Optional[str] = Form(
         None,
         description=(
-            "Optional JSON string with minimal procedure context: "
+            "Optional JSON string with minimal procedure context (HINT ONLY - "
+            "the orchestrator re-reads the canonical checklist from the DB): "
             '{"procedureName": str, "currentStep": str, '
             '"pendingItems": [str], "completedItems": [str]}.'
         ),
     ),
     stt_provider: SpeechToTextProvider = Depends(_stt_provider_dependency),
     intent_engine: IntentEngine = Depends(_intent_engine_dependency),
+    orchestrator: VoiceCommandOrchestrator = Depends(_voice_orchestrator_dependency),
 ) -> ProcessVoiceResponse:
-    """Transcribe → classify intent → return structured JSON.
+    """Transcribe -> classify intent -> orchestrate action -> return result.
 
-    PARSING ONLY. Does not update the checklist, save notes, or touch the
-    database. The endpoint depends solely on the SpeechToTextProvider and
-    IntentEngine abstractions; provider-specific code lives behind them.
+    Pipeline:
+        upload bytes -> SpeechToText -> IntentEngine -> VoiceCommandOrchestrator
+    The orchestrator delegates writes to ChecklistService / NotesService /
+    ProcedureService. The controller itself performs NO DB I/O and contains
+    NO business logic.
+
+    The `context` form field is a HINT for the intent engine only (to help
+    entity-name disambiguation). The orchestrator ignores it and re-reads
+    the canonical checklist from MongoDB via ChecklistService - the
+    backend is the source of truth.
     """
     total_started = time.perf_counter()
 
@@ -290,12 +346,14 @@ async def process_voice(
     content_type: Optional[str] = audio.content_type
     size_bytes = len(audio_bytes)
 
-    logger.info(
-        "voice.process upload_received stt_provider=%s intent_engine=%s "
-        "procedure_id=%s filename=%s content_type=%s size_bytes=%d upload_ms=%d",
-        stt_provider.name, intent_engine.name, procedureId, filename,
-        content_type, size_bytes, upload_ms,
-    )
+    if _IS_DEV:
+        logger.info(
+            "voice.process upload_received stt_provider=%s intent_engine=%s "
+            "orchestrator=%s procedure_id=%s filename=%s content_type=%s "
+            "size_bytes=%d upload_ms=%d",
+            stt_provider.name, intent_engine.name, orchestrator.name,
+            procedureId, filename, content_type, size_bytes, upload_ms,
+        )
 
     # ---- 2) Speech to text --------------------------------------------
     stt_started = time.perf_counter()
@@ -305,7 +363,7 @@ async def process_voice(
     stt_ms = int((time.perf_counter() - stt_started) * 1000)
     del audio_bytes  # never persist
 
-    # If STT yielded nothing usable, short-circuit with UNKNOWN — do not
+    # If STT yielded nothing usable, short-circuit with UNKNOWN - do not
     # waste a model call.
     if not transcript:
         intent_result = IntentResult(
@@ -322,19 +380,36 @@ async def process_voice(
         intent_result = await intent_engine.process(transcript, proc_context)
         intent_ms = int((time.perf_counter() - intent_started) * 1000)
 
+    # ---- 4) Orchestration (confidence gate + dispatch) ----------------
+    user = _current_user_optional(request)
+    orch_started = time.perf_counter()
+    action_result: ActionResult = await orchestrator.execute(
+        intent_result,
+        procedure_id=procedureId,
+        user=user,
+    )
+    orch_ms = int((time.perf_counter() - orch_started) * 1000)
+
     total_ms = int((time.perf_counter() - total_started) * 1000)
 
-    logger.info(
-        "voice.process completed stt_provider=%s intent_engine=%s "
-        "procedure_id=%s size_bytes=%d upload_ms=%d stt_ms=%d intent_ms=%d "
-        "total_ms=%d transcript_chars=%d intent=%s confidence=%.3f entity=%r",
-        stt_provider.name, intent_engine.name, procedureId, size_bytes,
-        upload_ms, stt_ms, intent_ms, total_ms, len(transcript),
-        intent_result.intent.value, intent_result.confidence, intent_result.entity,
-    )
+    if _IS_DEV:
+        logger.info(
+            "voice.process completed stt_provider=%s intent_engine=%s "
+            "orchestrator=%s procedure_id=%s size_bytes=%d upload_ms=%d "
+            "stt_ms=%d intent_ms=%d orch_ms=%d total_ms=%d "
+            "transcript_chars=%d intent=%s confidence=%.3f "
+            "threshold=%.2f action_status=%s action_type=%s "
+            "requires_confirmation=%s",
+            stt_provider.name, intent_engine.name, orchestrator.name,
+            procedureId, size_bytes, upload_ms, stt_ms, intent_ms, orch_ms,
+            total_ms, len(transcript),
+            intent_result.intent.value, intent_result.confidence,
+            action_result.threshold, action_result.status.value,
+            action_result.action.type.value, action_result.requires_confirmation,
+        )
 
     return ProcessVoiceResponse(
-        success=True,
+        success=action_result.success,
         transcript=intent_result.transcript,
         intent=intent_result.intent.value,
         confidence=round(intent_result.confidence, 4),
@@ -343,8 +418,16 @@ async def process_voice(
         metrics=ProcessVoiceMetrics(
             stt_ms=stt_ms,
             intent_ms=intent_ms,
+            orchestrator_ms=orch_ms,
             server_total_ms=total_ms,
             upload_read_ms=upload_ms,
             size_bytes=size_bytes,
         ),
+        requiresConfirmation=action_result.requires_confirmation,
+        message=action_result.message,
+        action=VoiceActionPayload(
+            type=action_result.action.type.value,
+            data=action_result.action.data,
+        ),
+        threshold=action_result.threshold,
     )

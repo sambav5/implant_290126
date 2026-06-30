@@ -195,6 +195,120 @@ backend:
             EMERGENT_LLM_KEY is properly configured. All error handling paths tested.
             Endpoint is production-ready.
 
+  - task: "VoiceCommandOrchestrator (Step 4) — confidence-gated dispatch into ChecklistService/NotesService/ProcedureService"
+    implemented: true
+    working: true
+    file: "backend/services/voice_orchestrator/*, backend/services/checklist_service.py, backend/services/notes_service.py, backend/services/procedure_service.py, backend/routes/voice_routes.py, backend/tests/test_voice_orchestrator.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: |
+            Step 4 — VoiceCommandOrchestrator added (NOT a ChecklistActionExecutor).
+
+            New backend modules:
+              - services/checklist_service.py — flattens nested
+                prostheticChecklist + legacy treatment/pre/post lists into
+                a uniform ChecklistItemView. Exposes get_checklist() and
+                complete_item() with exact / case-insensitive / substring
+                resolution (in that order). Raises typed exceptions for
+                NotFound / Ambiguous / AlreadyComplete / ProcedureNotFound.
+              - services/notes_service.py — owns new `procedure_notes`
+                collection. add_note() rejects empty text and stamps
+                {noteId, procedureId, text, createdAt, itemId, itemText,
+                 authorId, authorName, source:"voice"}.
+              - services/procedure_service.py — finish_procedure() refuses
+                to complete a case while ANY checklist item is still
+                pending; on success sets case_status="completed" +
+                completedAt/By* fields.
+              - services/voice_orchestrator/base.py — VoiceCommandOrchestrator
+                ABC + ActionResult + ActionStatus + ActionPayload DTOs.
+              - services/voice_orchestrator/orchestrator.py —
+                DefaultVoiceCommandOrchestrator: confidence gate + per-
+                intent dispatch. NO DB I/O. NO business rules beyond the
+                gate. Translates domain exceptions into ActionResult.
+              - services/voice_orchestrator/factory.py — process-wide
+                singleton, threshold read from VOICE_CONFIDENCE_THRESHOLD
+                (default 0.90, clamped to [0,1]).
+
+            Route changes (routes/voice_routes.py):
+              - Added Depends(_voice_orchestrator_dependency) on
+                /api/voice/process. The route is still PARSING-by-default
+                from the client's perspective — but the orchestrator runs
+                after intent classification and routes to the domain
+                services for the 5 executable intents.
+              - The `context` form field is now documented as HINT ONLY.
+                The orchestrator re-reads the canonical checklist via
+                ChecklistService.get_checklist(procedureId). Backend is
+                the source of truth.
+              - Response model expanded with FOUR additive top-level
+                fields (no breaking changes to Step 3 callers):
+                  requiresConfirmation: bool   (default false)
+                  message: Optional[str]
+                  action: { type, data }
+                  threshold: float
+              - metrics now also reports orchestrator_ms.
+              - Dev-mode logging (APP_ENV=development) emits a single
+                line per call including: stt_provider, intent_engine,
+                orchestrator, procedure_id, intent, confidence,
+                threshold, action_status, action_type,
+                requires_confirmation, all four phase timings.
+
+            Confidence gate (configurable):
+              env: VOICE_CONFIDENCE_THRESHOLD=0.90
+              if intent_result.confidence < threshold OR intent is UNKNOWN
+              -> orchestrator returns success=false with structured
+              {requiresConfirmation, message, action.type="none"}.
+              No service is called.
+
+            Architecture preserved end-to-end:
+              VoiceAssistant -> VoiceService -> POST /api/voice/process
+              -> SpeechToText -> IntentEngine -> VoiceCommandOrchestrator
+              -> ChecklistService / NotesService / ProcedureService.
+              Controller imports only from the four service packages; it
+              has no DB handle and no provider-specific imports.
+              Business logic stays in the domain services.
+
+            Unit tests:
+              tests/test_voice_orchestrator.py — 22 tests, all passing.
+              Uses in-memory fake services (no MongoDB). Covers
+              confidence gate (inclusive at threshold), UNKNOWN
+              short-circuit, all 5 executable intents (happy path,
+              already-complete, unknown item, missing entity, ambiguous
+              match, validation rejection), ProcedureNotFound, empty
+              procedure_id rejection, and the static _resolve_item
+              helper (exact / CI / substring / ambiguous / not-found).
+
+            Live end-to-end smoke test against a seeded case:
+              - UPDATE_CHECKLIST (happy)      -> 200, checklist mutated
+              - UPDATE_CHECKLIST (conf 0.84)  -> 200, success=false,
+                                                  requiresConfirmation=true,
+                                                  NO mutation
+              - UPDATE_CHECKLIST (already)    -> 200, not_applicable
+              - UPDATE_CHECKLIST (unknown)    -> 200, rejected
+              - ADD_NOTE                      -> 200, note inserted into
+                                                  procedure_notes
+              - ADD_NOTE (entity bound)       -> 200, note linked to item
+              - READ_NEXT_STEP                -> 200, returns first pending
+              - REPEAT_STEP                   -> 200, returns current step
+              - FINISH_PROCEDURE (pending)    -> 200, rejected
+              - All pending completed         -> FINISH_PROCEDURE -> case_status="completed"
+
+            HTTP route /api/voice/process round-tripped with a silent wav
+            returns HTTP 200 with the full expanded response shape
+            (requiresConfirmation, message, action.type, threshold all
+            present) and the orchestrator log line is emitted with all
+            documented fields.
+
+            Audio still never persisted. Procedure data is fetched from
+            MongoDB by procedureId; client `context` is used only as a
+            hint to the IntentEngine. Auth remains optional for MVP
+            (intentional; user explicitly chose to keep voice endpoints
+            open during the active checklist UI). The orchestrator picks
+            up `request.state.user` when middleware sets it.
+
   - task: "POST /api/voice/process with IntentEngine abstraction (OpenAI Intent impl)"
     implemented: true
     working: true
