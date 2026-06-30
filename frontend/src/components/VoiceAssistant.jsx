@@ -1,43 +1,65 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { Mic, Square, X, Loader2 } from 'lucide-react';
+import {
+  Mic, Square, X, Loader2, Check, ArrowRight, Repeat as RepeatIcon,
+} from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 
 const IS_DEV = process.env.NODE_ENV === 'development';
 
 /**
- * VoiceAssistant — PURE UI component.
+ * VoiceAssistant -- PURE UI component (Step 5).
  *
- * Records audio with MediaRecorder and manages local UI state
- * (idle / starting / recording / processing). All network/provider work is
- * delegated to the parent via the `processVoice` callback. No API calls,
- * no provider-specific code, no business logic lives here.
+ * Records audio, hands the blob to `processVoice` (provided by the
+ * parent), and interprets the backend's ActionResult to produce
+ * meaningful, contextual feedback:
+ *
+ *   - UPDATE_CHECKLIST       -> success toast + onAction (parent updates UI)
+ *   - ADD_NOTE               -> "Note added." toast + onAction
+ *   - READ_NEXT_STEP         -> in-place info card ("Next Step\n{itemText}")
+ *   - REPEAT_STEP            -> in-place info card ("Current Step\n{itemText}")
+ *   - FINISH_PROCEDURE       -> success toast + onAction
+ *   - UNKNOWN / rejected     -> friendly error toast
+ *   - requiresConfirmation   -> Yes/No card; Yes calls `confirmAction`
+ *                               (no re-recording)
+ *
+ * Confidence, intent labels, JSON and transcripts are NEVER shown to
+ * normal users; a small dev-only diagnostic strip appears at the
+ * bottom when NODE_ENV === "development".
  *
  * Props:
- *   - processVoice?: (audioBlob: Blob, meta: { recordingMs: number })
- *       => Promise<{
- *            transcript: string,
- *            intent: string,
- *            confidence: number,
- *            entity: string|null,
- *            parameters: Object,
- *          }>
+ *   - processVoice?:    (blob, meta) => Promise<voiceResult>
+ *   - confirmAction?:   ({intent,entity,parameters,transcript}) => Promise<voiceResult>
+ *   - onAction?:        (voiceResult) => void   // fires on every executed action
  *   - onRecordingStarted?: () => void
- *   - onRecordingStopped?: (audioBlob: Blob) => void
- *   - onIntentReady?: (result, audioBlob) => void
- *   - onError?: (error: Error) => void
+ *   - onRecordingStopped?: (audioBlob) => void
+ *   - onError?:         (Error) => void
  *   - className?: string
+ *
+ * voiceResult shape (returned by voiceService.processVoice / confirmVoiceAction):
+ *   {
+ *     success, transcript, intent, confidence, entity, parameters,
+ *     requiresConfirmation, message, action: {type, data}, threshold,
+ *     durations: {...}
+ *   }
  */
 export default function VoiceAssistant({
   processVoice,
+  confirmAction,
+  onAction,
   onRecordingStarted,
   onRecordingStopped,
-  onIntentReady,
   onError,
   className,
 }) {
-  const [status, setStatus] = useState('idle'); // 'idle' | 'starting' | 'recording' | 'processing'
-  const [intentResult, setIntentResult] = useState(null);
+  const [status, setStatus] = useState('idle');
+  // 'idle' | 'starting' | 'recording' | 'processing' | 'confirming'
+  const [feedback, setFeedback] = useState(null);
+  // feedback shapes:
+  //   { kind: 'confirm', intent, entity, parameters, transcript, message }
+  //   { kind: 'info',    title, body }
+  //   { kind: 'devtrace', intent, confidence, action }  (dev only)
+  const [devTrace, setDevTrace] = useState(null);
 
   const mediaRecorderRef = useRef(null);
   const audioChunksRef = useRef([]);
@@ -45,39 +67,23 @@ export default function VoiceAssistant({
   const recordingStartedAtRef = useRef(null);
   const cancelRequestedRef = useRef(false);
   const isUnmountedRef = useRef(false);
+  const infoCardTimerRef = useRef(null);
 
   // ----- Resource management ------------------------------------------------
   const releaseMediaStream = useCallback(() => {
-    if (mediaStreamRef.current) {
-      try {
-        mediaStreamRef.current.getTracks().forEach((track) => {
-          try {
-            track.stop();
-          } catch {
-            /* no-op */
-          }
-        });
-      } finally {
-        mediaStreamRef.current = null;
-      }
+    const stream = mediaStreamRef.current;
+    if (stream) {
+      try { stream.getTracks().forEach((t) => t.stop()); } catch { /* no-op */ }
+      mediaStreamRef.current = null;
     }
   }, []);
 
   const disposeRecorder = useCallback(() => {
     const recorder = mediaRecorderRef.current;
-    if (recorder) {
-      try {
-        recorder.ondataavailable = null;
-        recorder.onstop = null;
-        recorder.onerror = null;
-        if (recorder.state !== 'inactive') {
-          recorder.stop();
-        }
-      } catch {
-        /* no-op */
-      }
-      mediaRecorderRef.current = null;
+    if (recorder && recorder.state !== 'inactive') {
+      try { recorder.stop(); } catch { /* no-op */ }
     }
+    mediaRecorderRef.current = null;
     audioChunksRef.current = [];
   }, []);
 
@@ -86,74 +92,151 @@ export default function VoiceAssistant({
       isUnmountedRef.current = true;
       disposeRecorder();
       releaseMediaStream();
+      if (infoCardTimerRef.current) clearTimeout(infoCardTimerRef.current);
     };
   }, [disposeRecorder, releaseMediaStream]);
 
   useEffect(() => {
     const onPageHide = () => {
-      try {
-        disposeRecorder();
-        releaseMediaStream();
-      } catch {
-        /* no-op */
-      }
+      disposeRecorder();
+      releaseMediaStream();
     };
     window.addEventListener('pagehide', onPageHide);
     return () => window.removeEventListener('pagehide', onPageHide);
   }, [disposeRecorder, releaseMediaStream]);
 
+  // ----- Helpers ------------------------------------------------------------
+  const scheduleInfoCardDismiss = useCallback((ms = 8000) => {
+    if (infoCardTimerRef.current) clearTimeout(infoCardTimerRef.current);
+    infoCardTimerRef.current = setTimeout(() => {
+      if (!isUnmountedRef.current) setFeedback(null);
+    }, ms);
+  }, []);
+
+  const showInfoCard = useCallback((title, body) => {
+    if (infoCardTimerRef.current) clearTimeout(infoCardTimerRef.current);
+    setFeedback({ kind: 'info', title, body });
+    scheduleInfoCardDismiss();
+  }, [scheduleInfoCardDismiss]);
+
+  const friendlyErrorMessage = useCallback((error) => {
+    const status = error?.status;
+    const code = error?.code;
+    if (status === 401) return 'Please sign in to use voice commands.';
+    if (status === 403) return 'You do not have permission to use voice on this procedure.';
+    if (status === 404) return 'Procedure not found.';
+    if (status === 409) return 'This procedure is already completed.';
+    if (code === 'TIMEOUT') return 'Voice processing timed out. Please try again.';
+    if (code === 'UPLOAD_FAILED' || code === 'NETWORK')
+      return 'Network problem. Check your connection and try again.';
+    if (code === 'NOT_CONFIGURED') return 'Voice is not available right now.';
+    if (code === 'TOO_LARGE') return 'Recording is too long.';
+    if (code === 'EMPTY_AUDIO') return 'No audio was captured. Please try again.';
+    if (status === 500 || status === 502 || status === 503)
+      return 'Voice service is unavailable. Please try again shortly.';
+    return error?.message || 'Voice command failed. Please try again.';
+  }, []);
+
+  // Translate an ActionResult into UI side-effects. Returns true if the
+  // assistant should remain idle (no persistent UI). Persistent UI
+  // (confirm card or info card) is set via setFeedback inside.
+  const handleActionResult = useCallback((result) => {
+    if (!result || typeof result !== 'object') return;
+
+    if (IS_DEV) {
+      setDevTrace({
+        intent: result.intent,
+        confidence: result.confidence,
+        action: result.action?.type,
+        requiresConfirmation: !!result.requiresConfirmation,
+      });
+    }
+
+    // 1) CONFIRMATION REQUIRED  ----------------------------------------------
+    if (result.requiresConfirmation) {
+      setFeedback({
+        kind: 'confirm',
+        intent: result.intent,
+        entity: result.entity,
+        parameters: result.parameters || {},
+        transcript: result.transcript || '',
+        message: result.message,
+      });
+      return;
+    }
+
+    const actionType = result.action?.type || 'none';
+    const data = result.action?.data || {};
+
+    // 2) EXECUTED WRITES  ----------------------------------------------------
+    if (result.success && actionType === 'checklist_item_completed') {
+      const itemText = data?.item?.text || result.entity || 'Step';
+      toast.success(`${itemText} marked complete.`);
+      setFeedback(null);
+      onAction?.(result);
+      return;
+    }
+    if (result.success && actionType === 'note_added') {
+      toast.success('Note added.');
+      setFeedback(null);
+      onAction?.(result);
+      return;
+    }
+    if (result.success && actionType === 'procedure_completed') {
+      toast.success('Procedure completed successfully.');
+      setFeedback(null);
+      onAction?.(result);
+      return;
+    }
+
+    // 3) READ-ONLY RESPONSES  ------------------------------------------------
+    if (result.success && actionType === 'next_step_read') {
+      if (data?.allComplete || !data?.item) {
+        showInfoCard('Next Step', 'All steps complete.');
+      } else {
+        showInfoCard('Next Step', data.item.text || 'No upcoming step.');
+      }
+      onAction?.(result);
+      return;
+    }
+    if (result.success && actionType === 'current_step_repeated') {
+      if (data?.allComplete || !data?.item) {
+        showInfoCard('Current Step', 'All steps complete.');
+      } else {
+        showInfoCard('Current Step', data.item.text || 'No current step.');
+      }
+      onAction?.(result);
+      return;
+    }
+
+    // 4) UNKNOWN / REJECTED / NOT-APPLICABLE  -------------------------------
+    if (result.intent === 'UNKNOWN') {
+      toast.message("I couldn't understand that command.");
+      setFeedback(null);
+      return;
+    }
+    // Anything else: use the backend's message if present.
+    toast.message(result.message || "I couldn't complete that.");
+    setFeedback(null);
+  }, [onAction, showInfoCard]);
+
   // ----- Voice processing delegate ------------------------------------------
-  const runProcessing = useCallback(
-    async (audioBlob, recordingMs) => {
-      if (typeof processVoice !== 'function') {
-        // Recording works on its own; intent processing is optional.
-        return;
-      }
-      setStatus('processing');
-      try {
-        const result = await processVoice(audioBlob, { recordingMs });
-        if (isUnmountedRef.current) return;
-
-        // Defensive: result must at least have a transcript & intent string.
-        const transcript = (result?.transcript || '').trim();
-        const intent =
-          typeof result?.intent === 'string' && result.intent ? result.intent : 'UNKNOWN';
-        const confidence =
-          typeof result?.confidence === 'number'
-            ? Math.max(0, Math.min(1, result.confidence))
-            : 0;
-        const entity = typeof result?.entity === 'string' ? result.entity : null;
-        const parameters =
-          result?.parameters && typeof result.parameters === 'object'
-            ? result.parameters
-            : {};
-
-        if (!transcript && intent === 'UNKNOWN') {
-          toast.message('No speech detected. Please try again.');
-          setStatus('idle');
-          return;
-        }
-
-        const normalised = { transcript, intent, confidence, entity, parameters };
-        setIntentResult(normalised);
-        setStatus('idle');
-
-        if (typeof onIntentReady === 'function') {
-          onIntentReady(normalised, audioBlob);
-        }
-      } catch (error) {
-        if (isUnmountedRef.current) return;
-        setStatus('idle');
-        const message =
-          error?.message || 'We couldn\u2019t process that recording. Please try again.';
-        toast.error(message);
-        if (typeof onError === 'function') {
-          onError(error);
-        }
-      }
-    },
-    [onError, onIntentReady, processVoice],
-  );
+  const runProcessing = useCallback(async (audioBlob, recordingMs) => {
+    if (typeof processVoice !== 'function') return;
+    setStatus('processing');
+    setFeedback(null);
+    try {
+      const result = await processVoice(audioBlob, { recordingMs });
+      if (isUnmountedRef.current) return;
+      setStatus('idle');
+      handleActionResult(result);
+    } catch (error) {
+      if (isUnmountedRef.current) return;
+      setStatus('idle');
+      toast.error(friendlyErrorMessage(error));
+      onError?.(error);
+    }
+  }, [friendlyErrorMessage, handleActionResult, onError, processVoice]);
 
   // ----- Recording lifecycle ------------------------------------------------
   const startRecording = useCallback(async () => {
@@ -165,7 +248,8 @@ export default function VoiceAssistant({
     }
 
     setStatus('starting');
-    setIntentResult(null);
+    setFeedback(null);
+    setDevTrace(null);
     cancelRequestedRef.current = false;
 
     let stream = null;
@@ -198,31 +282,18 @@ export default function VoiceAssistant({
         recordingStartedAtRef.current = null;
 
         if (isUnmountedRef.current) return;
-
-        if (typeof onRecordingStopped === 'function') {
-          onRecordingStopped(audioBlob);
-        }
-
-        if (IS_DEV) {
-          console.debug('[VoiceAssistant] recording stopped', {
-            sizeBytes: audioBlob.size,
-            recordingMs,
-            mimeType,
-          });
-        }
+        onRecordingStopped?.(audioBlob);
 
         if (cancelRequestedRef.current) {
           cancelRequestedRef.current = false;
           setStatus('idle');
           return;
         }
-
         if (!audioBlob.size) {
           toast.error('No audio was captured. Please try again.');
           setStatus('idle');
           return;
         }
-
         runProcessing(audioBlob, recordingMs);
       };
 
@@ -237,17 +308,10 @@ export default function VoiceAssistant({
       recorder.start();
       recordingStartedAtRef.current = performance.now();
       setStatus('recording');
-
-      if (typeof onRecordingStarted === 'function') {
-        onRecordingStarted();
-      }
+      onRecordingStarted?.();
     } catch (error) {
       if (stream) {
-        try {
-          stream.getTracks().forEach((t) => t.stop());
-        } catch {
-          /* no-op */
-        }
+        try { stream.getTracks().forEach((t) => t.stop()); } catch { /* no-op */ }
       }
       releaseMediaStream();
       if (isUnmountedRef.current) return;
@@ -265,9 +329,7 @@ export default function VoiceAssistant({
   const stopRecording = useCallback(() => {
     const recorder = mediaRecorderRef.current;
     if (recorder && recorder.state !== 'inactive') {
-      try {
-        recorder.stop();
-      } catch {
+      try { recorder.stop(); } catch {
         releaseMediaStream();
         setStatus('idle');
       }
@@ -278,23 +340,47 @@ export default function VoiceAssistant({
   }, [releaseMediaStream]);
 
   const handleToggle = useCallback(() => {
-    if (status === 'recording') {
-      stopRecording();
-    } else if (status === 'idle') {
-      startRecording();
-    }
+    if (status === 'recording') stopRecording();
+    else if (status === 'idle') startRecording();
   }, [status, startRecording, stopRecording]);
+
+  // ----- Confirmation flow --------------------------------------------------
+  const handleConfirmYes = useCallback(async () => {
+    if (feedback?.kind !== 'confirm') return;
+    if (typeof confirmAction !== 'function') {
+      toast.error('Confirmation is not available right now.');
+      setFeedback(null);
+      return;
+    }
+    const { intent, entity, parameters, transcript } = feedback;
+    setStatus('confirming');
+    try {
+      const result = await confirmAction({ intent, entity, parameters, transcript });
+      if (isUnmountedRef.current) return;
+      setStatus('idle');
+      handleActionResult(result);
+    } catch (error) {
+      if (isUnmountedRef.current) return;
+      setStatus('idle');
+      toast.error(friendlyErrorMessage(error));
+      onError?.(error);
+    }
+  }, [confirmAction, feedback, friendlyErrorMessage, handleActionResult, onError]);
+
+  const handleConfirmNo = useCallback(() => {
+    setFeedback(null);
+  }, []);
 
   // ----- Render -------------------------------------------------------------
   const isRecording = status === 'recording';
-  const isProcessing = status === 'processing';
+  const isProcessing = status === 'processing' || status === 'confirming';
   const isStarting = status === 'starting';
   const isBusy = isStarting || isProcessing;
 
   const buttonAriaLabel = isRecording
     ? 'Stop voice recording'
     : isProcessing
-      ? 'Processing audio'
+      ? 'Processing'
       : 'Start voice recording';
 
   return (
@@ -306,10 +392,22 @@ export default function VoiceAssistant({
       )}
       style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
     >
-      {intentResult && (
-        <IntentPanel
-          result={intentResult}
-          onDismiss={() => setIntentResult(null)}
+      {feedback?.kind === 'confirm' && (
+        <ConfirmCard
+          intent={feedback.intent}
+          entity={feedback.entity}
+          message={feedback.message}
+          submitting={status === 'confirming'}
+          onYes={handleConfirmYes}
+          onNo={handleConfirmNo}
+        />
+      )}
+
+      {feedback?.kind === 'info' && (
+        <InfoCard
+          title={feedback.title}
+          body={feedback.body}
+          onDismiss={() => setFeedback(null)}
         />
       )}
 
@@ -333,11 +431,15 @@ export default function VoiceAssistant({
             <>
               <Loader2 className="h-3.5 w-3.5 animate-spin text-forest" />
               <span className="text-[12px] uppercase tracking-[0.12em] text-charcoal">
-                Processing…
+                {status === 'confirming' ? 'Confirming…' : 'Processing…'}
               </span>
             </>
           )}
         </div>
+      )}
+
+      {IS_DEV && devTrace && (
+        <DevTraceStrip trace={devTrace} onDismiss={() => setDevTrace(null)} />
       )}
 
       <button
@@ -348,11 +450,7 @@ export default function VoiceAssistant({
         aria-busy={isProcessing}
         aria-label={buttonAriaLabel}
         title={
-          isRecording
-            ? 'Stop recording'
-            : isProcessing
-              ? 'Processing…'
-              : 'Start voice recording'
+          isRecording ? 'Stop recording' : isProcessing ? 'Processing' : 'Start voice recording'
         }
         className={cn(
           'group relative inline-flex h-14 w-14 items-center justify-center rounded-full',
@@ -386,115 +484,126 @@ export default function VoiceAssistant({
   );
 }
 
-/**
- * Temporary diagnostic panel used during Step 3.
- * Will be removed once Step 4 wires up real checklist actions.
- */
-function IntentPanel({ result, onDismiss }) {
-  const { transcript, intent, confidence, entity, parameters } = result;
-  const confidencePct = `${Math.round((confidence || 0) * 100)}%`;
-  const noteText =
-    parameters && typeof parameters.note === 'string' ? parameters.note : null;
-  const otherParamKeys = parameters
-    ? Object.keys(parameters).filter((k) => k !== 'note' && k !== 'error')
-    : [];
+// --------------------------------------------------------------------------- //
+// Sub-components                                                              //
+// --------------------------------------------------------------------------- //
 
+function ConfirmCard({ intent, entity, message, submitting, onYes, onNo }) {
+  // Choose a clear question per intent. Falls back to the backend message.
+  const title = intent === 'UPDATE_CHECKLIST'
+    ? 'Mark this step complete?'
+    : intent === 'ADD_NOTE'
+      ? 'Add this note?'
+      : intent === 'READ_NEXT_STEP'
+        ? 'Read the next step?'
+        : intent === 'REPEAT_STEP'
+          ? 'Repeat the current step?'
+          : intent === 'FINISH_PROCEDURE'
+            ? 'Finish this procedure?'
+            : 'Did you mean…';
+  const subject = entity || message || '';
   return (
     <div
-      role="region"
-      aria-label="Detected intent"
+      role="dialog"
+      aria-modal="false"
+      aria-label="Confirm voice command"
       className="w-[min(360px,calc(100vw-3rem))] rounded-[2px] border border-divider bg-champagne p-4 shadow-lg"
     >
-      <div className="mb-3 flex items-center justify-between">
-        <span className="text-[11px] uppercase tracking-[0.12em] text-warm-gray">
-          Voice Intent
-        </span>
+      <div className="mb-1 text-[11px] uppercase tracking-[0.12em] text-warm-gray">
+        Did you mean
+      </div>
+      <div className="mb-3 text-[15px] font-medium text-charcoal">{title}</div>
+      {subject && (
+        <div className="mb-4 rounded-[2px] border border-divider bg-white px-3 py-2 text-[15px] font-semibold text-charcoal">
+          {subject}
+        </div>
+      )}
+      <div className="flex items-center justify-end gap-2">
         <button
           type="button"
-          aria-label="Dismiss intent panel"
+          onClick={onNo}
+          disabled={submitting}
+          className="rounded-[2px] border border-divider bg-white px-3 py-1.5 text-sm text-charcoal hover:bg-divider disabled:opacity-60"
+        >
+          No
+        </button>
+        <button
+          type="button"
+          onClick={onYes}
+          disabled={submitting}
+          className={cn(
+            'inline-flex items-center gap-1.5 rounded-[2px] bg-forest px-3 py-1.5 text-sm text-champagne hover:bg-[#142A22]',
+            'disabled:cursor-not-allowed disabled:opacity-60',
+          )}
+        >
+          {submitting ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Check className="h-3.5 w-3.5" />}
+          Yes
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function InfoCard({ title, body, onDismiss }) {
+  const Icon = title === 'Next Step' ? ArrowRight : RepeatIcon;
+  return (
+    <div
+      role="status"
+      aria-live="polite"
+      className="w-[min(360px,calc(100vw-3rem))] rounded-[2px] border border-divider bg-champagne p-4 shadow-lg"
+    >
+      <div className="mb-2 flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <Icon className="h-3.5 w-3.5 text-forest" />
+          <span className="text-[11px] uppercase tracking-[0.12em] text-warm-gray">
+            {title}
+          </span>
+        </div>
+        <button
+          type="button"
+          aria-label="Dismiss"
           onClick={onDismiss}
           className="rounded-[2px] p-1 text-warm-gray hover:bg-divider hover:text-charcoal focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-forest"
         >
           <X className="h-3.5 w-3.5" />
         </button>
       </div>
-
-      <dl className="space-y-2 text-sm text-charcoal">
-        <div>
-          <dt className="text-[11px] uppercase tracking-[0.12em] text-warm-gray">
-            Transcript
-          </dt>
-          <dd className="mt-0.5 whitespace-pre-wrap">
-            {transcript || <span className="text-warm-gray italic">(empty)</span>}
-          </dd>
-        </div>
-
-        <div>
-          <dt className="text-[11px] uppercase tracking-[0.12em] text-warm-gray">
-            Intent
-          </dt>
-          <dd className="mt-0.5 font-medium">{intent}</dd>
-        </div>
-
-        {entity && (
-          <div>
-            <dt className="text-[11px] uppercase tracking-[0.12em] text-warm-gray">
-              Entity
-            </dt>
-            <dd className="mt-0.5">{entity}</dd>
-          </div>
-        )}
-
-        {noteText && (
-          <div>
-            <dt className="text-[11px] uppercase tracking-[0.12em] text-warm-gray">
-              Note
-            </dt>
-            <dd className="mt-0.5 whitespace-pre-wrap">{noteText}</dd>
-          </div>
-        )}
-
-        {otherParamKeys.length > 0 && (
-          <div>
-            <dt className="text-[11px] uppercase tracking-[0.12em] text-warm-gray">
-              Parameters
-            </dt>
-            <dd className="mt-0.5 font-mono text-xs">
-              {JSON.stringify(
-                otherParamKeys.reduce((acc, key) => {
-                  acc[key] = parameters[key];
-                  return acc;
-                }, {}),
-              )}
-            </dd>
-          </div>
-        )}
-
-        <div>
-          <dt className="text-[11px] uppercase tracking-[0.12em] text-warm-gray">
-            Confidence
-          </dt>
-          <dd className="mt-0.5">
-            <ConfidenceBar value={confidence} label={confidencePct} />
-          </dd>
-        </div>
-      </dl>
+      <div className="text-[17px] font-semibold leading-snug text-charcoal">{body}</div>
     </div>
   );
 }
 
-function ConfidenceBar({ value, label }) {
-  const pct = Math.max(0, Math.min(1, value || 0)) * 100;
-  const tone = pct >= 75 ? 'bg-forest' : pct >= 40 ? 'bg-amber-500' : 'bg-red-500';
+function DevTraceStrip({ trace, onDismiss }) {
+  const pct =
+    typeof trace.confidence === 'number'
+      ? `${Math.round(Math.max(0, Math.min(1, trace.confidence)) * 100)}%`
+      : 'n/a';
   return (
-    <div className="flex items-center gap-2">
-      <div className="h-1.5 flex-1 overflow-hidden rounded-[2px] bg-divider">
-        <div
-          className={cn('h-full transition-all', tone)}
-          style={{ width: `${pct}%` }}
-        />
-      </div>
-      <span className="text-xs tabular-nums text-charcoal">{label}</span>
+    <div
+      role="note"
+      aria-label="Developer diagnostics"
+      className="flex items-center gap-1.5 rounded-[2px] border border-dashed border-warm-gray/40 bg-white/80 px-2 py-1 text-[10px] font-mono text-warm-gray shadow-sm"
+    >
+      <span>dev:</span>
+      <span className="text-charcoal">{trace.intent || '?'}</span>
+      <span>·</span>
+      <span className="text-charcoal">{pct}</span>
+      <span>·</span>
+      <span className="text-charcoal">{trace.action || 'none'}</span>
+      {trace.requiresConfirmation && (
+        <>
+          <span>·</span>
+          <span className="text-amber-700">confirm</span>
+        </>
+      )}
+      <button
+        type="button"
+        aria-label="Hide dev trace"
+        onClick={onDismiss}
+        className="ml-1 rounded p-0.5 text-warm-gray hover:bg-divider hover:text-charcoal"
+      >
+        <X className="h-3 w-3" />
+      </button>
     </div>
   );
 }

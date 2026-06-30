@@ -1,33 +1,38 @@
 """Voice endpoints.
 
 `POST /api/voice/transcribe`
-    Step 2 — multipart `audio` field → STT → `{transcript}`.
+    Step 2 - multipart `audio` field -> STT -> `{transcript}`.
 
 `POST /api/voice/process`
-    Step 3 — multipart `audio` + `procedureId` (+ optional JSON `context`) →
-    STT → IntentEngine → structured `IntentResult` JSON.
+    Step 3-5 - multipart `audio` + `procedureId` (+ optional JSON
+    `context`) -> STT -> IntentEngine -> VoiceCommandOrchestrator ->
+    domain services. AUTH REQUIRED (Step 5).
 
-Both routes depend ONLY on the `SpeechToTextProvider` abstraction
-(Step 2) and the `IntentEngine` abstraction (Step 3). They have no
-provider-specific imports and never touch the database, the checklist
-service, or any business state.
+`POST /api/voice/confirm`
+    Step 5 - confirmation endpoint for low-confidence commands. JSON body
+    {procedureId, intent, entity, parameters?, transcript?} -> orchestrator
+    is invoked with forced confidence 1.0, BYPASSING the gate. No STT or
+    IntentEngine work is done. AUTH REQUIRED.
 
-Non-goals (explicitly excluded for Step 3):
-- Persisting audio or transcripts
-- Updating checklists / saving notes / mutating any DB collection
-- Conversational LLM behaviour beyond strict JSON command parsing
+All three routes depend on stable abstractions
+(`SpeechToTextProvider`, `IntentEngine`, `VoiceCommandOrchestrator`)
+and contain no provider-specific imports. Audio is never persisted.
+Every processed command is written to the `voice_command_audits`
+collection via a fire-and-forget task.
 """
 from __future__ import annotations
 
+import asyncio
 import json
 import logging
 import os
 import time
 from typing import Any, Dict, List, Optional
 
-from fastapi import APIRouter, Depends, File, Form, HTTPException, Request, UploadFile
+from fastapi import APIRouter, Depends, File, Form, HTTPException, Request, UploadFile, status
 from pydantic import BaseModel, Field
 
+from auth.security import get_current_user
 from services.speech_to_text import (
     AudioTooLargeError,
     EmptyAudioError,
@@ -51,6 +56,11 @@ from services.voice_orchestrator import (
     ActionResult,
     VoiceCommandOrchestrator,
     get_voice_orchestrator,
+)
+from services.voice_audit_service import (
+    VoiceAuditRecord,
+    VoiceAuditService,
+    get_voice_audit_service,
 )
 
 logger = logging.getLogger(__name__)
@@ -148,6 +158,136 @@ def _current_user_optional(request: Request) -> Optional[Dict[str, Any]]:
     """
     user = getattr(request.state, "user", None)
     return user if isinstance(user, dict) else None
+
+
+def _voice_audit_dependency(request: Request) -> VoiceAuditService:
+    db = getattr(request.app.state, "db", None)
+    if db is None:
+        # Audit is best-effort; if the DB isn't available we use a NOOP.
+        class _NullAudit:
+            async def log(self, *_args, **_kwargs):
+                return None
+        return _NullAudit()  # type: ignore[return-value]
+    return get_voice_audit_service(db)
+
+
+async def _ensure_user_can_access_procedure(
+    request: Request,
+    procedure_id: str,
+    current_user: Dict[str, Any],
+) -> Dict[str, Any]:
+    """Return the case document if the user is allowed to access it.
+
+    Authorisation rules (Step 5):
+      - 401 is already enforced by Depends(get_current_user).
+      - 403 if the user's clinic does not own this case.
+      - 404 if the case does not exist.
+
+    The check resolves the user's clinic_id the same way the rest of
+    the app does:  user.clinic_id  ->  user.id (clinic owner fallback).
+    """
+    db = request.app.state.db
+    user_id = current_user.get("userId")
+    if not user_id:
+        raise HTTPException(status_code=401, detail="Authentication required.")
+
+    user_doc = await db.users.find_one({"id": user_id}, {"_id": 0})
+    if not user_doc:
+        # Token is valid but the user record is gone - treat as unauthed.
+        raise HTTPException(status_code=401, detail="User not found.")
+    clinic_id = user_doc.get("clinic_id") or user_doc.get("id")
+
+    case = await db.cases.find_one({"id": procedure_id}, {"_id": 0})
+    if not case:
+        raise HTTPException(status_code=404, detail=f"Procedure '{procedure_id}' not found.")
+
+    case_clinic = case.get("clinic_id")
+    if case_clinic and case_clinic != clinic_id:
+        raise HTTPException(
+            status_code=403,
+            detail="You do not have permission to operate on this procedure.",
+        )
+
+    if case.get("case_status") == "completed":
+        # Reads are allowed; writes are not. We surface 409 so the
+        # frontend can show a friendly message. The orchestrator also
+        # guards individual writes, but failing fast here saves a round
+        # trip + LLM call.
+        # NOTE: we DON'T raise here - reads (READ_NEXT_STEP, REPEAT_STEP)
+        # are still meaningful. The orchestrator's individual handlers
+        # raise on writes to already-completed procedures.
+        pass
+
+    return {
+        "case": case,
+        "user_doc": user_doc,
+        "clinic_id": clinic_id,
+    }
+
+
+def _audit_user_fields(current_user: Optional[Dict[str, Any]], access: Optional[Dict[str, Any]]):
+    user_id = (current_user or {}).get("userId") if current_user else None
+    clinic_id = (access or {}).get("clinic_id") if access else None
+    return user_id, clinic_id
+
+
+def _user_for_orchestrator(
+    current_user: Dict[str, Any],
+    access: Optional[Dict[str, Any]],
+) -> Dict[str, Any]:
+    user_doc = (access or {}).get("user_doc") or {}
+    return {
+        "userId": current_user.get("userId"),
+        "name": (
+            user_doc.get("name")
+            or current_user.get("clinicianName")
+            or current_user.get("name")
+        ),
+        "role": user_doc.get("role"),
+        "clinic_id": (access or {}).get("clinic_id"),
+    }
+
+
+def _schedule_audit(
+    audit: VoiceAuditService,
+    *,
+    user_id: Optional[str],
+    clinic_id: Optional[str],
+    procedure_id: str,
+    transcript: str,
+    intent: str,
+    confidence: float,
+    entity: Optional[str],
+    action: Dict[str, Any],
+    success: bool,
+    requires_confirmation: bool,
+    execution_time_ms: int,
+    source: str = "audio",
+    error_code: Optional[str] = None,
+    extras: Optional[Dict[str, Any]] = None,
+) -> None:
+    """Fire-and-forget audit write. NEVER raises, NEVER blocks the caller."""
+    record = VoiceAuditRecord(
+        user_id=user_id,
+        clinic_id=clinic_id,
+        procedure_id=procedure_id,
+        transcript=transcript,
+        intent=intent,
+        confidence=confidence,
+        entity=entity,
+        action=action,
+        success=success,
+        requires_confirmation=requires_confirmation,
+        execution_time_ms=execution_time_ms,
+        source=source,
+        error_code=error_code,
+        extras=extras or {},
+    )
+    try:
+        asyncio.create_task(audit.log(record))
+    except RuntimeError:
+        # No running loop (e.g. shutting down) - audit is best-effort.
+        pass
 
 
 # --------------------------------------------------------------------------- #
@@ -318,8 +458,13 @@ async def process_voice(
     stt_provider: SpeechToTextProvider = Depends(_stt_provider_dependency),
     intent_engine: IntentEngine = Depends(_intent_engine_dependency),
     orchestrator: VoiceCommandOrchestrator = Depends(_voice_orchestrator_dependency),
+    audit: VoiceAuditService = Depends(_voice_audit_dependency),
+    current_user: Dict[str, Any] = Depends(get_current_user),
 ) -> ProcessVoiceResponse:
     """Transcribe -> classify intent -> orchestrate action -> return result.
+
+    AUTH REQUIRED (Step 5). The caller must be authenticated AND their
+    clinic must own the target procedure (HTTP 403 otherwise).
 
     Pipeline:
         upload bytes -> SpeechToText -> IntentEngine -> VoiceCommandOrchestrator
@@ -333,6 +478,27 @@ async def process_voice(
     backend is the source of truth.
     """
     total_started = time.perf_counter()
+
+    # ---- 0) Authorise -------------------------------------------------
+    try:
+        access = await _ensure_user_can_access_procedure(
+            request, procedureId, current_user,
+        )
+    except HTTPException as exc:
+        # Audit-log the rejected attempt (best effort, no transcript).
+        user_id, clinic_id = _audit_user_fields(current_user, None)
+        _schedule_audit(
+            audit,
+            user_id=user_id, clinic_id=clinic_id,
+            procedure_id=procedureId,
+            transcript="", intent="UNKNOWN", confidence=0.0,
+            entity=None,
+            action={"type": "none", "status": "rejected", "requires_confirmation": False},
+            success=False, requires_confirmation=False,
+            execution_time_ms=int((time.perf_counter() - total_started) * 1000),
+            error_code=str(exc.status_code),
+        )
+        raise
 
     # ---- 1) Read upload ------------------------------------------------
     upload_started = time.perf_counter()
@@ -350,9 +516,10 @@ async def process_voice(
         logger.info(
             "voice.process upload_received stt_provider=%s intent_engine=%s "
             "orchestrator=%s procedure_id=%s filename=%s content_type=%s "
-            "size_bytes=%d upload_ms=%d",
+            "size_bytes=%d upload_ms=%d user_id=%s",
             stt_provider.name, intent_engine.name, orchestrator.name,
             procedureId, filename, content_type, size_bytes, upload_ms,
+            current_user.get("userId"),
         )
 
     # ---- 2) Speech to text --------------------------------------------
@@ -381,16 +548,36 @@ async def process_voice(
         intent_ms = int((time.perf_counter() - intent_started) * 1000)
 
     # ---- 4) Orchestration (confidence gate + dispatch) ----------------
-    user = _current_user_optional(request)
     orch_started = time.perf_counter()
     action_result: ActionResult = await orchestrator.execute(
         intent_result,
         procedure_id=procedureId,
-        user=user,
+        user=_user_for_orchestrator(current_user, access),
     )
     orch_ms = int((time.perf_counter() - orch_started) * 1000)
 
     total_ms = int((time.perf_counter() - total_started) * 1000)
+
+    # ---- 5) Audit (fire-and-forget; never blocks) ---------------------
+    user_id, clinic_id = _audit_user_fields(current_user, access)
+    _schedule_audit(
+        audit,
+        user_id=user_id, clinic_id=clinic_id,
+        procedure_id=procedureId,
+        transcript=intent_result.transcript,
+        intent=intent_result.intent.value,
+        confidence=intent_result.confidence,
+        entity=intent_result.entity,
+        action={
+            "type": action_result.action.type.value,
+            "status": action_result.status.value,
+            "requires_confirmation": action_result.requires_confirmation,
+        },
+        success=action_result.success,
+        requires_confirmation=action_result.requires_confirmation,
+        execution_time_ms=total_ms,
+        source="audio",
+    )
 
     if _IS_DEV:
         logger.info(
@@ -399,13 +586,14 @@ async def process_voice(
             "stt_ms=%d intent_ms=%d orch_ms=%d total_ms=%d "
             "transcript_chars=%d intent=%s confidence=%.3f "
             "threshold=%.2f action_status=%s action_type=%s "
-            "requires_confirmation=%s",
+            "requires_confirmation=%s audit_scheduled=true user_id=%s",
             stt_provider.name, intent_engine.name, orchestrator.name,
             procedureId, size_bytes, upload_ms, stt_ms, intent_ms, orch_ms,
             total_ms, len(transcript),
             intent_result.intent.value, intent_result.confidence,
             action_result.threshold, action_result.status.value,
             action_result.action.type.value, action_result.requires_confirmation,
+            current_user.get("userId"),
         )
 
     return ProcessVoiceResponse(
@@ -422,6 +610,115 @@ async def process_voice(
             server_total_ms=total_ms,
             upload_read_ms=upload_ms,
             size_bytes=size_bytes,
+        ),
+        requiresConfirmation=action_result.requires_confirmation,
+        message=action_result.message,
+        action=VoiceActionPayload(
+            type=action_result.action.type.value,
+            data=action_result.action.data,
+        ),
+        threshold=action_result.threshold,
+    )
+
+
+# --------------------------------------------------------------------------- #
+# Confirmation endpoint (Step 5)                                              #
+# --------------------------------------------------------------------------- #
+class ConfirmVoiceRequest(BaseModel):
+    procedureId: str = Field(..., min_length=1)
+    intent: str = Field(..., description="One of the supported IntentKind values.")
+    entity: Optional[str] = None
+    parameters: Dict[str, Any] = Field(default_factory=dict)
+    transcript: Optional[str] = Field(
+        default=None,
+        description="Original transcript (audit only - not re-classified).",
+    )
+
+
+@router.post("/confirm", response_model=ProcessVoiceResponse)
+async def confirm_voice_action(
+    request: Request,
+    body: ConfirmVoiceRequest,
+    orchestrator: VoiceCommandOrchestrator = Depends(_voice_orchestrator_dependency),
+    audit: VoiceAuditService = Depends(_voice_audit_dependency),
+    current_user: Dict[str, Any] = Depends(get_current_user),
+) -> ProcessVoiceResponse:
+    """Execute a previously-low-confidence intent that the user confirmed.
+
+    No STT, no IntentEngine. The orchestrator is called with confidence
+    1.0 so the gate is satisfied. AUTH + procedure-ownership rules are
+    identical to /process. Every confirmation is audited.
+    """
+    total_started = time.perf_counter()
+
+    access = await _ensure_user_can_access_procedure(
+        request, body.procedureId, current_user,
+    )
+
+    # Coerce the intent label; default to UNKNOWN if the client sent garbage.
+    try:
+        intent_kind = IntentKind(body.intent)
+    except ValueError:
+        intent_kind = IntentKind.UNKNOWN
+
+    forced = IntentResult(
+        transcript=body.transcript or "",
+        intent=intent_kind,
+        confidence=1.0,
+        entity=body.entity,
+        parameters=body.parameters or {},
+    )
+
+    orch_started = time.perf_counter()
+    action_result: ActionResult = await orchestrator.execute(
+        forced,
+        procedure_id=body.procedureId,
+        user=_user_for_orchestrator(current_user, access),
+    )
+    orch_ms = int((time.perf_counter() - orch_started) * 1000)
+    total_ms = int((time.perf_counter() - total_started) * 1000)
+
+    user_id, clinic_id = _audit_user_fields(current_user, access)
+    _schedule_audit(
+        audit,
+        user_id=user_id, clinic_id=clinic_id,
+        procedure_id=body.procedureId,
+        transcript=forced.transcript,
+        intent=forced.intent.value,
+        confidence=forced.confidence,
+        entity=forced.entity,
+        action={
+            "type": action_result.action.type.value,
+            "status": action_result.status.value,
+            "requires_confirmation": action_result.requires_confirmation,
+        },
+        success=action_result.success,
+        requires_confirmation=action_result.requires_confirmation,
+        execution_time_ms=total_ms,
+        source="confirm",
+    )
+
+    if _IS_DEV:
+        logger.info(
+            "voice.confirm completed orchestrator=%s procedure_id=%s "
+            "orch_ms=%d total_ms=%d intent=%s entity=%r action_status=%s "
+            "action_type=%s success=%s user_id=%s",
+            orchestrator.name, body.procedureId, orch_ms, total_ms,
+            forced.intent.value, forced.entity, action_result.status.value,
+            action_result.action.type.value, action_result.success,
+            current_user.get("userId"),
+        )
+
+    return ProcessVoiceResponse(
+        success=action_result.success,
+        transcript=forced.transcript,
+        intent=forced.intent.value,
+        confidence=round(forced.confidence, 4),
+        entity=forced.entity,
+        parameters=forced.parameters or {},
+        metrics=ProcessVoiceMetrics(
+            stt_ms=0, intent_ms=0, orchestrator_ms=orch_ms,
+            server_total_ms=total_ms, upload_read_ms=0, size_bytes=0,
         ),
         requiresConfirmation=action_result.requires_confirmation,
         message=action_result.message,

@@ -434,6 +434,26 @@ export async function processVoice(audioBlob, args = {}, options = {}) {
         confidence,
         entity,
         parameters,
+        // Step 5: action result fields from the backend orchestrator.
+        success: typeof payload?.success === 'boolean' ? payload.success : true,
+        requiresConfirmation:
+          typeof payload?.requiresConfirmation === 'boolean'
+            ? payload.requiresConfirmation
+            : false,
+        message: typeof payload?.message === 'string' ? payload.message : null,
+        action:
+          payload?.action && typeof payload.action === 'object'
+            ? {
+                type:
+                  typeof payload.action.type === 'string' ? payload.action.type : 'none',
+                data:
+                  payload.action.data && typeof payload.action.data === 'object'
+                    ? payload.action.data
+                    : {},
+              }
+            : { type: 'none', data: {} },
+        threshold:
+          typeof payload?.threshold === 'number' ? payload.threshold : null,
         durations: { uploadMs, sttMs, intentMs, totalMs },
       };
     } catch (rawError) {
@@ -478,10 +498,76 @@ export async function processVoice(audioBlob, args = {}, options = {}) {
   throw lastError || new VoiceServiceError('UNKNOWN', ERROR_MESSAGES.UNKNOWN);
 }
 
+/**
+ * Confirm a previously low-confidence intent and request execution
+ * (Step 5). Bypasses STT and the IntentEngine: the backend forces
+ * confidence=1.0 and runs the orchestrator directly.
+ *
+ * @param {Object} args
+ * @param {string} args.procedureId
+ * @param {string} args.intent      - e.g. "UPDATE_CHECKLIST"
+ * @param {string|null} [args.entity]
+ * @param {Object} [args.parameters]
+ * @param {string} [args.transcript] - original transcript (audit only)
+ * @param {Object} [options]
+ * @returns {Promise<Object>} processVoice-shaped response
+ */
+export async function confirmVoiceAction(args = {}, options = {}) {
+  const { procedureId, intent, entity = null, parameters = {}, transcript = '' } = args;
+  if (!procedureId) {
+    throw new VoiceServiceError('UNKNOWN', 'confirmVoiceAction requires a procedureId.');
+  }
+  if (!intent) {
+    throw new VoiceServiceError('UNKNOWN', 'confirmVoiceAction requires an intent.');
+  }
+
+  const timeoutMs = options.timeoutMs ?? 15_000;
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+
+  try {
+    const headers = { 'Content-Type': 'application/json' };
+    const auth = getAuthHeader();
+    if (auth) headers.Authorization = auth;
+
+    const response = await fetch(`${API_BASE}/voice/confirm`, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({ procedureId, intent, entity, parameters, transcript }),
+      signal: controller.signal,
+    });
+
+    let payload = null;
+    try {
+      payload = await response.json();
+    } catch {
+      /* non-JSON */
+    }
+
+    if (!response.ok) {
+      const code = statusToCode(response.status);
+      const detail =
+        (payload && (payload.detail || payload.error || payload.message)) ||
+        ERROR_MESSAGES[code];
+      throw new VoiceServiceError(code, detail, { status: response.status });
+    }
+    return payload;
+  } catch (rawError) {
+    if (rawError instanceof VoiceServiceError) throw rawError;
+    if (rawError?.name === 'AbortError') {
+      throw new VoiceServiceError('TIMEOUT', ERROR_MESSAGES.TIMEOUT, { cause: rawError });
+    }
+    throw new VoiceServiceError('UPLOAD_FAILED', ERROR_MESSAGES.UPLOAD_FAILED, { cause: rawError });
+  } finally {
+    clearTimeout(timeoutId);
+  }
+}
+
 const voiceService = {
   transcribe,
   transcribeWithMetrics,
   processVoice,
+  confirmVoiceAction,
   logVoiceMetrics,
   formatDuration,
   VoiceServiceError,

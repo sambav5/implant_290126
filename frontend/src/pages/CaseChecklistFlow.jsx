@@ -180,10 +180,50 @@ function ChecklistFlowScreen({
             },
           )
         }
-        onIntentReady={(result) => {
-          // Step 3: intent is shown in the UI panel only. Step 4 will hand
-          // this to the Checklist Action Engine.
-          console.log('Intent ready', result);
+        confirmAction={({ intent, entity, parameters, transcript }) =>
+          voiceService.confirmVoiceAction({
+            procedureId: caseId,
+            intent,
+            entity,
+            parameters,
+            transcript,
+          })
+        }
+        onAction={(result) => {
+          // The backend just mutated server-side state. Mirror the change
+          // locally so the UI updates instantly without a refetch.
+          if (!result || !result.success) return;
+          const actionType = result.action?.type;
+          const data = result.action?.data || {};
+
+          if (actionType === 'checklist_item_completed') {
+            const completedText =
+              data?.item?.text || result.entity || '';
+            if (!completedText) return;
+
+            // Match the server-side item against our local checklist by text
+            // (case-insensitive). If we find it, mark it complete locally so
+            // the checklist UI advances without a page refresh.
+            const localMatch = (state.checklist || []).find(
+              (i) => String(i.text || '').trim().toLowerCase() ===
+                     String(completedText).trim().toLowerCase(),
+            );
+            if (localMatch) {
+              dispatch({
+                type: 'SET_RESPONSES',
+                payload: { [localMatch.id]: true },
+              });
+            }
+            return;
+          }
+
+          if (actionType === 'procedure_completed') {
+            // Best-effort: try to navigate to a summary screen if it exists,
+            // otherwise stay on the page (the toast already confirms).
+            // We DO NOT navigate eagerly to avoid losing user context; the
+            // existing "Complete Case" flow remains the canonical exit.
+            return;
+          }
         }}
         onError={(error) => {
           console.warn('Voice processing failed', error);

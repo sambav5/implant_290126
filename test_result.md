@@ -195,6 +195,126 @@ backend:
             EMERGENT_LLM_KEY is properly configured. All error handling paths tested.
             Endpoint is production-ready.
 
+  - task: "Voice workflow Step 5 — Auth, audit, confirmation flow, frontend integration"
+    implemented: true
+    working: true
+    file: "backend/routes/voice_routes.py, backend/services/voice_audit_service.py, backend/server.py, frontend/src/components/VoiceAssistant.jsx, frontend/src/services/voiceService.js, frontend/src/pages/CaseChecklistFlow.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: |
+            Step 5 — Frontend integration + authentication + audit trail.
+
+            BACKEND CHANGES
+            ---------------
+            • Auth enforced on POST /api/voice/process.
+              Depends(get_current_user) is now required. Caller's clinic
+              must own the procedure or HTTP 403 is returned; missing
+              case is HTTP 404; bad token is HTTP 401. Verified by
+              backend smoke test (no-auth -> 403, wrong-clinic -> 403,
+              unknown-procedure -> 404, authed -> 200).
+            • New POST /api/voice/confirm endpoint. JSON body
+              {procedureId, intent, entity, parameters, transcript}.
+              Forces confidence=1.0, calls orchestrator, returns the
+              same response shape as /process. Same auth + ownership
+              rules. NO STT, NO IntentEngine work. Allows the frontend
+              to execute a low-confidence command after the user
+              clicks "Yes" WITHOUT re-recording.
+            • New services/voice_audit_service.py:
+                - Owns `voice_command_audits` collection (UUIDs).
+                - Fields: id, timestamp, user_id, clinic_id, procedure_id,
+                  source ("audio"|"confirm"), transcript, intent,
+                  confidence, entity, action.{type,status,
+                  requires_confirmation}, success, requires_confirmation,
+                  execution_time_ms, error_code, extras.
+                - log() swallows ALL exceptions; audit failures NEVER
+                  break the voice workflow. Indexes created at startup.
+            • Audit is fire-and-forget via asyncio.create_task — the
+              voice request never waits on the audit insert. Even the
+              auth rejection paths (401/403/404) are audited (with
+              error_code).
+            • Raw audio is NEVER persisted (continues from prior steps).
+            • Dev-mode log line now includes user_id and an
+              audit_scheduled=true flag.
+
+            FRONTEND CHANGES
+            ----------------
+            • voiceService.js:
+                - processVoice() return value extended with the new
+                  Step 5 fields (success, requiresConfirmation, message,
+                  action, threshold). Pre-existing callers are unaffected.
+                - New confirmVoiceAction({procedureId, intent, entity,
+                  parameters, transcript}) calls /api/voice/confirm with
+                  bearer token. Pure HTTP — no UI state.
+            • VoiceAssistant.jsx: full rewrite of the panel layer (mic
+              button + recording logic unchanged).
+                - Diagnostic IntentPanel REMOVED.
+                - Per-action UI:
+                    UPDATE_CHECKLIST       -> toast "{Item} marked complete."
+                                                + onAction(result)
+                    ADD_NOTE               -> toast "Note added." + onAction
+                    READ_NEXT_STEP         -> InfoCard "Next Step\n{item}"
+                                                (auto-dismiss after 8s)
+                    REPEAT_STEP            -> InfoCard "Current Step\n{item}"
+                    FINISH_PROCEDURE       -> toast "Procedure completed
+                                                successfully." + onAction
+                    UNKNOWN                -> toast "I couldn't understand
+                                                that command."
+                - requiresConfirmation -> ConfirmCard with Yes/No buttons.
+                  Yes triggers confirmAction (no re-recording). No
+                  dismisses to idle.
+                - Friendly error mapping for 401/403/404/409, TIMEOUT,
+                  NETWORK, NOT_CONFIGURED, TOO_LARGE, etc.
+                - Confidence / intent labels / JSON / transcripts are
+                  HIDDEN from normal users. A tiny dev-only diagnostic
+                  strip (intent · pct · action) appears only when
+                  NODE_ENV === "development".
+            • CaseChecklistFlow.jsx: wires confirmAction + onAction.
+                - On checklist_item_completed, matches the server-side
+                  item to a local checklist entry by case-insensitive
+                  text and dispatches SET_RESPONSES so the UI updates
+                  instantly without a refresh.
+
+            BACKEND SMOKE TEST (live, against the running backend)
+            ------------------------------------------------------
+            All HTTP outcomes verified in-band:
+                no-auth         -> 403   (FastAPI HTTPBearer default)
+                wrong-clinic    -> 403
+                unknown-proc    -> 404
+                authed silence  -> 200, intent=UNKNOWN
+                confirm authed  -> 200, success=true,
+                                   action.type=checklist_item_completed,
+                                   DB row updated
+                confirm no-auth -> 403
+            Audit verification:
+                4 audit rows persisted (3 failure paths + 1 confirm row),
+                error_code set on 401/403/404 rows, source="audio" vs
+                "confirm" correctly tagged.
+            Non-blocking audit: dropped voice_command_audits collection
+            mid-test, confirm still returned 200 success and the
+            collection auto-recreated on next insert.
+            All 43 backend unit tests (intent engine + orchestrator)
+            still pass.
+
+            FRONTEND STATE
+            --------------
+            • voiceService.js and VoiceAssistant.jsx lint clean.
+            • CaseChecklistFlow.jsx lint clean.
+            • Frontend served by supervisor; webpack compiles cleanly.
+
+            CONSTRAINTS HONOURED
+            --------------------
+            • No TTS / wake word / streaming / continuous listening /
+              conversational AI added.
+            • API contract unchanged for Step 3 callers (only additive
+              optional fields appended).
+            • IntentEngine and SpeechToText unchanged.
+            • VoiceService architectural shape unchanged (single export
+              + ESM helpers; component never calls /api directly).
+
   - task: "VoiceCommandOrchestrator (Step 4) — confidence-gated dispatch into ChecklistService/NotesService/ProcedureService"
     implemented: true
     working: true

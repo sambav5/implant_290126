@@ -1526,6 +1526,8 @@ async def startup_db_indexes():
     from services.clinic_service import ClinicService
     from services.discussion_service import DiscussionService
     from services.case_file_service import CaseFileService
+    from services.notes_service import NotesService
+    from services.voice_audit_service import get_voice_audit_service
     
     user_service = UserService(db)
     team_service = TeamService(db)
@@ -1533,6 +1535,8 @@ async def startup_db_indexes():
     clinic_service = ClinicService(db)
     discussion_service = DiscussionService(db)
     case_file_service = CaseFileService(db)
+    notes_service = NotesService(db)
+    voice_audit_service = get_voice_audit_service(db)
     
     await user_service.ensure_indexes()
     await team_service.ensure_indexes()
@@ -1540,6 +1544,8 @@ async def startup_db_indexes():
     await clinic_service.ensure_indexes()
     await discussion_service.ensure_indexes()
     await case_file_service.ensure_indexes()
+    await notes_service.ensure_indexes()
+    await voice_audit_service.ensure_indexes()
     logger.info("Database indexes initialized")
 
 @app.on_event("shutdown")
