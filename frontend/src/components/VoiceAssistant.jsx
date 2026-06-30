@@ -4,6 +4,10 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
+import {
+  VOICE_STAGES, FAILURE_MODES,
+  buildSimulatedFailure, useVoiceDemo,
+} from '@/contexts/VoiceDemoContext';
 
 const IS_DEV = process.env.NODE_ENV === 'development';
 
@@ -61,6 +65,12 @@ export default function VoiceAssistant({
   //   { kind: 'devtrace', intent, confidence, action }  (dev only)
   const [devTrace, setDevTrace] = useState(null);
 
+  // Demo / diagnostics context. When demoMode is off ALL of these are
+  // no-ops, so production behaviour matches Step 5 exactly.
+  const {
+    demoMode, setStage, addInteraction, failureMode, replayHandlerRef,
+  } = useVoiceDemo();
+
   const mediaRecorderRef = useRef(null);
   const audioChunksRef = useRef([]);
   const mediaStreamRef = useRef(null);
@@ -68,6 +78,11 @@ export default function VoiceAssistant({
   const cancelRequestedRef = useRef(false);
   const isUnmountedRef = useRef(false);
   const infoCardTimerRef = useRef(null);
+  const stageTimersRef = useRef([]);
+  // Hold the recording duration of the just-finished blob so that we can
+  // attach it to the interaction record (durations.recordingMs is not in
+  // the server response).
+  const lastRecordingMsRef = useRef(0);
 
   // ----- Resource management ------------------------------------------------
   const releaseMediaStream = useCallback(() => {
@@ -93,6 +108,8 @@ export default function VoiceAssistant({
       disposeRecorder();
       releaseMediaStream();
       if (infoCardTimerRef.current) clearTimeout(infoCardTimerRef.current);
+      stageTimersRef.current.forEach((id) => clearTimeout(id));
+      stageTimersRef.current = [];
     };
   }, [disposeRecorder, releaseMediaStream]);
 
@@ -106,6 +123,34 @@ export default function VoiceAssistant({
   }, [disposeRecorder, releaseMediaStream]);
 
   // ----- Helpers ------------------------------------------------------------
+  const clearStageTimers = useCallback(() => {
+    stageTimersRef.current.forEach((id) => clearTimeout(id));
+    stageTimersRef.current = [];
+  }, []);
+
+  const beginStageProgression = useCallback(() => {
+    // After recording stops we don't know which sub-phase the server is
+    // actually in (the network call is a single round-trip). To match
+    // the requested UX progression we advance through the stages with
+    // best-effort timings. The Performance panel has the real numbers.
+    clearStageTimers();
+    setStage(VOICE_STAGES.TRANSCRIBING);
+    stageTimersRef.current.push(setTimeout(() => {
+      if (!isUnmountedRef.current) setStage(VOICE_STAGES.UNDERSTANDING);
+    }, 750));
+    stageTimersRef.current.push(setTimeout(() => {
+      if (!isUnmountedRef.current) setStage(VOICE_STAGES.EXECUTING);
+    }, 1600));
+  }, [clearStageTimers, setStage]);
+
+  const finishStage = useCallback((nextStage, holdMs = 1200) => {
+    clearStageTimers();
+    setStage(nextStage);
+    stageTimersRef.current.push(setTimeout(() => {
+      if (!isUnmountedRef.current) setStage(VOICE_STAGES.READY);
+    }, holdMs));
+  }, [clearStageTimers, setStage]);
+
   const scheduleInfoCardDismiss = useCallback((ms = 8000) => {
     if (infoCardTimerRef.current) clearTimeout(infoCardTimerRef.current);
     infoCardTimerRef.current = setTimeout(() => {
@@ -140,7 +185,7 @@ export default function VoiceAssistant({
   // Translate an ActionResult into UI side-effects. Returns true if the
   // assistant should remain idle (no persistent UI). Persistent UI
   // (confirm card or info card) is set via setFeedback inside.
-  const handleActionResult = useCallback((result) => {
+  const handleActionResult = useCallback((result, opts = {}) => {
     if (!result || typeof result !== 'object') return;
 
     if (IS_DEV) {
@@ -154,6 +199,7 @@ export default function VoiceAssistant({
 
     // 1) CONFIRMATION REQUIRED  ----------------------------------------------
     if (result.requiresConfirmation) {
+      finishStage(VOICE_STAGES.CONFIRMATION_NEEDED, 9999_000);
       setFeedback({
         kind: 'confirm',
         intent: result.intent,
@@ -171,21 +217,24 @@ export default function VoiceAssistant({
     // 2) EXECUTED WRITES  ----------------------------------------------------
     if (result.success && actionType === 'checklist_item_completed') {
       const itemText = data?.item?.text || result.entity || 'Step';
-      toast.success(`${itemText} marked complete.`);
+      toast.success(`${itemText} marked complete.${opts.replay ? ' (replay)' : ''}`);
       setFeedback(null);
-      onAction?.(result);
+      finishStage(VOICE_STAGES.COMPLETED);
+      if (!opts.replay) onAction?.(result);
       return;
     }
     if (result.success && actionType === 'note_added') {
-      toast.success('Note added.');
+      toast.success(`Note added.${opts.replay ? ' (replay)' : ''}`);
       setFeedback(null);
-      onAction?.(result);
+      finishStage(VOICE_STAGES.COMPLETED);
+      if (!opts.replay) onAction?.(result);
       return;
     }
     if (result.success && actionType === 'procedure_completed') {
-      toast.success('Procedure completed successfully.');
+      toast.success(`Procedure completed successfully.${opts.replay ? ' (replay)' : ''}`);
       setFeedback(null);
-      onAction?.(result);
+      finishStage(VOICE_STAGES.COMPLETED);
+      if (!opts.replay) onAction?.(result);
       return;
     }
 
@@ -196,7 +245,8 @@ export default function VoiceAssistant({
       } else {
         showInfoCard('Next Step', data.item.text || 'No upcoming step.');
       }
-      onAction?.(result);
+      finishStage(VOICE_STAGES.COMPLETED);
+      if (!opts.replay) onAction?.(result);
       return;
     }
     if (result.success && actionType === 'current_step_repeated') {
@@ -205,7 +255,8 @@ export default function VoiceAssistant({
       } else {
         showInfoCard('Current Step', data.item.text || 'No current step.');
       }
-      onAction?.(result);
+      finishStage(VOICE_STAGES.COMPLETED);
+      if (!opts.replay) onAction?.(result);
       return;
     }
 
@@ -213,30 +264,119 @@ export default function VoiceAssistant({
     if (result.intent === 'UNKNOWN') {
       toast.message("I couldn't understand that command.");
       setFeedback(null);
+      finishStage(VOICE_STAGES.ERROR);
       return;
     }
     // Anything else: use the backend's message if present.
     toast.message(result.message || "I couldn't complete that.");
     setFeedback(null);
-  }, [onAction, showInfoCard]);
+    finishStage(VOICE_STAGES.ERROR);
+  }, [finishStage, onAction, showInfoCard]);
+
+  // Expose the handler to the demo context for Replay support.
+  useEffect(() => {
+    replayHandlerRef.current = handleActionResult;
+    return () => {
+      if (replayHandlerRef.current === handleActionResult) {
+        replayHandlerRef.current = null;
+      }
+    };
+  }, [handleActionResult, replayHandlerRef]);
 
   // ----- Voice processing delegate ------------------------------------------
   const runProcessing = useCallback(async (audioBlob, recordingMs) => {
     if (typeof processVoice !== 'function') return;
     setStatus('processing');
     setFeedback(null);
+    beginStageProgression();
+    lastRecordingMsRef.current = recordingMs || 0;
+
+    // Demo-mode failure simulation: short-circuit the network entirely.
+    if (demoMode && failureMode && failureMode !== FAILURE_MODES.NONE) {
+      const sim = buildSimulatedFailure(failureMode);
+      // Add a small fake delay so the stage progression is visible.
+      await new Promise((r) => setTimeout(r, 600));
+      if (isUnmountedRef.current) return;
+      setStatus('idle');
+      if (sim?.__throw) {
+        const err = sim.__throw;
+        finishStage(VOICE_STAGES.ERROR);
+        addInteraction({
+          transcript: '(simulated)', intent: 'UNKNOWN', confidence: 0,
+          entity: null, action: { type: 'none' }, success: false,
+          requiresConfirmation: false,
+          durations: { recordingMs: lastRecordingMsRef.current, totalMs: 600 },
+          error: err.message || 'simulated error',
+          simulated: true,
+        });
+        toast.error(friendlyErrorMessage(err));
+        onError?.(err);
+        return;
+      }
+      if (sim) {
+        const enriched = {
+          ...sim,
+          durations: { ...sim.durations, recordingMs: lastRecordingMsRef.current },
+        };
+        addInteraction({
+          transcript: enriched.transcript,
+          intent: enriched.intent,
+          confidence: enriched.confidence,
+          entity: enriched.entity,
+          action: enriched.action,
+          success: enriched.success,
+          requiresConfirmation: enriched.requiresConfirmation,
+          threshold: enriched.threshold,
+          durations: enriched.durations,
+          result: enriched,
+          simulated: true,
+        });
+        handleActionResult(enriched);
+        return;
+      }
+    }
+
     try {
       const result = await processVoice(audioBlob, { recordingMs });
       if (isUnmountedRef.current) return;
       setStatus('idle');
-      handleActionResult(result);
+      const enriched = {
+        ...result,
+        durations: { ...(result?.durations || {}), recordingMs },
+      };
+      // Capture this interaction in the demo timeline (no-op if demoMode off
+      // because addInteraction only mutates state read by the panel/badge).
+      addInteraction({
+        transcript: enriched.transcript || '',
+        intent: enriched.intent,
+        confidence: enriched.confidence,
+        entity: enriched.entity,
+        action: enriched.action,
+        success: enriched.success,
+        requiresConfirmation: enriched.requiresConfirmation,
+        threshold: enriched.threshold,
+        durations: enriched.durations,
+        result: enriched,
+      });
+      handleActionResult(enriched);
     } catch (error) {
       if (isUnmountedRef.current) return;
       setStatus('idle');
+      finishStage(VOICE_STAGES.ERROR);
+      addInteraction({
+        transcript: '', intent: 'UNKNOWN', confidence: 0, entity: null,
+        action: { type: 'none' }, success: false, requiresConfirmation: false,
+        durations: { recordingMs: lastRecordingMsRef.current },
+        error: error?.message || 'unknown error',
+      });
       toast.error(friendlyErrorMessage(error));
       onError?.(error);
     }
-  }, [friendlyErrorMessage, handleActionResult, onError, processVoice]);
+  }, [
+    addInteraction, beginStageProgression, demoMode, failureMode,
+    finishStage, friendlyErrorMessage, handleActionResult,
+    onError, processVoice,
+  ]);
 
   // ----- Recording lifecycle ------------------------------------------------
   const startRecording = useCallback(async () => {
@@ -308,6 +448,7 @@ export default function VoiceAssistant({
       recorder.start();
       recordingStartedAtRef.current = performance.now();
       setStatus('recording');
+      setStage(VOICE_STAGES.LISTENING);
       onRecordingStarted?.();
     } catch (error) {
       if (stream) {
@@ -354,22 +495,41 @@ export default function VoiceAssistant({
     }
     const { intent, entity, parameters, transcript } = feedback;
     setStatus('confirming');
+    setStage(VOICE_STAGES.CONFIRMING);
     try {
       const result = await confirmAction({ intent, entity, parameters, transcript });
       if (isUnmountedRef.current) return;
       setStatus('idle');
+      addInteraction({
+        transcript: transcript || '',
+        intent: result?.intent || intent,
+        confidence: result?.confidence ?? 1.0,
+        entity: result?.entity ?? entity,
+        action: result?.action,
+        success: !!result?.success,
+        requiresConfirmation: !!result?.requiresConfirmation,
+        threshold: result?.threshold,
+        durations: result?.durations,
+        result,
+        confirmed: true,
+      });
       handleActionResult(result);
     } catch (error) {
       if (isUnmountedRef.current) return;
       setStatus('idle');
+      finishStage(VOICE_STAGES.ERROR);
       toast.error(friendlyErrorMessage(error));
       onError?.(error);
     }
-  }, [confirmAction, feedback, friendlyErrorMessage, handleActionResult, onError]);
+  }, [
+    addInteraction, confirmAction, feedback, finishStage,
+    friendlyErrorMessage, handleActionResult, onError, setStage,
+  ]);
 
   const handleConfirmNo = useCallback(() => {
     setFeedback(null);
-  }, []);
+    finishStage(VOICE_STAGES.READY, 0);
+  }, [finishStage]);
 
   // ----- Render -------------------------------------------------------------
   const isRecording = status === 'recording';

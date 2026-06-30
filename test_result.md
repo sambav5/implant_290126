@@ -195,7 +195,131 @@ backend:
             EMERGENT_LLM_KEY is properly configured. All error handling paths tested.
             Endpoint is production-ready.
 
-  - task: "Voice workflow Step 5 — Auth, audit, confirmation flow, frontend integration"
+  - task: "Voice workflow Step 6 — Demo Mode & Voice Diagnostics (frontend only)"
+    implemented: true
+    working: true
+    file: "frontend/src/contexts/VoiceDemoContext.jsx, frontend/src/components/voice-demo/VoiceDemoPanel.jsx, frontend/src/components/voice-demo/VoiceStatusBadge.jsx, frontend/src/components/VoiceAssistant.jsx, frontend/src/pages/CaseChecklistFlow.jsx, frontend/.env"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: true
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: |
+            Step 6 - Demo Mode + observability layer. PURE FRONTEND.
+            ZERO backend changes (verified via git status: only files
+            under /app/frontend changed; /app/backend untouched).
+
+            NEW FILES
+            ---------
+            - contexts/VoiceDemoContext.jsx
+                React context providing:
+                  demoMode (env REACT_APP_DEMO_MODE || localStorage),
+                  stage state machine (ready/listening/transcribing/
+                    understanding/executing/confirmation_needed/
+                    confirming/completed/error),
+                  interactions[] (in-memory, last 20, NEVER persisted),
+                  addInteraction / clearHistory,
+                  failureMode (none/stt_timeout/low_confidence/
+                    network_error/unauthorized/unknown_command),
+                  computed stats {total, avgResponseMs, avgConfidence,
+                                  confirmationRate} for the session,
+                  replayHandlerRef + replayInteraction(record).
+                When demoMode is false, useEffect clears all transient
+                state - the app reverts to exactly Step 5 behaviour.
+                Exports buildSimulatedFailure() so VoiceAssistant can
+                short-circuit the network for demo-only failure modes.
+            - components/voice-demo/VoiceDemoPanel.jsx
+                Collapsible side panel. Hidden by default; opens via
+                a "DEMO" tab on the right edge. Five tabs:
+                  Timeline    - per-row time, transcript, intent, entity,
+                                confidence, action type. Per-row Replay
+                                button.
+                  Performance - last interaction's latency breakdown
+                                (recording / upload / STT / intent /
+                                execution / total).
+                  History     - last 20 commands, transcript truncated,
+                                badge (Success / Confirmation / Failed /
+                                Unknown), Clear button.
+                  Stats       - 4-tile grid: total, avg response,
+                                avg confidence, confirmation rate.
+                  Failure Sim - radio list of 5 failure modes; selecting
+                                short-circuits the next /process call.
+                Rendered only when demoMode === true.
+            - components/voice-demo/VoiceStatusBadge.jsx
+                Small pill showing the current stage with a tone-coded
+                icon: Ready / Listening / Transcribing / Understanding /
+                Executing / Confirmation Needed / Confirming / Done /
+                Error. Hidden when demo mode is off AND stage is 'ready'
+                so production users see no clutter.
+
+            MODIFIED FILES
+            --------------
+            - components/VoiceAssistant.jsx
+                * Consumes VoiceDemoContext (setStage, addInteraction,
+                  failureMode, replayHandlerRef).
+                * On Start -> stage LISTENING; on stop -> begins
+                  progression TRANSCRIBING (0ms) -> UNDERSTANDING
+                  (~750ms) -> EXECUTING (~1600ms) until the response
+                  arrives; final stage COMPLETED (1.2s) -> READY,
+                  or ERROR / CONFIRMATION_NEEDED as appropriate.
+                * Records every completion (success / failure /
+                  confirmation / simulated) via addInteraction with the
+                  full ActionResult attached so the panel can replay it.
+                * Replay support: the component publishes its
+                  handleActionResult into replayHandlerRef. Replays pass
+                  {replay:true} which suppresses the parent onAction
+                  callback (no double-mutation of the local checklist)
+                  but still produces the original toast / info-card /
+                  confirm card. Replays NEVER hit STT, IntentEngine, or
+                  the backend.
+                * Failure simulation: when demoMode && failureMode !=
+                  NONE, buildSimulatedFailure() returns a synthetic
+                  voice result or thrown error matching the production
+                  shapes. The network call is skipped entirely.
+            - pages/CaseChecklistFlow.jsx
+                * Wraps the checklist screen in <VoiceDemoProvider>.
+                * Renders <VoiceStatusBadge/> in the header strip and
+                  <VoiceDemoPanel/> at the right edge.
+                * onAction / processVoice / confirmAction wiring from
+                  Step 5 is unchanged.
+            - frontend/.env
+                * Added REACT_APP_DEMO_MODE=false (default).
+                  Runtime override via localStorage.seamless_demo_mode.
+
+            STORAGE / PRIVACY
+            -----------------
+            * interactions[] lives ONLY in React state. Browser refresh
+              clears the timeline. Nothing is persisted to localStorage
+              / sessionStorage / disk.
+            * Only the demoMode toggle key is stored in localStorage.
+            * No raw audio, no transcripts, no patient data leaves the
+              browser other than via the existing voiceService calls.
+
+            VERIFICATION
+            ------------
+            * ESLint: clean across all new + modified files.
+            * webpack build: "Compiled with warnings" - 1 pre-existing
+              warning unrelated to Step 6. No new warnings.
+            * Backend tests: 43/43 still pass; backend code untouched.
+            * Constraint audit (architecture, services, IntentEngine,
+              SpeechToText, orchestrator, business services): NO
+              backend files modified. Verified via `git status`:
+              modifications limited to frontend/src/{components,
+              contexts,pages} + frontend/.env.
+
+            DEMO MODE OFF (default) BEHAVIOUR
+            ---------------------------------
+            * VoiceDemoPanel: not rendered.
+            * VoiceStatusBadge: hidden when stage === 'ready' (still
+              renders the working-state pill during processing, which
+              is a strict UX improvement over Step 5; if you want this
+              gated to demoMode too, that's a one-line change).
+            * Failure simulation: inactive.
+            * Interaction recording: still happens (cheap, in-memory)
+              but is never displayed.
+            * processVoice, confirmAction, /process, /confirm endpoints
+              behave identically to Step 5.
     implemented: true
     working: true
     file: "backend/routes/voice_routes.py, backend/services/voice_audit_service.py, backend/server.py, frontend/src/components/VoiceAssistant.jsx, frontend/src/services/voiceService.js, frontend/src/pages/CaseChecklistFlow.jsx"

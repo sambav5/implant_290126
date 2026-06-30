@@ -11,6 +11,9 @@ import { userApi } from '@/api/userApi';
 import { deriveCaseContext, getRoutingVariant } from '@/lib/caseContext';
 import VoiceAssistant from '@/components/VoiceAssistant';
 import voiceService from '@/services/voiceService';
+import { VoiceDemoProvider } from '@/contexts/VoiceDemoContext';
+import VoiceDemoPanel from '@/components/voice-demo/VoiceDemoPanel';
+import VoiceStatusBadge from '@/components/voice-demo/VoiceStatusBadge';
 
 const getStorageKey = (caseId) => `case_gate_data_${caseId}`;
 const getChecklistStorageKey = (caseId) => `case_checklist_progress_${caseId}`;
@@ -150,86 +153,92 @@ function ChecklistFlowScreen({
   ]);
 
   return (
-    <div className="space-y-4">
-      <div className="flex justify-end gap-2">
-        <Button variant="outline" onClick={() => onChangeVisit(undefined, state)}>Change Visit</Button>
-        <Button variant="outline" onClick={onEditGate}>Edit Case Snapshot</Button>
-      </div>
-      <ChecklistPage
-        state={state}
-        dispatch={dispatch}
-        totalVisits={3}
-        activeVisit={visit}
-        onVisitChange={onVisitChange}
-        onChangeVisit={(visitNumber) => onChangeVisit(visitNumber, state)}
-        onCompleteCase={() => onCompleteCase(state)}
-      />
+    <VoiceDemoProvider>
+      <div className="space-y-4">
+        <div className="flex justify-end gap-2">
+          <VoiceStatusBadge className="mr-auto self-center" />
+          <Button variant="outline" onClick={() => onChangeVisit(undefined, state)}>Change Visit</Button>
+          <Button variant="outline" onClick={onEditGate}>Edit Case Snapshot</Button>
+        </div>
+        <ChecklistPage
+          state={state}
+          dispatch={dispatch}
+          totalVisits={3}
+          activeVisit={visit}
+          onVisitChange={onVisitChange}
+          onChangeVisit={(visitNumber) => onChangeVisit(visitNumber, state)}
+          onCompleteCase={() => onCompleteCase(state)}
+        />
 
-      <VoiceAssistant
-        processVoice={(audioBlob, meta) =>
-          // VoiceAssistant stays a pure UI component. All network + provider
-          // work lives in voiceService.processVoice. The minimal procedure
-          // context is computed here from local state — no patient record
-          // is ever sent.
-          voiceService.processVoice(
-            audioBlob,
-            {
+        <VoiceAssistant
+          processVoice={(audioBlob, meta) =>
+            // VoiceAssistant stays a pure UI component. All network + provider
+            // work lives in voiceService.processVoice. The minimal procedure
+            // context is computed here from local state — no patient record
+            // is ever sent.
+            voiceService.processVoice(
+              audioBlob,
+              {
+                procedureId: caseId,
+                context: voiceContext,
+                recordingMs: meta?.recordingMs,
+              },
+            )
+          }
+          confirmAction={({ intent, entity, parameters, transcript }) =>
+            voiceService.confirmVoiceAction({
               procedureId: caseId,
-              context: voiceContext,
-              recordingMs: meta?.recordingMs,
-            },
-          )
-        }
-        confirmAction={({ intent, entity, parameters, transcript }) =>
-          voiceService.confirmVoiceAction({
-            procedureId: caseId,
-            intent,
-            entity,
-            parameters,
-            transcript,
-          })
-        }
-        onAction={(result) => {
-          // The backend just mutated server-side state. Mirror the change
-          // locally so the UI updates instantly without a refetch.
-          if (!result || !result.success) return;
-          const actionType = result.action?.type;
-          const data = result.action?.data || {};
+              intent,
+              entity,
+              parameters,
+              transcript,
+            })
+          }
+          onAction={(result) => {
+            // The backend just mutated server-side state. Mirror the change
+            // locally so the UI updates instantly without a refetch.
+            if (!result || !result.success) return;
+            const actionType = result.action?.type;
+            const data = result.action?.data || {};
 
-          if (actionType === 'checklist_item_completed') {
-            const completedText =
-              data?.item?.text || result.entity || '';
-            if (!completedText) return;
+            if (actionType === 'checklist_item_completed') {
+              const completedText =
+                data?.item?.text || result.entity || '';
+              if (!completedText) return;
 
-            // Match the server-side item against our local checklist by text
-            // (case-insensitive). If we find it, mark it complete locally so
-            // the checklist UI advances without a page refresh.
-            const localMatch = (state.checklist || []).find(
-              (i) => String(i.text || '').trim().toLowerCase() ===
-                     String(completedText).trim().toLowerCase(),
-            );
-            if (localMatch) {
-              dispatch({
-                type: 'SET_RESPONSES',
-                payload: { [localMatch.id]: true },
-              });
+              // Match the server-side item against our local checklist by text
+              // (case-insensitive). If we find it, mark it complete locally so
+              // the checklist UI advances without a page refresh.
+              const localMatch = (state.checklist || []).find(
+                (i) => String(i.text || '').trim().toLowerCase() ===
+                       String(completedText).trim().toLowerCase(),
+              );
+              if (localMatch) {
+                dispatch({
+                  type: 'SET_RESPONSES',
+                  payload: { [localMatch.id]: true },
+                });
+              }
+              return;
             }
-            return;
-          }
 
-          if (actionType === 'procedure_completed') {
-            // Best-effort: try to navigate to a summary screen if it exists,
-            // otherwise stay on the page (the toast already confirms).
-            // We DO NOT navigate eagerly to avoid losing user context; the
-            // existing "Complete Case" flow remains the canonical exit.
-            return;
-          }
-        }}
-        onError={(error) => {
-          console.warn('Voice processing failed', error);
-        }}
-      />
-    </div>
+            if (actionType === 'procedure_completed') {
+              // Best-effort: try to navigate to a summary screen if it exists,
+              // otherwise stay on the page (the toast already confirms).
+              // We DO NOT navigate eagerly to avoid losing user context; the
+              // existing "Complete Case" flow remains the canonical exit.
+              return;
+            }
+          }}
+          onError={(error) => {
+            console.warn('Voice processing failed', error);
+          }}
+        />
+
+        {/* Step 6 demo panel - only renders when DEMO_MODE is on. */}
+        <VoiceDemoPanel />
+      </div>
+    </VoiceDemoProvider>
   );
 }
 
