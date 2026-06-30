@@ -334,6 +334,73 @@ backend:
             OpenAI Intent Engine integration is working correctly via emergentintegrations.
             EMERGENT_LLM_KEY is properly configured. All error handling paths tested.
             Endpoint is production-ready.
+        - working: true
+          agent: "main"
+          comment: |
+            Step 3.1 — Intent Engine determinism + prompt polish.
+            NO API CONTRACT CHANGES. NO ARCHITECTURE CHANGES. Parsing only.
+
+            Changes (backend/services/intent_engine/openai_intent_engine.py):
+              - Added deterministic sampling. `seed` is forwarded via
+                LlmChat.with_params() (defaults to 42, configurable via
+                INTENT_ENGINE_SEED). `temperature` is also forwarded when
+                set via INTENT_ENGINE_TEMPERATURE; if the provider rejects
+                it (gpt-5.x only accepts temperature=1), the engine
+                transparently retries once with seed only. This keeps the
+                code forward-compatible with smaller models that DO honour
+                temperature=0 (e.g. gpt-4o-mini, gpt-5.4-mini).
+              - Expanded system prompt with:
+                  * Explicit "always return one of the allowed labels" rule.
+                  * Disambiguation rules (numbered, applied in order) for
+                    bare completion signals, advance signals, repeat
+                    signals, bare "Finish", and destructive words like
+                    "stop"/"cancel".
+                  * 18 few-shot examples covering UPDATE_CHECKLIST,
+                    ADD_NOTE, READ_NEXT_STEP, REPEAT_STEP, FINISH_PROCEDURE,
+                    UNKNOWN, including ambiguous short commands:
+                    Done / Next / Move on / Continue / Go ahead / Proceed /
+                    That's done / Completed / Mark it done / Repeat /
+                    Finish.
+                  * Confidence-band guidance (0.95+ unambiguous,
+                    0.80-0.94 context-inferred, <0.50 reserved for UNKNOWN).
+              - User prompt now fences the transcript with
+                <<<TRANSCRIPT>>> / <<<END_TRANSCRIPT>>> markers (instead of
+                naked double quotes) to neutralise prompt-injection from
+                transcripts containing quote characters.
+
+            Env (backend/.env):
+              INTENT_ENGINE_SEED=42
+              INTENT_ENGINE_TEMPERATURE= (blank; engine drops unsupported)
+
+            Live re-run of the full command suite (19 commands x 2 passes
+            against real gpt-5.4 via EMERGENT_LLM_KEY):
+              - 19/19 deterministic (identical intent, entity, confidence,
+                parameters across both passes).
+              - 17/19 with confidence >= 0.90.
+              - Only 2 commands below 0.90, both intentionally so:
+                  "Stop"             -> UNKNOWN, conf 0.20 (by design;
+                                         destructive word, not in our
+                                         intent set)
+                  "Order me a pizza" -> UNKNOWN, conf 0.02 (off-topic)
+              - All previously ambiguous short commands now classify
+                cleanly and at high confidence:
+                  Done       -> UPDATE_CHECKLIST(Working Length) 0.95
+                  Next       -> READ_NEXT_STEP                    0.97
+                  Move on    -> READ_NEXT_STEP                    0.95
+                  Continue   -> READ_NEXT_STEP                    0.95
+                  Go ahead   -> READ_NEXT_STEP                    0.93
+                  Proceed    -> READ_NEXT_STEP                    0.93
+                  That's done-> UPDATE_CHECKLIST(Working Length) 0.95
+                  Completed  -> UPDATE_CHECKLIST(Working Length) 0.95
+                  Mark it done-> UPDATE_CHECKLIST(Working Length) 0.95
+                  Repeat     -> REPEAT_STEP(Working Length)       0.95
+                  Finish     -> UPDATE_CHECKLIST(Working Length) 0.90
+                  (previously "Continue" sat at 0.60 with mixed
+                   intent; now 0.95 and stable.)
+
+            All 21 unit tests still pass (no schema changes; parser
+            behaviour preserved). Controller / response model / route
+            paths unchanged. Audio still never persisted. No DB writes.
 
 frontend:
   - task: "VoiceAssistant (pure UI) + VoiceService + checklist page integration"
