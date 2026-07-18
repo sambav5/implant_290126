@@ -7,6 +7,8 @@ ENVIRONMENT_NAME="${ENVIRONMENT_NAME:-prod}"
 AWS_REGION="${AWS_REGION:-${AWS_DEFAULT_REGION:-us-east-1}}"
 ECR_STACK_NAME="${ECR_STACK_NAME:-${PROJECT_NAME}-${ENVIRONMENT_NAME}-ecr}"
 APP_STACK_NAME="${APP_STACK_NAME:-${PROJECT_NAME}-${ENVIRONMENT_NAME}-ecs}"
+NETWORK_STACK_NAME="${NETWORK_STACK_NAME:-${PROJECT_NAME}-${ENVIRONMENT_NAME}-network}"
+APP_SECRET_NAME="${APP_SECRET_NAME:-/${PROJECT_NAME}/${ENVIRONMENT_NAME}/app}"
 IMAGE_TAG="${IMAGE_TAG:-$(git -C "${ROOT_DIR}" rev-parse --short HEAD 2>/dev/null || date +%Y%m%d%H%M%S)}"
 FRONTEND_REPOSITORY_NAME="${PROJECT_NAME}/frontend"
 BACKEND_REPOSITORY_NAME="${PROJECT_NAME}/backend"
@@ -25,25 +27,32 @@ fi
 
 ACCOUNT_ID="$(aws sts get-caller-identity --query Account --output text --region "${AWS_REGION}")"
 
-VPC_ID="${VPC_ID:-$(aws ec2 describe-vpcs \
-  --filters Name=isDefault,Values=true \
-  --query 'Vpcs[0].VpcId' \
-  --output text \
-  --region "${AWS_REGION}")}"
-VPC_ID="$(echo "${VPC_ID}" | xargs)"
+aws cloudformation deploy   --stack-name "${NETWORK_STACK_NAME}"   --template-file "${ROOT_DIR}/cloudformation/network.yml"   --parameter-overrides     ProjectName="${PROJECT_NAME}"     EnvironmentName="${ENVIRONMENT_NAME}"     VpcCidr="${VPC_CIDR:-10.100.0.0/16}"     PublicSubnet1Cidr="${PUBLIC_SUBNET_1_CIDR:-10.100.0.0/24}"     PublicSubnet2Cidr="${PUBLIC_SUBNET_2_CIDR:-10.100.1.0/24}"   --region "${AWS_REGION}"
 
-if [[ -z "${SUBNET_IDS:-}" ]]; then
-  SUBNET_IDS="$(aws ec2 describe-subnets \
-    --filters Name=vpc-id,Values="${VPC_ID}" Name=default-for-az,Values=true \
-    --query 'Subnets[].SubnetId' \
-    --output text \
-    --region "${AWS_REGION}" | tr '\t' ',')"
-fi
+VPC_ID="$(aws cloudformation describe-stacks --stack-name "${NETWORK_STACK_NAME}" --query "Stacks[0].Outputs[?OutputKey=='VpcId'].OutputValue" --output text --region "${AWS_REGION}")"
+SUBNET_IDS="$(aws cloudformation describe-stacks --stack-name "${NETWORK_STACK_NAME}" --query "Stacks[0].Outputs[?OutputKey=='PublicSubnetIds'].OutputValue" --output text --region "${AWS_REGION}")"
 
-if [[ -z "${VPC_ID}" || "${VPC_ID}" == "None" || -z "${SUBNET_IDS}" ]]; then
-  echo "Could not determine default VPC/subnets. Set VPC_ID and SUBNET_IDS explicitly." >&2
-  exit 1
+SECRET_JSON="$(python3 - <<'PYSECRET'
+import json, os
+keys = {
+    'MONGO_URL': os.environ.get('MONGO_URL', ''),
+    'JWT_SECRET': os.environ.get('JWT_SECRET', ''),
+    'TWILIO_ACCOUNT_SID': os.environ.get('TWILIO_ACCOUNT_SID', ''),
+    'TWILIO_AUTH_TOKEN': os.environ.get('TWILIO_AUTH_TOKEN', ''),
+    'REACT_APP_POSTHOG_KEY': os.environ.get('REACT_APP_POSTHOG_KEY') or os.environ.get('POSTHOG_API_KEY', ''),
+    'EMERGENT_LLM_KEY': os.environ.get('EMERGENT_LLM_KEY', ''),
+    'OPENAI_API_KEY': os.environ.get('OPENAI_API_KEY', ''),
+}
+print(json.dumps(keys, separators=(',', ':')))
+PYSECRET
+)"
+
+if aws secretsmanager describe-secret --secret-id "${APP_SECRET_NAME}" --region "${AWS_REGION}" >/dev/null 2>&1; then
+  aws secretsmanager put-secret-value --secret-id "${APP_SECRET_NAME}" --secret-string "${SECRET_JSON}" --region "${AWS_REGION}" >/dev/null
+else
+  aws secretsmanager create-secret --name "${APP_SECRET_NAME}" --secret-string "${SECRET_JSON}" --region "${AWS_REGION}" >/dev/null
 fi
+APP_SECRET_ARN="$(aws secretsmanager describe-secret --secret-id "${APP_SECRET_NAME}" --query ARN --output text --region "${AWS_REGION}")"
 
 aws cloudformation deploy \
   --stack-name "${ECR_STACK_NAME}" \
@@ -87,21 +96,16 @@ PARAMS=(
   PublicSubnetIds="${SUBNET_IDS}"
   FrontendImageUri="${FRONTEND_REPOSITORY_URI}:${IMAGE_TAG}"
   BackendImageUri="${BACKEND_REPOSITORY_URI}:${IMAGE_TAG}"
-  MongoUrl="${MONGO_URL}"
+  AppSecretArn="${APP_SECRET_ARN}"
   DbName="${DB_NAME}"
-  JwtSecret="${JWT_SECRET}"
   JwtAlgorithm="${JWT_ALGORITHM:-HS256}"
   JwtExpireDays="${JWT_EXPIRE_DAYS:-7}"
   CorsOrigins="${CORS_ORIGINS:-*}"
   AppEnv="${APP_ENV:-production}"
   WebConcurrency="${WEB_CONCURRENCY:-2}"
   GunicornTimeout="${GUNICORN_TIMEOUT:-120}"
-  TwilioAccountSid="${TWILIO_ACCOUNT_SID:-}"
-  TwilioAuthToken="${TWILIO_AUTH_TOKEN:-}"
   TwilioWhatsappFrom="${TWILIO_WHATSAPP_FROM:-}"
   TwilioTemplateSid="${TWILIO_TEMPLATE_SID:-}"
-  EmergentLlmKey="${EMERGENT_LLM_KEY:-}"
-  OpenAiApiKey="${OPENAI_API_KEY:-}"
   SpeechToTextProvider="${SPEECH_TO_TEXT_PROVIDER:-openai_whisper}"
   SpeechToTextModel="${SPEECH_TO_TEXT_MODEL:-whisper-1}"
   SpeechToTextLanguage="${SPEECH_TO_TEXT_LANGUAGE:-}"
@@ -115,7 +119,6 @@ PARAMS=(
   FileStorageDriver="${FILE_STORAGE_DRIVER:-local}"
   LocalUploadsDir="${LOCAL_UPLOADS_DIR:-/app/uploads}"
   ReactAppBackendUrl="${REACT_APP_BACKEND_URL:-}"
-  ReactAppPosthogKey="${REACT_APP_POSTHOG_KEY:-}"
   ReactAppPosthogHost="${REACT_APP_POSTHOG_HOST:-https://us.i.posthog.com}"
   ReactAppDemoMode="${REACT_APP_DEMO_MODE:-false}"
 )

@@ -32,19 +32,39 @@ if ([string]::IsNullOrWhiteSpace($env:MONGO_URL) -or [string]::IsNullOrWhiteSpac
 $RootDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 $EcrStackName = if ($env:ECR_STACK_NAME) { $env:ECR_STACK_NAME } else { "$ProjectName-$EnvironmentName-ecr" }
 $AppStackName = if ($env:APP_STACK_NAME) { $env:APP_STACK_NAME } else { "$ProjectName-$EnvironmentName-ecs" }
+$NetworkStackName = if ($env:NETWORK_STACK_NAME) { $env:NETWORK_STACK_NAME } else { "$ProjectName-$EnvironmentName-network" }
+$AppSecretName = if ($env:APP_SECRET_NAME) { $env:APP_SECRET_NAME } else { "/$ProjectName/$EnvironmentName/app" }
 $FrontendRepositoryName = "$ProjectName/frontend"
 $BackendRepositoryName = "$ProjectName/backend"
 $AccountId = (aws sts get-caller-identity --query Account --output text --region $AwsRegion).Trim()
 
-if ([string]::IsNullOrWhiteSpace($VpcId)) {
-  $VpcId = (aws ec2 describe-vpcs --filters Name=isDefault,Values=true --query 'Vpcs[0].VpcId' --output text --region $AwsRegion).Trim()
+aws cloudformation deploy `
+  --stack-name $NetworkStackName `
+  --template-file (Join-Path $RootDir 'cloudformation/network.yml') `
+  --parameter-overrides ProjectName=$ProjectName EnvironmentName=$EnvironmentName VpcCidr=$(if ($env:VPC_CIDR) { $env:VPC_CIDR } else { '10.100.0.0/16' }) PublicSubnet1Cidr=$(if ($env:PUBLIC_SUBNET_1_CIDR) { $env:PUBLIC_SUBNET_1_CIDR } else { '10.100.0.0/24' }) PublicSubnet2Cidr=$(if ($env:PUBLIC_SUBNET_2_CIDR) { $env:PUBLIC_SUBNET_2_CIDR } else { '10.100.1.0/24' }) `
+  --region $AwsRegion
+
+$VpcId = (aws cloudformation describe-stacks --stack-name $NetworkStackName --query "Stacks[0].Outputs[?OutputKey=='VpcId'].OutputValue" --output text --region $AwsRegion).Trim()
+$SubnetIds = (aws cloudformation describe-stacks --stack-name $NetworkStackName --query "Stacks[0].Outputs[?OutputKey=='PublicSubnetIds'].OutputValue" --output text --region $AwsRegion).Trim()
+
+$PosthogSecret = if ($env:REACT_APP_POSTHOG_KEY) { $env:REACT_APP_POSTHOG_KEY } else { $env:POSTHOG_API_KEY }
+$secretObject = [ordered]@{
+  MONGO_URL = $env:MONGO_URL
+  JWT_SECRET = $env:JWT_SECRET
+  TWILIO_ACCOUNT_SID = $env:TWILIO_ACCOUNT_SID
+  TWILIO_AUTH_TOKEN = $env:TWILIO_AUTH_TOKEN
+  REACT_APP_POSTHOG_KEY = $PosthogSecret
+  EMERGENT_LLM_KEY = $env:EMERGENT_LLM_KEY
+  OPENAI_API_KEY = $env:OPENAI_API_KEY
 }
-if ([string]::IsNullOrWhiteSpace($SubnetIds)) {
-  $SubnetIds = ((aws ec2 describe-subnets --filters Name=vpc-id,Values=$VpcId Name=default-for-az,Values=true --query 'Subnets[].SubnetId' --output text --region $AwsRegion).Trim() -split '\s+') -join ','
+$secretJson = $secretObject | ConvertTo-Json -Compress
+try {
+  aws secretsmanager describe-secret --secret-id $AppSecretName --region $AwsRegion | Out-Null
+  aws secretsmanager put-secret-value --secret-id $AppSecretName --secret-string $secretJson --region $AwsRegion | Out-Null
+} catch {
+  aws secretsmanager create-secret --name $AppSecretName --secret-string $secretJson --region $AwsRegion | Out-Null
 }
-if ([string]::IsNullOrWhiteSpace($VpcId) -or $VpcId -eq 'None' -or [string]::IsNullOrWhiteSpace($SubnetIds)) {
-  throw 'Could not determine default VPC/subnets. Set VPC_ID and SUBNET_IDS explicitly.'
-}
+$AppSecretArn = (aws secretsmanager describe-secret --secret-id $AppSecretName --query ARN --output text --region $AwsRegion).Trim()
 
 aws cloudformation deploy `
   --stack-name $EcrStackName `
@@ -71,21 +91,16 @@ $params = @(
   "PublicSubnetIds=$SubnetIds",
   "FrontendImageUri=$FrontendRepositoryUri`:$ImageTag",
   "BackendImageUri=$BackendRepositoryUri`:$ImageTag",
-  "MongoUrl=$($env:MONGO_URL)",
+  "AppSecretArn=$AppSecretArn",
   "DbName=$($env:DB_NAME)",
-  "JwtSecret=$($env:JWT_SECRET)",
   "JwtAlgorithm=$(if ($env:JWT_ALGORITHM) { $env:JWT_ALGORITHM } else { 'HS256' })",
   "JwtExpireDays=$(if ($env:JWT_EXPIRE_DAYS) { $env:JWT_EXPIRE_DAYS } else { '7' })",
   "CorsOrigins=$(if ($env:CORS_ORIGINS) { $env:CORS_ORIGINS } else { '*' })",
   "AppEnv=$(if ($env:APP_ENV) { $env:APP_ENV } else { 'production' })",
   "WebConcurrency=$(if ($env:WEB_CONCURRENCY) { $env:WEB_CONCURRENCY } else { '2' })",
   "GunicornTimeout=$(if ($env:GUNICORN_TIMEOUT) { $env:GUNICORN_TIMEOUT } else { '120' })",
-  "TwilioAccountSid=$($env:TWILIO_ACCOUNT_SID)",
-  "TwilioAuthToken=$($env:TWILIO_AUTH_TOKEN)",
   "TwilioWhatsappFrom=$($env:TWILIO_WHATSAPP_FROM)",
   "TwilioTemplateSid=$($env:TWILIO_TEMPLATE_SID)",
-  "EmergentLlmKey=$($env:EMERGENT_LLM_KEY)",
-  "OpenAiApiKey=$($env:OPENAI_API_KEY)",
   "SpeechToTextProvider=$(if ($env:SPEECH_TO_TEXT_PROVIDER) { $env:SPEECH_TO_TEXT_PROVIDER } else { 'openai_whisper' })",
   "SpeechToTextModel=$(if ($env:SPEECH_TO_TEXT_MODEL) { $env:SPEECH_TO_TEXT_MODEL } else { 'whisper-1' })",
   "SpeechToTextLanguage=$($env:SPEECH_TO_TEXT_LANGUAGE)",
@@ -99,7 +114,6 @@ $params = @(
   "FileStorageDriver=$(if ($env:FILE_STORAGE_DRIVER) { $env:FILE_STORAGE_DRIVER } else { 'local' })",
   "LocalUploadsDir=$(if ($env:LOCAL_UPLOADS_DIR) { $env:LOCAL_UPLOADS_DIR } else { '/app/uploads' })",
   "ReactAppBackendUrl=$($env:REACT_APP_BACKEND_URL)",
-  "ReactAppPosthogKey=$($env:REACT_APP_POSTHOG_KEY)",
   "ReactAppPosthogHost=$(if ($env:REACT_APP_POSTHOG_HOST) { $env:REACT_APP_POSTHOG_HOST } else { 'https://us.i.posthog.com' })",
   "ReactAppDemoMode=$(if ($env:REACT_APP_DEMO_MODE) { $env:REACT_APP_DEMO_MODE } else { 'false' })"
 )

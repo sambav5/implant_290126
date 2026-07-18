@@ -1,0 +1,55 @@
+name: Deploy to ECS Fargate
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+env:
+  AWS_REGION: ${{ secrets.AWS_REGION || 'us-east-1' }}
+  PROJECT_NAME: ${{ vars.PROJECT_NAME || 'implant' }}
+  ENVIRONMENT_NAME: ${{ vars.ENVIRONMENT_NAME || 'prod' }}
+  IMAGE_TAG: ${{ github.sha }}
+  MONGO_URL: ${{ secrets.MONGO_URL }}
+  DB_NAME: ${{ vars.DB_NAME || 'dental_app' }}
+  JWT_SECRET: ${{ secrets.JWT_SECRET }}
+  TWILIO_ACCOUNT_SID: ${{ secrets.TWILIO_ACCOUNT_SID }}
+  TWILIO_AUTH_TOKEN: ${{ secrets.TWILIO_AUTH_TOKEN }}
+  TWILIO_WHATSAPP_FROM: ${{ vars.TWILIO_WHATSAPP_FROM }}
+  TWILIO_TEMPLATE_SID: ${{ vars.TWILIO_TEMPLATE_SID }}
+  REACT_APP_POSTHOG_KEY: ${{ secrets.POSTHOG_API_KEY }}
+  REACT_APP_POSTHOG_HOST: ${{ vars.REACT_APP_POSTHOG_HOST || 'https://us.i.posthog.com' }}
+  EMERGENT_LLM_KEY: ${{ secrets.EMERGENT_LLM_KEY }}
+  OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+  CORS_ORIGINS: ${{ vars.CORS_ORIGINS || '*' }}
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Build, push, deploy, and wait for ECS stability
+        run: ./deploy.sh
+
+      - name: Print application URL
+        run: |
+          APP_STACK_NAME="${APP_STACK_NAME:-${PROJECT_NAME}-${ENVIRONMENT_NAME}-ecs}"
+          aws cloudformation describe-stacks \
+            --stack-name "$APP_STACK_NAME" \
+            --query "Stacks[0].Outputs[?OutputKey=='ApplicationUrl'].OutputValue" \
+            --output text \
+            --region "$AWS_REGION"

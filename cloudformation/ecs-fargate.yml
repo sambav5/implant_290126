@@ -63,16 +63,12 @@ Parameters:
   HealthCheckGracePeriodSeconds:
     Type: Number
     Default: 60
-  MongoUrl:
+  AppSecretArn:
     Type: String
-    NoEcho: true
-    Description: MongoDB connection string.
+    Description: Secrets Manager secret ARN containing sensitive container environment variables as JSON keys.
   DbName:
     Type: String
     Default: dental_app
-  JwtSecret:
-    Type: String
-    NoEcho: true
   JwtAlgorithm:
     Type: String
     Default: HS256
@@ -91,28 +87,12 @@ Parameters:
   GunicornTimeout:
     Type: Number
     Default: 120
-  TwilioAccountSid:
-    Type: String
-    Default: ''
-    NoEcho: true
-  TwilioAuthToken:
-    Type: String
-    Default: ''
-    NoEcho: true
   TwilioWhatsappFrom:
     Type: String
     Default: ''
   TwilioTemplateSid:
     Type: String
     Default: ''
-  EmergentLlmKey:
-    Type: String
-    Default: ''
-    NoEcho: true
-  OpenAiApiKey:
-    Type: String
-    Default: ''
-    NoEcho: true
   SpeechToTextProvider:
     Type: String
     Default: openai_whisper
@@ -153,10 +133,6 @@ Parameters:
     Type: String
     Default: ''
     Description: Public backend origin for frontend runtime config. Leave empty to use same-origin ALB /api routing.
-  ReactAppPosthogKey:
-    Type: String
-    Default: ''
-    NoEcho: true
   ReactAppPosthogHost:
     Type: String
     Default: https://us.i.posthog.com
@@ -173,6 +149,9 @@ Resources:
       ClusterSettings:
         - Name: containerInsights
           Value: enabled
+      Configuration:
+        ExecuteCommandConfiguration:
+          Logging: DEFAULT
 
   AlbSecurityGroup:
     Type: AWS::EC2::SecurityGroup
@@ -233,6 +212,10 @@ Resources:
       HealthCheckProtocol: HTTP
       Matcher:
         HttpCode: '200'
+      HealthyThresholdCount: 2
+      UnhealthyThresholdCount: 2
+      HealthCheckIntervalSeconds: 30
+      HealthCheckTimeoutSeconds: 5
 
   BackendTargetGroup:
     Type: AWS::ElasticLoadBalancingV2::TargetGroup
@@ -246,6 +229,10 @@ Resources:
       HealthCheckProtocol: HTTP
       Matcher:
         HttpCode: '200'
+      HealthyThresholdCount: 2
+      UnhealthyThresholdCount: 2
+      HealthCheckIntervalSeconds: 30
+      HealthCheckTimeoutSeconds: 5
 
   HttpListener:
     Type: AWS::ElasticLoadBalancingV2::Listener
@@ -307,6 +294,22 @@ Resources:
             Action: sts:AssumeRole
       ManagedPolicyArns:
         - arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy
+      Policies:
+        - PolicyName: ReadApplicationSecrets
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - secretsmanager:GetSecretValue
+                Resource: !Ref AppSecretArn
+              - Effect: Allow
+                Action:
+                  - kms:Decrypt
+                Resource: '*'
+                Condition:
+                  StringEquals:
+                    kms:ViaService: !Sub 'secretsmanager.${AWS::Region}.amazonaws.com'
 
   TaskRole:
     Type: AWS::IAM::Role
@@ -318,6 +321,18 @@ Resources:
             Principal:
               Service: ecs-tasks.amazonaws.com
             Action: sts:AssumeRole
+      Policies:
+        - PolicyName: EcsExecMessages
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - ssmmessages:CreateControlChannel
+                  - ssmmessages:CreateDataChannel
+                  - ssmmessages:OpenControlChannel
+                  - ssmmessages:OpenDataChannel
+                Resource: '*'
 
   FrontendTaskDefinition:
     Type: AWS::ECS::TaskDefinition
@@ -339,14 +354,15 @@ Resources:
           Environment:
             - Name: REACT_APP_BACKEND_URL
               Value: !Ref ReactAppBackendUrl
-            - Name: REACT_APP_POSTHOG_KEY
-              Value: !Ref ReactAppPosthogKey
             - Name: REACT_APP_POSTHOG_HOST
               Value: !Ref ReactAppPosthogHost
             - Name: REACT_APP_DEMO_MODE
               Value: !Ref ReactAppDemoMode
             - Name: NGINX_API_PROXY
               Value: !Sub 'http://${LoadBalancer.DNSName}'
+          Secrets:
+            - Name: REACT_APP_POSTHOG_KEY
+              ValueFrom: !Sub '${AppSecretArn}:REACT_APP_POSTHOG_KEY::'
           LogConfiguration:
             LogDriver: awslogs
             Options:
@@ -374,12 +390,8 @@ Resources:
           Environment:
             - Name: APP_ENV
               Value: !Ref AppEnv
-            - Name: MONGO_URL
-              Value: !Ref MongoUrl
             - Name: DB_NAME
               Value: !Ref DbName
-            - Name: JWT_SECRET
-              Value: !Ref JwtSecret
             - Name: JWT_ALGORITHM
               Value: !Ref JwtAlgorithm
             - Name: JWT_EXPIRE_DAYS
@@ -392,18 +404,10 @@ Resources:
               Value: !Sub '${WebConcurrency}'
             - Name: GUNICORN_TIMEOUT
               Value: !Sub '${GunicornTimeout}'
-            - Name: TWILIO_ACCOUNT_SID
-              Value: !Ref TwilioAccountSid
-            - Name: TWILIO_AUTH_TOKEN
-              Value: !Ref TwilioAuthToken
             - Name: TWILIO_WHATSAPP_FROM
               Value: !Ref TwilioWhatsappFrom
             - Name: TWILIO_TEMPLATE_SID
               Value: !Ref TwilioTemplateSid
-            - Name: EMERGENT_LLM_KEY
-              Value: !Ref EmergentLlmKey
-            - Name: OPENAI_API_KEY
-              Value: !Ref OpenAiApiKey
             - Name: SPEECH_TO_TEXT_PROVIDER
               Value: !Ref SpeechToTextProvider
             - Name: SPEECH_TO_TEXT_MODEL
@@ -428,6 +432,19 @@ Resources:
               Value: !Ref FileStorageDriver
             - Name: LOCAL_UPLOADS_DIR
               Value: !Ref LocalUploadsDir
+          Secrets:
+            - Name: MONGO_URL
+              ValueFrom: !Sub '${AppSecretArn}:MONGO_URL::'
+            - Name: JWT_SECRET
+              ValueFrom: !Sub '${AppSecretArn}:JWT_SECRET::'
+            - Name: TWILIO_ACCOUNT_SID
+              ValueFrom: !Sub '${AppSecretArn}:TWILIO_ACCOUNT_SID::'
+            - Name: TWILIO_AUTH_TOKEN
+              ValueFrom: !Sub '${AppSecretArn}:TWILIO_AUTH_TOKEN::'
+            - Name: EMERGENT_LLM_KEY
+              ValueFrom: !Sub '${AppSecretArn}:EMERGENT_LLM_KEY::'
+            - Name: OPENAI_API_KEY
+              ValueFrom: !Sub '${AppSecretArn}:OPENAI_API_KEY::'
           LogConfiguration:
             LogDriver: awslogs
             Options:
@@ -443,6 +460,10 @@ Resources:
       Cluster: !Ref Cluster
       LaunchType: FARGATE
       DesiredCount: !Ref FrontendDesiredCount
+      EnableExecuteCommand: true
+      DeploymentConfiguration:
+        MinimumHealthyPercent: 100
+        MaximumPercent: 200
       HealthCheckGracePeriodSeconds: !Ref HealthCheckGracePeriodSeconds
       TaskDefinition: !Ref FrontendTaskDefinition
       NetworkConfiguration:
@@ -466,6 +487,10 @@ Resources:
       Cluster: !Ref Cluster
       LaunchType: FARGATE
       DesiredCount: !Ref BackendDesiredCount
+      EnableExecuteCommand: true
+      DeploymentConfiguration:
+        MinimumHealthyPercent: 100
+        MaximumPercent: 200
       HealthCheckGracePeriodSeconds: !Ref HealthCheckGracePeriodSeconds
       TaskDefinition: !Ref BackendTaskDefinition
       NetworkConfiguration:

@@ -36,11 +36,11 @@ Resources:
             "rules": [
               {
                 "rulePriority": 1,
-                "description": "Keep the most recent 20 frontend images",
+                "description": "Keep the most recent 5 frontend images",
                 "selection": {
                   "tagStatus": "any",
                   "countType": "imageCountMoreThan",
-                  "countNumber": 20
+                  "countNumber": 5
                 },
                 "action": { "type": "expire" }
               }
@@ -60,11 +60,11 @@ Resources:
             "rules": [
               {
                 "rulePriority": 1,
-                "description": "Keep the most recent 20 backend images",
+                "description": "Keep the most recent 5 backend images",
                 "selection": {
                   "tagStatus": "any",
                   "countType": "imageCountMoreThan",
-                  "countNumber": 20
+                  "countNumber": 5
                 },
                 "action": { "type": "expire" }
               }
