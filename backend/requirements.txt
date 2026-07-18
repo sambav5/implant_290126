@@ -29,3 +29,5 @@ twilio>=8.10.0
 emergentintegrations
 aiofiles>=23.2.1
 python-dateutil==2.9.0.post0
+
+gunicorn>=22.0.0

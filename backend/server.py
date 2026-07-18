@@ -76,6 +76,11 @@ async def serve_file(file_path: str, request: Request, current_user: dict = Depe
         logger.error(f"Error serving file: {str(e)}")
         raise HTTPException(status_code=500, detail="Failed to serve file")
 
+# Lightweight health check for containers and load balancers
+@app.get("/health")
+async def health_check():
+    return {"status": "ok"}
+
 # Create a router with the /api prefix
 api_router = APIRouter(prefix="/api")
 
