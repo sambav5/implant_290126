@@ -1,0 +1,84 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: ECR repositories for the implant application frontend and backend images.
+
+Parameters:
+  ProjectName:
+    Type: String
+    Default: implant
+    AllowedPattern: '^[a-zA-Z][a-zA-Z0-9-]{1,30}$'
+  ImageTagMutability:
+    Type: String
+    Default: MUTABLE
+    AllowedValues:
+      - MUTABLE
+      - IMMUTABLE
+  ScanOnPush:
+    Type: String
+    Default: 'true'
+    AllowedValues:
+      - 'true'
+      - 'false'
+
+Conditions:
+  EnableScanOnPush: !Equals [!Ref ScanOnPush, 'true']
+
+Resources:
+  FrontendRepository:
+    Type: AWS::ECR::Repository
+    Properties:
+      RepositoryName: !Sub '${ProjectName}/frontend'
+      ImageTagMutability: !Ref ImageTagMutability
+      ImageScanningConfiguration:
+        ScanOnPush: !If [EnableScanOnPush, true, false]
+      LifecyclePolicy:
+        LifecyclePolicyText: |
+          {
+            "rules": [
+              {
+                "rulePriority": 1,
+                "description": "Keep the most recent 5 frontend images",
+                "selection": {
+                  "tagStatus": "any",
+                  "countType": "imageCountMoreThan",
+                  "countNumber": 5
+                },
+                "action": { "type": "expire" }
+              }
+            ]
+          }
+
+  BackendRepository:
+    Type: AWS::ECR::Repository
+    Properties:
+      RepositoryName: !Sub '${ProjectName}/backend'
+      ImageTagMutability: !Ref ImageTagMutability
+      ImageScanningConfiguration:
+        ScanOnPush: !If [EnableScanOnPush, true, false]
+      LifecyclePolicy:
+        LifecyclePolicyText: |
+          {
+            "rules": [
+              {
+                "rulePriority": 1,
+                "description": "Keep the most recent 5 backend images",
+                "selection": {
+                  "tagStatus": "any",
+                  "countType": "imageCountMoreThan",
+                  "countNumber": 5
+                },
+                "action": { "type": "expire" }
+              }
+            ]
+          }
+
+Outputs:
+  FrontendRepositoryUri:
+    Description: Frontend ECR repository URI.
+    Value: !GetAtt FrontendRepository.RepositoryUri
+    Export:
+      Name: !Sub '${AWS::StackName}-FrontendRepositoryUri'
+  BackendRepositoryUri:
+    Description: Backend ECR repository URI.
+    Value: !GetAtt BackendRepository.RepositoryUri
+    Export:
+      Name: !Sub '${AWS::StackName}-BackendRepositoryUri'

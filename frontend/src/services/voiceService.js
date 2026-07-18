@@ -11,8 +11,9 @@
  * remapped to `processVoice` later without any UI changes.
  */
 
-const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || '';
-const API_BASE = BACKEND_URL ? `${BACKEND_URL}/api` : '/api';
+import { API_BASE_URL } from '../config/runtimeConfig';
+
+const API_BASE = API_BASE_URL;
 
 const DEFAULT_TIMEOUT_MS = 35_000; // > backend's 30s STT timeout
 const DEFAULT_RETRIES = 1;
