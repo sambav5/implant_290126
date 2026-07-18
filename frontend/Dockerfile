@@ -14,6 +14,9 @@ RUN npm run build
 FROM nginx:alpine
 
 ENV REACT_APP_BACKEND_URL= \
+    REACT_APP_POSTHOG_KEY= \
+    REACT_APP_POSTHOG_HOST=https://us.i.posthog.com \
+    REACT_APP_DEMO_MODE=false \
     NGINX_API_PROXY=http://backend:8001
 
 COPY docker/nginx.conf.template /etc/nginx/templates/default.conf.template

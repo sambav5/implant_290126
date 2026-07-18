@@ -28,6 +28,7 @@
  * persisted to localStorage / sessionStorage / disk. Browser refresh
  * clears the timeline.
  */
+import { DEMO_MODE } from '@/config/runtimeConfig';
 import React, {
   createContext, useCallback, useContext, useEffect, useMemo, useRef, useState,
 } from 'react';
@@ -61,7 +62,7 @@ export const FAILURE_MODES = {
 };
 
 function readInitialDemoMode() {
-  if (typeof process !== 'undefined' && process.env?.REACT_APP_DEMO_MODE === 'true') {
+  if (DEMO_MODE === 'true') {
     return true;
   }
   try {
