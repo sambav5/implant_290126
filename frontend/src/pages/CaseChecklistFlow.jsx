@@ -152,51 +152,13 @@ function ChecklistFlowScreen({
     caseData?.caseName,
   ]);
 
-  const handleSimulatedVoiceCommand = async (commandText) => {
-    try {
-      const activeVisit = visit || state.activeVisit;
-      const activePhase = state.activePhase;
-      const filtered = (state.checklist || []).filter(
-        (item) => (!activeVisit || item.visit === activeVisit) && (!activePhase || item.phase === activePhase)
-      );
-      const pendingItems = filtered.filter((i) => !state.responses?.[i.id]).map((i) => i.text);
-      const currentStep = pendingItems[0] || null;
-
-      const result = await voiceService.processVoice(null, {
-        procedureId: caseId,
-        simulatedTranscript: commandText,
-        context: { procedureName: 'Procedure', currentStep, pendingItems, completedItems: [] },
-      });
-
-      if (result && result.success && result.action?.type === 'checklist_item_completed') {
-        const localMatch = (state.checklist || []).find(
-          (i) => String(i.text || '').trim().toLowerCase() === String(result.entity || currentStep || '').trim().toLowerCase()
-        );
-        if (localMatch) {
-          dispatch({ type: 'SET_RESPONSES', payload: { [localMatch.id]: true } });
-        }
-      }
-    } catch (err) {
-      console.error('Voice test command failed:', err);
-    }
-  };
-
   return (
     <VoiceDemoProvider>
       <div className="space-y-4">
-        <div className="flex flex-wrap items-center justify-between gap-2 rounded-md border border-forest/20 bg-forest/5 p-3">
-          <div className="flex items-center gap-2">
-            <VoiceStatusBadge />
-            <span className="text-xs font-semibold uppercase tracking-wider text-forest">Voice Assistant:</span>
-            <span className="text-xs text-charcoal">Click Mic below or test quick commands:</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <Button size="sm" variant="outline" className="h-8 text-xs" onClick={() => handleSimulatedVoiceCommand('mark done')}>
-              ⚡ Mark Current Step Done
-            </Button>
-            <Button variant="outline" size="sm" className="h-8 text-xs" onClick={() => onChangeVisit(undefined, state)}>Change Visit</Button>
-            <Button variant="outline" size="sm" className="h-8 text-xs" onClick={onEditGate}>Edit Snapshot</Button>
-          </div>
+        <div className="flex justify-end gap-2">
+          <VoiceStatusBadge className="mr-auto self-center" />
+          <Button variant="outline" onClick={() => onChangeVisit(undefined, state)}>Change Visit</Button>
+          <Button variant="outline" onClick={onEditGate}>Edit Case Snapshot</Button>
         </div>
         <ChecklistPage
           state={state}
