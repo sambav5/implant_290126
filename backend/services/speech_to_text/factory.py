@@ -16,6 +16,9 @@ logger = logging.getLogger(__name__)
 
 _REGISTRY = {
     # alias -> import path of a zero-arg class
+    "gemini": "services.speech_to_text.gemini_provider.GeminiSpeechToTextProvider",
+    "google": "services.speech_to_text.gemini_provider.GeminiSpeechToTextProvider",
+    "gemini_whisper": "services.speech_to_text.gemini_provider.GeminiSpeechToTextProvider",
     "openai_whisper": "services.speech_to_text.openai_whisper_provider.OpenAIWhisperProvider",
     "whisper": "services.speech_to_text.openai_whisper_provider.OpenAIWhisperProvider",
     "openai": "services.speech_to_text.openai_whisper_provider.OpenAIWhisperProvider",

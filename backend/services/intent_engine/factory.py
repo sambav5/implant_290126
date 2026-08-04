@@ -15,6 +15,9 @@ from .base import IntentEngine, IntentEngineConfigurationError
 logger = logging.getLogger(__name__)
 
 _REGISTRY = {
+    "gemini": "services.intent_engine.gemini_intent_engine.GeminiIntentEngine",
+    "google": "services.intent_engine.gemini_intent_engine.GeminiIntentEngine",
+    "gemini_intent_engine": "services.intent_engine.gemini_intent_engine.GeminiIntentEngine",
     "openai": "services.intent_engine.openai_intent_engine.OpenAIIntentEngine",
     "openai_intent_engine": "services.intent_engine.openai_intent_engine.OpenAIIntentEngine",
     "gpt": "services.intent_engine.openai_intent_engine.OpenAIIntentEngine",

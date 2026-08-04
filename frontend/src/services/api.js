@@ -1,7 +1,12 @@
 import axios from 'axios';
-import { API_BASE_URL } from '../config/runtimeConfig';
+import { API_BASE_URL, BACKEND_URL } from '../config/runtimeConfig';
 
 const API = API_BASE_URL;
+
+// Configure global axios base URL for backend requests (http://localhost:8001)
+if (BACKEND_URL) {
+  axios.defaults.baseURL = BACKEND_URL;
+}
 
 // Axios interceptor for JWT authentication
 axios.interceptors.request.use(

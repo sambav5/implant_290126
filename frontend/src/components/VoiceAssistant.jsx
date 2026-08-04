@@ -78,6 +78,7 @@ export default function VoiceAssistant({
   const cancelRequestedRef = useRef(false);
   const isUnmountedRef = useRef(false);
   const infoCardTimerRef = useRef(null);
+  const recordingAutoStopTimerRef = useRef(null);
   const stageTimersRef = useRef([]);
   // Hold the recording duration of the just-finished blob so that we can
   // attach it to the interaction record (durations.recordingMs is not in
@@ -103,24 +104,37 @@ export default function VoiceAssistant({
   }, []);
 
   useEffect(() => {
+    isUnmountedRef.current = false;
     return () => {
       isUnmountedRef.current = true;
-      disposeRecorder();
-      releaseMediaStream();
+      const rec = mediaRecorderRef.current;
+      if (rec && rec.state !== 'inactive') {
+        try { rec.stop(); } catch { /* no-op */ }
+      }
+      const stream = mediaStreamRef.current;
+      if (stream) {
+        try { stream.getTracks().forEach((t) => t.stop()); } catch { /* no-op */ }
+      }
       if (infoCardTimerRef.current) clearTimeout(infoCardTimerRef.current);
       stageTimersRef.current.forEach((id) => clearTimeout(id));
       stageTimersRef.current = [];
     };
-  }, [disposeRecorder, releaseMediaStream]);
+  }, []);
 
   useEffect(() => {
     const onPageHide = () => {
-      disposeRecorder();
-      releaseMediaStream();
+      const rec = mediaRecorderRef.current;
+      if (rec && rec.state !== 'inactive') {
+        try { rec.stop(); } catch { /* no-op */ }
+      }
+      const stream = mediaStreamRef.current;
+      if (stream) {
+        try { stream.getTracks().forEach((t) => t.stop()); } catch { /* no-op */ }
+      }
     };
     window.addEventListener('pagehide', onPageHide);
     return () => window.removeEventListener('pagehide', onPageHide);
-  }, [disposeRecorder, releaseMediaStream]);
+  }, []);
 
   // ----- Helpers ------------------------------------------------------------
   const clearStageTimers = useCallback(() => {
@@ -336,16 +350,25 @@ export default function VoiceAssistant({
       }
     }
 
+    // Safety timeout to prevent status from locking in 'processing'
+    const processingTimeout = setTimeout(() => {
+      if (!isUnmountedRef.current && status === 'processing') {
+        setStatus('idle');
+        finishStage(VOICE_STAGES.ERROR);
+        toast.error('Voice processing timed out. Please try again.');
+      }
+    }, 12000);
+
     try {
       const result = await processVoice(audioBlob, { recordingMs });
+      clearTimeout(processingTimeout);
       if (isUnmountedRef.current) return;
       setStatus('idle');
       const enriched = {
         ...result,
         durations: { ...(result?.durations || {}), recordingMs },
       };
-      // Capture this interaction in the demo timeline (no-op if demoMode off
-      // because addInteraction only mutates state read by the panel/badge).
+      // Capture this interaction in the demo timeline
       addInteraction({
         transcript: enriched.transcript || '',
         intent: enriched.intent,
@@ -360,6 +383,7 @@ export default function VoiceAssistant({
       });
       handleActionResult(enriched);
     } catch (error) {
+      clearTimeout(processingTimeout);
       if (isUnmountedRef.current) return;
       setStatus('idle');
       finishStage(VOICE_STAGES.ERROR);
@@ -380,10 +404,15 @@ export default function VoiceAssistant({
 
   // ----- Recording lifecycle ------------------------------------------------
   const startRecording = useCallback(async () => {
-    if (status !== 'idle') return;
+    console.log('[VoiceAssistant] startRecording invoked. Current status:', status);
+    if (status !== 'idle') {
+      console.warn('[VoiceAssistant] Cannot start recording, status is not idle:', status);
+      return;
+    }
 
     if (typeof navigator === 'undefined' || !navigator.mediaDevices?.getUserMedia) {
-      toast.error('Microphone is not supported in this browser.');
+      console.error('[VoiceAssistant] navigator.mediaDevices.getUserMedia is unsupported!');
+      toast.error('Microphone is not supported in this browser context.');
       return;
     }
 
@@ -392,21 +421,39 @@ export default function VoiceAssistant({
     setDevTrace(null);
     cancelRequestedRef.current = false;
 
+    // Safety timeout in case browser prompt or getUserMedia hangs
+    const startTimeout = setTimeout(() => {
+      if (!isUnmountedRef.current && status === 'starting') {
+        console.warn('[VoiceAssistant] getUserMedia request timed out after 10s');
+        setStatus('idle');
+        toast.error('Microphone request timed out. Please click again.');
+      }
+    }, 10000);
+
     let stream = null;
     try {
+      console.log('[VoiceAssistant] Requesting microphone access via getUserMedia...');
       stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      clearTimeout(startTimeout);
+      console.log('[VoiceAssistant] Microphone access granted. Stream ID:', stream.id);
       if (isUnmountedRef.current) {
         stream.getTracks().forEach((t) => t.stop());
         return;
       }
       mediaStreamRef.current = stream;
 
-      const recorder = new MediaRecorder(stream);
+      const options = typeof MediaRecorder !== 'undefined' && MediaRecorder.isTypeSupported('audio/webm;codecs=opus')
+        ? { mimeType: 'audio/webm;codecs=opus' }
+        : typeof MediaRecorder !== 'undefined' && MediaRecorder.isTypeSupported('audio/webm')
+          ? { mimeType: 'audio/webm' }
+          : {};
+      const recorder = new MediaRecorder(stream, options);
       audioChunksRef.current = [];
 
       recorder.ondataavailable = (event) => {
         if (event.data && event.data.size > 0) {
           audioChunksRef.current.push(event.data);
+          console.log('[VoiceAssistant] Audio chunk captured:', event.data.size, 'bytes, total chunks:', audioChunksRef.current.length);
         }
       };
 
@@ -421,6 +468,8 @@ export default function VoiceAssistant({
           typeof startedAt === 'number' ? Math.round(performance.now() - startedAt) : 0;
         recordingStartedAtRef.current = null;
 
+        console.log('[VoiceAssistant] Recording stopped. Total duration:', recordingMs, 'ms, Blob size:', audioBlob.size, 'bytes, MIME:', mimeType);
+
         if (isUnmountedRef.current) return;
         onRecordingStopped?.(audioBlob);
 
@@ -429,15 +478,17 @@ export default function VoiceAssistant({
           setStatus('idle');
           return;
         }
-        if (!audioBlob.size) {
-          toast.error('No audio was captured. Please try again.');
+        if (audioBlob.size < 500) {
+          console.warn('[VoiceAssistant] Captured audio blob is too small (only', audioBlob.size, 'bytes). Need actual speech.');
+          toast.error('Recording was too short or quiet. Please speak your command clearly while recording.');
           setStatus('idle');
           return;
         }
         runProcessing(audioBlob, recordingMs);
       };
 
-      recorder.onerror = () => {
+      recorder.onerror = (err) => {
+        console.error('[VoiceAssistant] MediaRecorder error:', err);
         releaseMediaStream();
         if (isUnmountedRef.current) return;
         setStatus('idle');
@@ -445,12 +496,29 @@ export default function VoiceAssistant({
       };
 
       mediaRecorderRef.current = recorder;
-      recorder.start();
+      recorder.start(500);
       recordingStartedAtRef.current = performance.now();
       setStatus('recording');
       setStage(VOICE_STAGES.LISTENING);
       onRecordingStarted?.();
+      console.log('[VoiceAssistant] Recording actively started with timeslice 500ms! Will auto-stop in 6s if not manually stopped.');
+
+      // Auto-stop recording after 6 seconds if user doesn't click stop
+      if (recordingAutoStopTimerRef.current) clearTimeout(recordingAutoStopTimerRef.current);
+      recordingAutoStopTimerRef.current = setTimeout(() => {
+        const rec = mediaRecorderRef.current;
+        if (rec && rec.state === 'recording') {
+          console.log('[VoiceAssistant] Auto-stopping recording after 6s limit...');
+          try {
+            rec.stop();
+          } catch (err) {
+            console.error('[VoiceAssistant] Error stopping recorder directly:', err);
+          }
+        }
+      }, 6000);
     } catch (error) {
+      clearTimeout(startTimeout);
+      console.error('[VoiceAssistant] getUserMedia failed:', error);
       if (stream) {
         try { stream.getTracks().forEach((t) => t.stop()); } catch { /* no-op */ }
       }
@@ -468,9 +536,15 @@ export default function VoiceAssistant({
   }, [onRecordingStarted, onRecordingStopped, releaseMediaStream, runProcessing, status]);
 
   const stopRecording = useCallback(() => {
+    if (recordingAutoStopTimerRef.current) {
+      clearTimeout(recordingAutoStopTimerRef.current);
+      recordingAutoStopTimerRef.current = null;
+    }
     const recorder = mediaRecorderRef.current;
+    console.log('[VoiceAssistant] stopRecording called. Recorder state:', recorder?.state);
     if (recorder && recorder.state !== 'inactive') {
-      try { recorder.stop(); } catch {
+      try { recorder.stop(); } catch (err) {
+        console.error('[VoiceAssistant] Error stopping recorder:', err);
         releaseMediaStream();
         setStatus('idle');
       }
@@ -481,8 +555,19 @@ export default function VoiceAssistant({
   }, [releaseMediaStream]);
 
   const handleToggle = useCallback(() => {
-    if (status === 'recording') stopRecording();
-    else if (status === 'idle') startRecording();
+    console.log('[VoiceAssistant] handleToggle clicked. Current status state:', status);
+    if (status === 'recording') {
+      console.log('[VoiceAssistant] handleToggle triggering stopRecording()');
+      stopRecording();
+    } else if (status === 'starting') {
+      console.warn('[VoiceAssistant] handleToggle ignored click because status is starting');
+      return;
+    } else {
+      console.log('[VoiceAssistant] handleToggle triggering startRecording()');
+      setFeedback(null);
+      setStatus('idle');
+      startRecording();
+    }
   }, [status, startRecording, stopRecording]);
 
   // ----- Confirmation flow --------------------------------------------------
@@ -535,12 +620,11 @@ export default function VoiceAssistant({
   const isRecording = status === 'recording';
   const isProcessing = status === 'processing' || status === 'confirming';
   const isStarting = status === 'starting';
-  const isBusy = isStarting || isProcessing;
 
   const buttonAriaLabel = isRecording
     ? 'Stop voice recording'
     : isProcessing
-      ? 'Processing'
+      ? 'Processing - Click to record new command'
       : 'Start voice recording';
 
   return (
@@ -605,18 +689,16 @@ export default function VoiceAssistant({
       <button
         type="button"
         onClick={handleToggle}
-        disabled={isBusy}
         aria-pressed={isRecording}
         aria-busy={isProcessing}
         aria-label={buttonAriaLabel}
         title={
-          isRecording ? 'Stop recording' : isProcessing ? 'Processing' : 'Start voice recording'
+          isRecording ? 'Click to stop recording' : isProcessing ? 'Processing... Click to record again' : 'Click to start voice recording'
         }
         className={cn(
-          'group relative inline-flex h-14 w-14 items-center justify-center rounded-full',
-          'shadow-lg transition-all duration-200 ease-out',
+          'group relative inline-flex h-14 w-14 items-center justify-center rounded-full cursor-pointer',
+          'shadow-lg transition-all duration-200 ease-out hover:scale-105 active:scale-95',
           'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-forest',
-          'disabled:cursor-not-allowed',
           isRecording
             ? 'bg-red-600 text-white hover:bg-red-700'
             : isProcessing

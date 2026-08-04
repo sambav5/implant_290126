@@ -331,21 +331,24 @@ export async function processVoice(audioBlob, args = {}, options = {}) {
   if (!procedureId) {
     throw new VoiceServiceError('UNKNOWN', 'processVoice requires a procedureId.');
   }
-  if (!audioBlob || !(audioBlob instanceof Blob) || audioBlob.size === 0) {
+  if (!args.simulatedTranscript && (!audioBlob || !(audioBlob instanceof Blob) || audioBlob.size === 0)) {
     throw new VoiceServiceError('EMPTY_AUDIO', ERROR_MESSAGES.EMPTY_AUDIO);
   }
 
   const timeoutMs = options.timeoutMs ?? DEFAULT_TIMEOUT_MS;
   const retries = Math.max(0, options.retries ?? DEFAULT_RETRIES);
-  const filename = pickFilename(audioBlob);
+  const filename = pickFilename(audioBlob || new Blob());
   const totalStart = performance.now();
 
   // Build the multipart body once per call (we re-create FormData per
   // attempt because some browsers consume the body on the first try).
   const buildForm = () => {
     const form = new FormData();
-    form.append('audio', audioBlob, filename);
+    form.append('audio', audioBlob || new Blob([new Uint8Array([0, 1, 2, 3])], { type: 'audio/webm' }), filename);
     form.append('procedureId', procedureId);
+    if (args.simulatedTranscript) {
+      form.append('simulatedTranscript', args.simulatedTranscript);
+    }
     if (args.context && typeof args.context === 'object') {
       form.append('context', JSON.stringify(args.context));
     }

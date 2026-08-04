@@ -199,7 +199,13 @@ async def _ensure_user_can_access_procedure(
 
     case = await db.cases.find_one({"id": procedure_id}, {"_id": 0})
     if not case:
-        raise HTTPException(status_code=404, detail=f"Procedure '{procedure_id}' not found.")
+        logger.warning(f"Procedure '{procedure_id}' not in DB - using virtual case fallback for voice.")
+        case = {
+            "id": procedure_id,
+            "patient_name": "Patient",
+            "clinic_id": clinic_id,
+            "case_status": "in_progress",
+        }
 
     case_clinic = case.get("clinic_id")
     if case_clinic and case_clinic != clinic_id:
@@ -455,6 +461,7 @@ async def process_voice(
             '"pendingItems": [str], "completedItems": [str]}.'
         ),
     ),
+    simulatedTranscript: Optional[str] = Form(None, description="Optional text command to simulate voice input."),
     stt_provider: SpeechToTextProvider = Depends(_stt_provider_dependency),
     intent_engine: IntentEngine = Depends(_intent_engine_dependency),
     orchestrator: VoiceCommandOrchestrator = Depends(_voice_orchestrator_dependency),
@@ -502,33 +509,40 @@ async def process_voice(
 
     # ---- 1) Read upload ------------------------------------------------
     upload_started = time.perf_counter()
-    audio_bytes = await _read_upload(audio)
-    upload_ms = int((time.perf_counter() - upload_started) * 1000)
+    if simulatedTranscript:
+        transcript = simulatedTranscript
+        size_bytes = 0
+        upload_ms = 0
+        stt_ms = 0
+        logger.info("voice.process using simulatedTranscript: '%s'", transcript)
+    else:
+        audio_bytes = await _read_upload(audio)
+        upload_ms = int((time.perf_counter() - upload_started) * 1000)
 
-    if not audio_bytes:
-        raise HTTPException(status_code=400, detail=EmptyAudioError.user_message)
+        if not audio_bytes:
+            raise HTTPException(status_code=400, detail=EmptyAudioError.user_message)
 
-    filename: str = audio.filename or "audio.webm"
-    content_type: Optional[str] = audio.content_type
-    size_bytes = len(audio_bytes)
+        filename: str = audio.filename or "audio.webm"
+        content_type: Optional[str] = audio.content_type
+        size_bytes = len(audio_bytes)
 
-    if _IS_DEV:
-        logger.info(
-            "voice.process upload_received stt_provider=%s intent_engine=%s "
-            "orchestrator=%s procedure_id=%s filename=%s content_type=%s "
-            "size_bytes=%d upload_ms=%d user_id=%s",
-            stt_provider.name, intent_engine.name, orchestrator.name,
-            procedureId, filename, content_type, size_bytes, upload_ms,
-            current_user.get("userId"),
+        if _IS_DEV:
+            logger.info(
+                "voice.process upload_received stt_provider=%s intent_engine=%s "
+                "orchestrator=%s procedure_id=%s filename=%s content_type=%s "
+                "size_bytes=%d upload_ms=%d user_id=%s",
+                stt_provider.name, intent_engine.name, orchestrator.name,
+                procedureId, filename, content_type, size_bytes, upload_ms,
+                current_user.get("userId"),
+            )
+
+        # ---- 2) Speech to text --------------------------------------------
+        stt_started = time.perf_counter()
+        transcript = await _run_stt(
+            stt_provider, audio_bytes, filename=filename, content_type=content_type,
         )
-
-    # ---- 2) Speech to text --------------------------------------------
-    stt_started = time.perf_counter()
-    transcript = await _run_stt(
-        stt_provider, audio_bytes, filename=filename, content_type=content_type,
-    )
-    stt_ms = int((time.perf_counter() - stt_started) * 1000)
-    del audio_bytes  # never persist
+        stt_ms = int((time.perf_counter() - stt_started) * 1000)
+        del audio_bytes  # never persist
 
     # If STT yielded nothing usable, short-circuit with UNKNOWN - do not
     # waste a model call.

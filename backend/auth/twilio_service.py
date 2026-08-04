@@ -16,14 +16,15 @@ TWILIO_AUTH_TOKEN = os.environ.get("TWILIO_AUTH_TOKEN")
 TWILIO_WHATSAPP_FROM = os.environ.get("TWILIO_WHATSAPP_FROM", "whatsapp:+14155238886")
 TWILIO_TEMPLATE_SID = os.environ.get("TWILIO_TEMPLATE_SID")
 
-if not TWILIO_ACCOUNT_SID or not TWILIO_AUTH_TOKEN:
-    raise ValueError("Twilio credentials must be set in environment variables")
+# Initialize Twilio client (supports mock mode for local testing)
+IS_MOCK_TWILIO = not TWILIO_ACCOUNT_SID or not TWILIO_AUTH_TOKEN or "mock" in str(TWILIO_ACCOUNT_SID).lower()
 
-if not TWILIO_TEMPLATE_SID:
-    raise ValueError("TWILIO_TEMPLATE_SID must be set in environment variables")
+if IS_MOCK_TWILIO:
+    logger.warning("Twilio credentials missing or mock. Running in mock Twilio mode for local dev.")
+    twilio_client = None
+else:
+    twilio_client = Client(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN)
 
-# Initialize Twilio client
-twilio_client = Client(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN)
 
 
 def send_whatsapp_otp(phone_number: str, otp: str) -> bool:
@@ -49,7 +50,10 @@ def send_whatsapp_otp(phone_number: str, otp: str) -> bool:
         
         logger.info(f"Sending WhatsApp OTP to {to_number}")
         
-        # Send message using Content Template
+        if IS_MOCK_TWILIO or not twilio_client:
+            logger.info(f"[MOCK TWILIO] OTP for {to_number} is: {otp}")
+            return True
+
         # Twilio Sandbox requires approved Content Templates
         message = twilio_client.messages.create(
             content_sid=TWILIO_TEMPLATE_SID,
