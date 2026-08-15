@@ -46,7 +46,7 @@ class GeminiIntentEngine(IntentEngine):
 
     def __init__(self) -> None:
         self.api_key = os.environ.get("GEMINI_API_KEY") or os.environ.get("GOOGLE_API_KEY")
-        self.model = os.environ.get("GEMINI_INTENT_MODEL", "gemini-2.5-flash")
+        self.model = os.environ.get("GEMINI_INTENT_MODEL", "gemini-2.0-flash")
 
         if not self.api_key or "mock" in str(self.api_key).lower():
             logger.warning("GEMINI_API_KEY / GOOGLE_API_KEY missing or mock. Gemini IntentEngine running in mock mode.")
@@ -115,8 +115,13 @@ class GeminiIntentEngine(IntentEngine):
             parameters = parsed.get("parameters", {})
 
             # Default to active current step if updating checklist with empty entity
-            if intent == IntentKind.UPDATE_CHECKLIST and not entity:
-                entity = context.current_step if context else None
+            if intent == IntentKind.UPDATE_CHECKLIST:
+                if not entity:
+                    entity = context.current_step if context else None
+                elif context and context.current_step:
+                    entity_lower = str(entity).lower().strip()
+                    if any(phrase in entity_lower for phrase in ["current step", "current", "step", "kurumstead", "kurum", "kuran", "karen", "column"]):
+                        entity = context.current_step
 
             # Smart fallback for clinical voice commands if model returned UNKNOWN
             if intent == IntentKind.UNKNOWN and transcript:
@@ -128,7 +133,7 @@ class GeminiIntentEngine(IntentEngine):
                 elif any(w in lowered for w in ["next", "proceed", "ahead", "continue"]):
                     intent = IntentKind.READ_NEXT_STEP
                     confidence = 0.92
-                elif "repeat" in lowered:
+                elif any(w in lowered for w in ["repeat", "current step", "what is the step", "what's the step", "what is the current"]):
                     intent = IntentKind.REPEAT_STEP
                     confidence = 0.92
                 elif "note" in lowered:
@@ -156,7 +161,7 @@ class GeminiIntentEngine(IntentEngine):
             return IntentResult(transcript=transcript, intent=IntentKind.UPDATE_CHECKLIST, confidence=0.95, entity=entity)
         elif any(w in lowered for w in ["next", "proceed", "ahead", "continue"]):
             return IntentResult(transcript=transcript, intent=IntentKind.READ_NEXT_STEP, confidence=0.95)
-        elif "repeat" in lowered:
+        elif any(w in lowered for w in ["repeat", "current step", "what is the step", "what's the step", "what is the current"]):
             return IntentResult(transcript=transcript, intent=IntentKind.REPEAT_STEP, confidence=0.95, entity=entity)
         elif "note" in lowered:
             return IntentResult(transcript=transcript, intent=IntentKind.ADD_NOTE, confidence=0.95, parameters={"note": transcript})

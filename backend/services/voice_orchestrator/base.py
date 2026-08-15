@@ -163,6 +163,7 @@ class VoiceCommandOrchestrator(ABC):
         *,
         procedure_id: str,
         user: Optional[Dict[str, Any]] = None,
+        proc_context: Optional[ProcedureContext] = None,
     ) -> ActionResult:
         """Validate confidence and dispatch to the appropriate service.
 

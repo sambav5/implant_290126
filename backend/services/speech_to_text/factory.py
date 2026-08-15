@@ -22,6 +22,8 @@ _REGISTRY = {
     "openai_whisper": "services.speech_to_text.openai_whisper_provider.OpenAIWhisperProvider",
     "whisper": "services.speech_to_text.openai_whisper_provider.OpenAIWhisperProvider",
     "openai": "services.speech_to_text.openai_whisper_provider.OpenAIWhisperProvider",
+    "sarvam": "services.speech_to_text.sarvam_provider.SarvamSpeechToTextProvider",
+    "sarvam_speech_to_text": "services.speech_to_text.sarvam_provider.SarvamSpeechToTextProvider",
 }
 
 

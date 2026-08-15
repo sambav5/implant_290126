@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import {
-  Mic, Square, X, Loader2, Check, ArrowRight, Repeat as RepeatIcon,
+  Mic, Square, X, Loader2, Check, ArrowRight, Repeat as RepeatIcon, Settings,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
@@ -64,6 +64,86 @@ export default function VoiceAssistant({
   //   { kind: 'info',    title, body }
   //   { kind: 'devtrace', intent, confidence, action }  (dev only)
   const [devTrace, setDevTrace] = useState(null);
+
+  const [wakeWord, setWakeWord] = useState(() => localStorage.getItem('voice_assistant_wake_word') || 'ora');
+  const [wakeWordEnabled, setWakeWordEnabled] = useState(() => localStorage.getItem('voice_assistant_wake_word_enabled') !== 'false');
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const [trainingWakeWord, setTrainingWakeWord] = useState(false);
+  const wakeWordRecognitionRef = useRef(null);
+
+  const updateWakeWord = useCallback((word) => {
+    const val = (word || '').trim();
+    setWakeWord(val);
+    localStorage.setItem('voice_assistant_wake_word', val);
+  }, []);
+
+  const updateWakeWordEnabled = useCallback((enabled) => {
+    setWakeWordEnabled(enabled);
+    localStorage.setItem('voice_assistant_wake_word_enabled', String(enabled));
+  }, []);
+
+  const handleTrainWakeWord = useCallback(() => {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      toast.error('Speech recognition is not supported in this browser.');
+      return;
+    }
+
+    setTrainingWakeWord(true);
+    if (wakeWordRecognitionRef.current) {
+      try { wakeWordRecognitionRef.current.stop(); } catch (e) {}
+    }
+
+    const trainingRec = new SpeechRecognition();
+    trainingRec.continuous = false;
+    trainingRec.interimResults = false;
+    trainingRec.lang = 'en-US';
+
+    trainingRec.onresult = (event) => {
+      const resultText = event.results[0][0].transcript.toLowerCase().trim();
+      if (resultText) {
+        updateWakeWord(resultText);
+        toast.success(`Wake word successfully trained as: "${resultText}"`);
+        try {
+          const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+          const osc1 = audioCtx.createOscillator();
+          const osc2 = audioCtx.createOscillator();
+          const gain = audioCtx.createGain();
+          osc1.connect(gain);
+          osc2.connect(gain);
+          gain.connect(audioCtx.destination);
+          gain.gain.setValueAtTime(0.08, audioCtx.currentTime);
+          osc1.frequency.setValueAtTime(523.25, audioCtx.currentTime); // C5
+          osc2.frequency.setValueAtTime(659.25, audioCtx.currentTime); // E5
+          osc1.start();
+          osc2.start();
+          osc1.stop(audioCtx.currentTime + 0.2);
+          osc2.stop(audioCtx.currentTime + 0.2);
+        } catch (e) {}
+      }
+    };
+
+    trainingRec.onerror = (err) => {
+      console.warn('[VoiceAssistant] Training error:', err.error);
+      if (err.error !== 'no-speech') {
+        toast.error(`Training failed: ${err.error}`);
+      } else {
+        toast.error('No speech detected. Please try training again.');
+      }
+      setTrainingWakeWord(false);
+    };
+
+    trainingRec.onend = () => {
+      setTrainingWakeWord(false);
+    };
+
+    try {
+      trainingRec.start();
+    } catch (e) {
+      toast.error('Failed to access microphone for training.');
+      setTrainingWakeWord(false);
+    }
+  }, [updateWakeWord]);
 
   // Demo / diagnostics context. When demoMode is off ALL of these are
   // no-ops, so production behaviour matches Step 5 exactly.
@@ -135,6 +215,8 @@ export default function VoiceAssistant({
     window.addEventListener('pagehide', onPageHide);
     return () => window.removeEventListener('pagehide', onPageHide);
   }, []);
+
+
 
   // ----- Helpers ------------------------------------------------------------
   const clearStageTimers = useCallback(() => {
@@ -554,6 +636,118 @@ export default function VoiceAssistant({
     }
   }, [releaseMediaStream]);
 
+  const startRecordingRef = useRef(null);
+  useEffect(() => {
+    startRecordingRef.current = startRecording;
+  }, [startRecording]);
+
+  useEffect(() => {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      console.warn('[VoiceAssistant] webkitSpeechRecognition is not supported in this browser.');
+      return;
+    }
+
+    if (!wakeWordEnabled || status !== 'idle') {
+      return;
+    }
+
+    let recognition = new SpeechRecognition();
+    recognition.continuous = true;
+    recognition.interimResults = true;
+    recognition.lang = 'en-US';
+
+    let active = true;
+
+    let triggered = false;
+
+    recognition.onresult = (event) => {
+      if (triggered) return;
+      for (let i = event.resultIndex; i < event.results.length; i++) {
+        const transcript = event.results[i][0].transcript.toLowerCase();
+        console.log(`[VoiceAssistant] Wake word interim transcript: "${transcript}"`);
+        const target = wakeWord.toLowerCase();
+        const matches = (target === 'ora')
+          ? (transcript.includes('ora') || transcript.includes('aura') || transcript.includes('aurora') || transcript.includes('hola') || transcript.includes('oral') || transcript.includes('order'))
+          : transcript.includes(target);
+
+        if (matches) {
+          triggered = true;
+          console.log(`[VoiceAssistant] Wake word "${wakeWord}" detected: "${transcript}"`);
+          // Play a quick chime
+          try {
+            const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            const oscillator = audioCtx.createOscillator();
+            const gainNode = audioCtx.createGain();
+            oscillator.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+            oscillator.type = 'sine';
+            oscillator.frequency.setValueAtTime(880, audioCtx.currentTime);
+            gainNode.gain.setValueAtTime(0.08, audioCtx.currentTime);
+            oscillator.start();
+            oscillator.stop(audioCtx.currentTime + 0.12);
+          } catch (e) {
+            // ignore
+          }
+          active = false;
+          recognition.stop();
+          if (startRecordingRef.current) {
+            startRecordingRef.current();
+          }
+          break;
+        }
+      }
+    };
+
+    recognition.onerror = (event) => {
+      // 'no-speech' is triggered normally by the browser if silent, ignore to prevent console logs spam
+      if (event.error === 'no-speech') {
+        return;
+      }
+      if (event.error !== 'aborted') {
+        console.warn(`[VoiceAssistant] Wake word recognition error: ${event.error}. Disabling background listener.`);
+      }
+      // Disable automatic restarts on any critical error (network, no-mic, etc.) to prevent infinite loops
+      active = false;
+      try {
+        recognition.stop();
+      } catch (e) {
+        // ignore
+      }
+    };
+
+    recognition.onend = () => {
+      if (active && wakeWordEnabled && status === 'idle' && !isUnmountedRef.current) {
+        // Safe 300ms delay to prevent rapid infinite restart hot-loops
+        setTimeout(() => {
+          if (active && wakeWordEnabled && status === 'idle' && !isUnmountedRef.current) {
+            try {
+              recognition.start();
+            } catch (e) {
+              // ignore if already running
+            }
+          }
+        }, 300);
+      }
+    };
+
+    try {
+      recognition.start();
+      console.log(`[VoiceAssistant] Background wake word listener active (Listening for "${wakeWord}").`);
+    } catch (err) {
+      console.error('[VoiceAssistant] Failed to start wake word listener:', err);
+    }
+
+    return () => {
+      active = false;
+      try {
+        recognition.stop();
+      } catch (e) {
+        // ignore
+      }
+    };
+  }, [wakeWordEnabled, wakeWord, status]);
+
   const handleToggle = useCallback(() => {
     console.log('[VoiceAssistant] handleToggle clicked. Current status state:', status);
     if (status === 'recording') {
@@ -686,42 +880,127 @@ export default function VoiceAssistant({
         <DevTraceStrip trace={devTrace} onDismiss={() => setDevTrace(null)} />
       )}
 
-      <button
-        type="button"
-        onClick={handleToggle}
-        aria-pressed={isRecording}
-        aria-busy={isProcessing}
-        aria-label={buttonAriaLabel}
-        title={
-          isRecording ? 'Click to stop recording' : isProcessing ? 'Processing... Click to record again' : 'Click to start voice recording'
-        }
-        className={cn(
-          'group relative inline-flex h-14 w-14 items-center justify-center rounded-full cursor-pointer',
-          'shadow-lg transition-all duration-200 ease-out hover:scale-105 active:scale-95',
-          'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-forest',
-          isRecording
-            ? 'bg-red-600 text-white hover:bg-red-700'
-            : isProcessing
-              ? 'bg-forest text-champagne opacity-80'
-              : 'bg-forest text-champagne hover:bg-[#142A22]',
-        )}
-      >
-        {isRecording && (
-          <span
-            aria-hidden="true"
-            className="absolute inset-0 rounded-full bg-red-500 opacity-60 animate-ping"
-          />
-        )}
-        <span className="relative flex items-center justify-center">
-          {isRecording ? (
-            <Square className="h-5 w-5" fill="currentColor" />
-          ) : isProcessing ? (
-            <Loader2 className="h-6 w-6 animate-spin" />
-          ) : (
-            <Mic className="h-6 w-6" />
+      {settingsOpen && (
+        <div
+          role="dialog"
+          aria-modal="false"
+          aria-label="Voice settings"
+          className="w-[min(280px,calc(100vw-3rem))] rounded-md border border-forest/20 bg-champagne p-4 shadow-lg text-charcoal flex flex-col gap-3"
+        >
+          <div className="flex items-center justify-between border-b border-forest/10 pb-2">
+            <span className="text-sm font-semibold uppercase tracking-wider text-forest flex items-center gap-1.5">
+              <Settings className="h-4 w-4" />
+              Voice Settings
+            </span>
+            <button
+              onClick={() => setSettingsOpen(false)}
+              className="p-1 rounded hover:bg-forest/10 text-charcoal/60 hover:text-charcoal cursor-pointer"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          </div>
+          
+          <div className="flex items-center justify-between gap-4">
+            <span className="text-xs font-medium">Hands-free Trigger ("Hey...")</span>
+            <label className="relative inline-flex items-center cursor-pointer">
+              <input
+                type="checkbox"
+                checked={wakeWordEnabled}
+                onChange={(e) => updateWakeWordEnabled(e.target.checked)}
+                className="sr-only peer"
+              />
+              <div className="w-9 h-5 bg-warm-gray/40 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-forest"></div>
+            </label>
+          </div>
+
+          {wakeWordEnabled && (
+            <div className="flex flex-col gap-1.5">
+              <label className="text-[10px] uppercase font-semibold tracking-wider text-warm-gray">Wake Phrase</label>
+              <div className="flex items-center gap-2">
+                <input
+                  type="text"
+                  value={wakeWord}
+                  onChange={(e) => updateWakeWord(e.target.value)}
+                  placeholder="e.g. ora"
+                  className="flex-1 px-2.5 py-1.5 text-xs rounded border border-forest/20 bg-white focus:outline-none focus:ring-1 focus:ring-forest"
+                  disabled={trainingWakeWord}
+                />
+                <button
+                  type="button"
+                  onClick={handleTrainWakeWord}
+                  disabled={trainingWakeWord}
+                  className={cn(
+                    "px-3 py-1.5 text-xs font-semibold rounded cursor-pointer transition-colors shadow-sm",
+                    trainingWakeWord
+                      ? "bg-red-500 text-white animate-pulse"
+                      : "bg-forest text-champagne hover:bg-[#142A22]"
+                  )}
+                  title="Speak your wake word once to record/train it"
+                >
+                  {trainingWakeWord ? 'Listening...' : '🎤 Train'}
+                </button>
+              </div>
+              <p className="text-[9px] text-warm-gray/80 italic mt-0.5">
+                {trainingWakeWord 
+                  ? "Say your wake phrase now (e.g. 'Ora')..."
+                  : "Type your phrase, or click 'Train' to speak and register it."
+                }
+              </p>
+            </div>
           )}
-        </span>
-      </button>
+        </div>
+      )}
+
+      <div className="flex items-center gap-2">
+        <button
+          type="button"
+          onClick={() => setSettingsOpen(!settingsOpen)}
+          className={cn(
+            "p-3.5 rounded-full border border-forest/20 bg-champagne text-forest hover:bg-forest/10 shadow shadow-forest/5 cursor-pointer transition-colors",
+            settingsOpen && "bg-forest/10 border-forest"
+          )}
+          title="Voice Assistant Settings"
+        >
+          <Settings className="h-6 w-6" />
+        </button>
+
+        <button
+          type="button"
+          onClick={handleToggle}
+          aria-pressed={isRecording}
+          aria-busy={isProcessing}
+          aria-label={buttonAriaLabel}
+          title={
+            isRecording ? 'Click to stop recording' : isProcessing ? 'Processing... Click to record again' : 'Click to start voice recording'
+          }
+          className={cn(
+            'group relative inline-flex h-14 w-14 items-center justify-center rounded-full cursor-pointer',
+            'shadow-lg transition-all duration-200 ease-out hover:scale-105 active:scale-95',
+            'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-forest',
+            isRecording
+              ? 'bg-red-600 text-white hover:bg-red-700'
+              : isProcessing
+                ? 'bg-forest text-champagne opacity-80'
+                : 'bg-forest text-champagne hover:bg-[#142A22]',
+          )}
+        >
+          {isRecording && (
+            <span
+              aria-hidden="true"
+              className="absolute inset-0 rounded-full bg-red-500 opacity-60 animate-ping"
+            />
+          )}
+          <span className="relative flex items-center justify-center">
+            {isRecording ? (
+              <Square className="h-5 w-5" fill="currentColor" />
+            ) : isProcessing ? (
+              <Loader2 className="h-6 w-6 animate-spin" />
+            ) : (
+              <Mic className="h-6 w-6" />
+            )}
+          </span>
+        </button>
+      </div>
     </div>
   );
 }

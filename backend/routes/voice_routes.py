@@ -487,6 +487,7 @@ async def process_voice(
     total_started = time.perf_counter()
 
     # ---- 0) Authorise -------------------------------------------------
+    proc_context = None
     try:
         access = await _ensure_user_can_access_procedure(
             request, procedureId, current_user,
@@ -567,6 +568,7 @@ async def process_voice(
         intent_result,
         procedure_id=procedureId,
         user=_user_for_orchestrator(current_user, access),
+        proc_context=proc_context,
     )
     orch_ms = int((time.perf_counter() - orch_started) * 1000)
 

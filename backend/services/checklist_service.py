@@ -163,6 +163,7 @@ class ChecklistService:
         user_id: Optional[str] = None,
         user_name: Optional[str] = None,
         user_role: Optional[str] = None,
+        proc_context: Optional[Any] = None,
     ) -> ChecklistItemView:
         """Mark exactly one item as complete.
 
@@ -171,13 +172,57 @@ class ChecklistService:
         the resolution returns more than one candidate.
         """
         view = await self.get_checklist(procedure_id)
-        match = self._resolve_item(view, item_query)
+
+        # If DB list is empty but we have a client-provided context, initialize it virtually
+        if not view.items and proc_context:
+            logger.info("Database checklist is empty. Using client-provided context to resolve.")
+            virtual_items = []
+            for item_text in getattr(proc_context, "pending", []) or []:
+                virtual_items.append(
+                    ChecklistItemView(
+                        item_id=item_text,
+                        text=item_text,
+                        completed=False,
+                    )
+                )
+            for item_text in getattr(proc_context, "completed", []) or []:
+                virtual_items.append(
+                    ChecklistItemView(
+                        item_id=item_text,
+                        text=item_text,
+                        completed=True,
+                    )
+                )
+            view = ChecklistView(procedure_id=procedure_id, procedure_name=getattr(proc_context, "procedure_name", "") or "", items=virtual_items)
+
+        try:
+            match = self._resolve_item(view, item_query)
+        except ChecklistItemNotFoundError as exc:
+            # If still not found, check if the client context has a current step we can fall back to
+            if proc_context and getattr(proc_context, "current_step", None):
+                logger.info(f"Checklist item not resolved. Falling back to client current step: {proc_context.current_step}")
+                match = ChecklistItemView(
+                    item_id=proc_context.current_step,
+                    text=proc_context.current_step,
+                    completed=False,
+                )
+            else:
+                raise exc
+
         if match.completed:
             raise ChecklistItemAlreadyCompleteError(
                 user_message=f"'{match.text}' is already complete.",
             )
 
         completed_at = datetime.now(timezone.utc).isoformat()
+
+        # If this is a virtual item (not in DB), skip the database write since it is client-managed
+        if getattr(match, "_shape", None) is None or match._shape == "legacy" and match._legacy_field is None:
+            logger.info(f"Skipping database update for client-managed virtual checklist item: {match.text}")
+            match.completed = True
+            match.completed_at = completed_at
+            return match
+
         update_doc = self._build_completion_update(
             match,
             completed_at=completed_at,

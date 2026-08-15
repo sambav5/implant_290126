@@ -45,7 +45,7 @@ class GeminiSpeechToTextProvider(SpeechToTextProvider):
 
     def __init__(self) -> None:
         self.api_key = os.environ.get("GEMINI_API_KEY") or os.environ.get("GOOGLE_API_KEY")
-        self.model = os.environ.get("GEMINI_STT_MODEL", "gemini-2.5-flash")
+        self.model = os.environ.get("GEMINI_STT_MODEL", "gemini-2.0-flash")
         
         if not self.api_key or "mock" in str(self.api_key).lower():
             logger.warning("GEMINI_API_KEY / GOOGLE_API_KEY missing or mock. Gemini STT running in mock mode.")

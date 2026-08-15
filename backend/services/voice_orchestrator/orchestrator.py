@@ -69,6 +69,7 @@ class DefaultVoiceCommandOrchestrator(VoiceCommandOrchestrator):
         *,
         procedure_id: str,
         user: Optional[Dict[str, Any]] = None,
+        proc_context: Optional[ProcedureContext] = None,
     ) -> ActionResult:
         if not procedure_id:
             return ActionResult.rejected(
@@ -93,7 +94,7 @@ class DefaultVoiceCommandOrchestrator(VoiceCommandOrchestrator):
         # 2) Dispatch --------------------------------------------------------
         try:
             if intent_result.intent is IntentKind.UPDATE_CHECKLIST:
-                return await self._handle_update_checklist(intent_result, procedure_id, user)
+                return await self._handle_update_checklist(intent_result, procedure_id, user, proc_context)
             if intent_result.intent is IntentKind.ADD_NOTE:
                 return await self._handle_add_note(intent_result, procedure_id, user)
             if intent_result.intent is IntentKind.READ_NEXT_STEP:
@@ -121,6 +122,7 @@ class DefaultVoiceCommandOrchestrator(VoiceCommandOrchestrator):
         intent_result: IntentResult,
         procedure_id: str,
         user: Optional[Dict[str, Any]],
+        proc_context: Optional[ProcedureContext] = None,
     ) -> ActionResult:
         query = (intent_result.entity or "").strip()
         if not query:
@@ -135,6 +137,7 @@ class DefaultVoiceCommandOrchestrator(VoiceCommandOrchestrator):
                 user_id=_user_field(user, "userId", "id"),
                 user_name=_user_field(user, "name", "fullName"),
                 user_role=_user_field(user, "role"),
+                proc_context=proc_context,
             )
         except AmbiguousChecklistItemError as exc:
             return ActionResult.confirmation(
